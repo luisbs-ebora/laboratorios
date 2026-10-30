@@ -1,0 +1,792 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Laboratorio de Sistemas Operativos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
+<style>
+/* Layout: cabecera con pestañas grandes para pizarra táctil; cada pestaña es una demostración a pantalla completa con controles grandes debajo del dibujo. Paleta tomada de las presentaciones de clase (azul marino y cian). */
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --ink:#0E1B32; --muted:#55697C; --line:#C9D5DF;
+  --accent:#00B8CF; --accent-ink:#17627C; --chip:#DFF5F9; --warn:#C9741F; --warn-bg:#FCE6CC;
+  --bad:#C2412D; --bad-bg:#FBE1DC; --good:#1F8A5B; --good-bg:#DDF2E7;
+  --lamp:#FFC93C; --lamp-glow:rgba(255,201,60,.55); --lamp-off:#DCE3EA;
+  --l-app:#FBE3C4; --l-tcp:#CFEAF7; --l-ip:#D9EBD0; --l-eth:#E6DCF4;
+  --f-head:'Poppins',system-ui,sans-serif; --f-body:'Open Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.5 var(--f-body)}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-top:6px solid var(--accent);padding-top:18px}
+.eyebrow{font:600 13px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font:700 clamp(28px,4vw,40px)/1.1 var(--f-head);margin:6px 0 0;text-wrap:balance}
+.speed{display:flex;align-items:center;gap:10px;font:600 15px var(--f-body);color:var(--muted)}
+nav.tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:20px 0 22px}
+.tab{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:12px 14px;background:var(--surface);border:2px solid var(--line);border-radius:10px;min-width:0}
+.tab b{font:600 17px/1.25 var(--f-head)}
+.tab span{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em}
+.tab[aria-selected="true"]{border-color:var(--accent);background:var(--chip)}
+.tab:focus-visible,.btn:focus-visible,.seg button:focus-visible,.bulb:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px clamp(16px,3vw,30px) 26px}
+.panel h2{font:700 clamp(24px,3vw,30px)/1.2 var(--f-head);margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:6px 0 18px;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{all:unset;cursor:pointer;font:600 17px var(--f-head);padding:12px 20px;border-radius:10px;background:var(--ink);color:var(--surface);text-align:center}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn[disabled]{opacity:.4;cursor:default}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:10px 18px;font:600 16px var(--f-head)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+input[type=number],select{font:600 20px var(--f-mono);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:7.5em}
+select{width:auto}
+label.lbl{font:600 15px var(--f-body);color:var(--muted)}
+.note{background:var(--chip);border-radius:10px;padding:14px 18px;margin-top:18px;max-width:80ch}
+.note b{font-family:var(--f-head)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.svgbox{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.svgbox svg{display:block;width:100%;min-width:560px;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+.mono{font-family:var(--f-mono)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.log li{padding:10px 12px;border-left:4px solid var(--accent);background:var(--bg);border-radius:6px;font-size:16px}
+.log li.bad{border-color:var(--bad);background:var(--bad-bg)}
+.log li.good{border-color:var(--good);background:var(--good-bg)}
+.log li.warn{border-color:var(--warn);background:var(--warn-bg)}
+.side h3{font:600 15px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--accent-ink);margin:0 0 10px}
+
+/* Bits */
+.bulbs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;max-width:900px}
+.bulb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0 12px;border-radius:12px;border:2px solid var(--line);background:var(--bg)}
+.bulb .w{font:700 clamp(15px,2.2vw,22px) var(--f-mono);color:var(--muted)}
+.bulb .lamp{width:clamp(34px,6vw,64px);aspect-ratio:1;border-radius:50%;background:var(--lamp-off);border:3px solid var(--line);transition:background .2s,box-shadow .2s}
+.bulb .bit{font:700 clamp(22px,3.4vw,36px) var(--f-mono)}
+.bulb.on{border-color:var(--lamp)}
+.bulb.on .lamp{background:var(--lamp);box-shadow:0 0 22px 6px var(--lamp-glow);border-color:var(--lamp)}
+.bulb.on .w{color:var(--ink)}
+.nibbles{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:900px;margin-top:8px}
+.nibbles div{text-align:center;font:600 16px var(--f-mono);border-top:4px solid var(--accent);padding-top:6px;color:var(--muted)}
+.nibbles strong{color:var(--ink);font-size:22px}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:20px 0;max-width:900px}
+.ro{background:var(--bg);border-radius:10px;padding:10px 14px;min-width:0}
+.ro small{display:block;font:600 13px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ro div{font:700 26px var(--f-mono);overflow-wrap:anywhere}
+.ro.big div{font-size:44px;line-height:1.1}
+.sum{font:600 20px var(--f-mono);margin:4px 0 0;color:var(--accent-ink);overflow-wrap:anywhere}
+.target{font:700 20px var(--f-head);padding:8px 14px;border-radius:8px;background:var(--warn-bg)}
+.target.ok{background:var(--good-bg);color:var(--good)}
+
+/* Divisiones */
+.divs{display:flex;flex-direction:column;gap:6px;margin:18px 0;font:600 clamp(18px,2.6vw,26px) var(--f-mono)}
+.divs .r{display:flex;gap:14px;align-items:center}
+.divs .r.new,.blk.new{animation:pop .3s ease-out}
+.divs .rest{display:inline-block;min-width:2.2em;text-align:center;padding:2px 8px;border-radius:6px;background:var(--warn-bg);color:var(--ink)}
+.result{font:700 clamp(22px,3vw,30px) var(--f-mono);padding:12px 16px;border-radius:10px;background:var(--good-bg);display:inline-block}
+@keyframes pop{from{opacity:.2;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* URL */
+.browser{border:2px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.browser .bar{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:2px solid var(--line);background:var(--surface);font:600 15px var(--f-mono);min-width:0}
+.browser .bar .lock{width:22px;text-align:center}
+.browser .bar .addr{flex:1;min-width:0;overflow-wrap:anywhere}
+.browser .page{min-height:150px;padding:16px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.urlparts{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.urlparts span{font:600 15px var(--f-mono);padding:4px 8px;border-radius:6px}
+.explain{font-size:18px;margin:14px 0 0}
+.f12{font:600 14px var(--f-mono);color:var(--accent-ink);margin-top:8px}
+
+/* Encapsulamiento */
+.encap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.encap{grid-template-columns:1fr 1fr}.encap .mid{grid-column:1/-1;order:3}}
+.stack{display:flex;flex-direction:column;gap:6px}
+.stack .tt{font:600 14px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:center}
+.layer{padding:10px;border-radius:8px;border:2px solid var(--line);text-align:center;font:600 16px var(--f-head);background:var(--bg)}
+.layer small{display:block;font:400 12px var(--f-mono);color:var(--muted)}
+.layer.cur{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.mid{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.pdu{font:700 24px var(--f-head);text-align:center}
+.packet{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;min-height:120px;align-items:stretch}
+.blk{border-radius:8px;padding:8px 10px;font:600 14px/1.3 var(--f-mono);border:2px solid var(--line);min-width:0;display:flex;flex-direction:column;justify-content:center}
+.blk b{font-family:var(--f-head);font-size:15px}
+.blk.app{background:var(--l-app);flex:2 1 110px}
+.blk.tcp{background:var(--l-tcp);flex:1 1 100px}
+.blk.ip{background:var(--l-ip);flex:1 1 120px}
+.blk.eth,.blk.fcs{background:var(--l-eth);flex:1 1 120px}
+.blk.fcs{flex:0 1 60px}
+.blk.bits{flex:1 1 100%;background:var(--bg);overflow-wrap:anywhere;letter-spacing:.06em}
+.dir{font:600 15px var(--f-mono);text-align:center;color:var(--accent-ink)}
+.size{font:600 15px var(--f-mono);text-align:center;color:var(--muted)}
+
+/* ===== Kit de actividades (clasificar, ordenar, test) ===== */
+.k-acts{margin:0 0 18px}
+.k-stage{min-height:120px}
+.k-msg{border-radius:12px;padding:12px 16px;background:var(--bg);border:2px solid var(--line);font-size:17px;margin:12px 0;min-height:52px}
+.k-msg.good{background:var(--good-bg);border-color:var(--good)}
+.k-msg.bad{background:var(--bad-bg);border-color:var(--bad)}
+.k-msg.warn{background:var(--warn-bg);border-color:var(--warn)}
+.k-msg b{font-family:var(--f-head)}
+.k-score{font:600 15px var(--f-mono);color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.k-score b{color:var(--ink)}
+.k-pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:2px dashed var(--line);border-radius:12px;min-height:64px;background:var(--bg);margin:10px 0 14px}
+.k-pool:empty::after{content:'¡Todas colocadas!';font:600 16px var(--f-head);color:var(--good);padding:8px}
+.k-chip{all:unset;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;padding:9px 13px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font:600 16px/1.3 var(--f-body);max-width:100%;overflow-wrap:anywhere}
+.k-chip.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-chip.ok{background:var(--good-bg);border-color:var(--good);cursor:default}
+.k-chip.shake{animation:kshake .35s}
+.k-chip:focus-visible,.k-bucket:focus-visible,.k-opt:focus-visible,.k-oi:focus-visible,.k-tok:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.k-ghost{position:fixed;z-index:50;pointer-events:none;opacity:.92;transform:translate(-50%,-50%) scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.k-buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.k-bucket{border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);min-height:120px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0}
+.k-bucket.over{border-color:var(--accent);background:var(--chip)}
+.k-bucket.armed{border-style:dashed;border-color:var(--accent)}
+.k-bucket h4{margin:0 0 4px;font:700 17px/1.2 var(--f-head)}
+.k-bucket h4 small{display:block;font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em;margin-top:2px}
+.k-bucket .k-chip{font-size:14px;padding:6px 9px}
+@keyframes kshake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.k-olist{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:860px}
+.k-oi{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.k-oi .n{font:700 18px var(--f-mono);color:var(--muted);min-width:1.6em;text-align:center}
+.k-oi .t{font:600 17px/1.35 var(--f-body)}
+.k-oi .t small{display:block;font-weight:400;color:var(--muted);font-size:14px}
+.k-oi .mv{display:flex;gap:4px}
+.k-oi .mv button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:8px;border:2px solid var(--line);text-align:center;font:700 18px/34px var(--f-mono);background:var(--bg)}
+.k-oi.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-oi.ok{border-color:var(--good);background:var(--good-bg)}
+.k-oi.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-olabel{font:600 13px var(--f-mono);color:var(--accent-ink);text-transform:uppercase;letter-spacing:.06em}
+.k-q{max-width:900px}
+.k-q .qn{font:600 14px var(--f-mono);color:var(--muted)}
+.k-q .qt{font:700 clamp(20px,2.4vw,24px)/1.3 var(--f-head);margin:6px 0 14px;text-wrap:pretty}
+.k-q .qfig{margin:0 0 14px}
+.k-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.k-opt{all:unset;cursor:pointer;padding:14px 16px;border:2px solid var(--line);border-radius:10px;background:var(--surface);font:600 17px/1.35 var(--f-body)}
+.k-opt:hover{border-color:var(--accent)}
+.k-opt.ok{border-color:var(--good);background:var(--good-bg)}
+.k-opt.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-opt[disabled]{cursor:default}
+.k-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:6px 0 12px;max-width:900px}
+.k-bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.k-end{font:700 24px var(--f-head);margin:8px 0}
+.k-two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+.k-two.wide{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr)}
+@media (max-width:900px){.k-two,.k-two.wide{grid-template-columns:minmax(0,1fr)}}
+.k-two>*{min-width:0}
+.k-tok{all:unset;cursor:pointer;font:700 clamp(18px,2.4vw,26px) var(--f-mono);padding:8px 12px;border-radius:8px;border:2px solid var(--line);background:var(--surface)}
+.k-tok.seen{background:var(--chip);border-color:var(--accent)}
+.k-tok.sel{box-shadow:0 0 0 3px var(--accent)}
+.k-toks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.k-tbl{border-collapse:collapse;font-size:16px;width:100%}
+.k-tbl th,.k-tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+.k-tbl th{background:var(--bg);font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.k-tbl tr.hl td{background:var(--warn-bg)}
+.k-tbl tr.new td{background:var(--good-bg);animation:pop .4s}
+.k-tbl td.fk,.k-tbl td.pk{font-family:var(--f-mono);font-weight:700}
+.k-tbl td.fk button{all:unset;cursor:pointer;color:var(--accent-ink);text-decoration:underline;text-underline-offset:3px}
+.k-tbl td.chg{background:var(--good-bg);font-weight:700}
+.k-tblwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.k-cap{font:700 16px var(--f-head);margin:14px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.k-cap small{font:600 12px var(--f-mono);color:var(--muted)}
+.k-mission{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.k-mission li{padding:10px 12px;border-radius:8px;background:var(--bg);border-left:4px solid var(--line);font-size:16px}
+.k-mission li.cur{border-color:var(--accent);background:var(--chip)}
+.k-mission li.done{border-color:var(--good);background:var(--good-bg)}
+.k-mission li.done::before{content:'✓ ';font-weight:700;color:var(--good)}
+.k-term{background:#0C1220;color:#D8E1EA;border-radius:12px;padding:14px 16px;font:500 15px/1.5 var(--f-mono);min-height:340px;max-height:460px;overflow:auto;border:2px solid var(--line)}
+.k-term .pr{color:#7FE3A0}
+.k-term .ps{color:#7CC4FF}
+.k-term .er{color:#FF9C8C}
+.k-term .wn{color:#FFD27A}
+.k-term pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+.k-term .in{display:flex;gap:8px;align-items:center}
+.k-term input{all:unset;flex:1;min-width:0;color:#fff;caret-color:#7FE3A0}
+.k-chips2{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.k-chips2 button{all:unset;cursor:pointer;font:600 14px var(--f-mono);padding:6px 10px;border-radius:8px;border:2px solid var(--line);background:var(--bg)}
+.k-chips2 button:focus-visible{outline:3px solid var(--accent)}
+.k-dm{border:2px solid var(--line);border-radius:10px;background:var(--surface);font:400 15px var(--f-body);overflow:hidden}
+.k-dm .tb{background:var(--bg);padding:6px 10px;border-bottom:1px solid var(--line);font:600 14px var(--f-body)}
+.k-dm ul{list-style:none;margin:0;padding:4px 0 8px}
+.k-dm li{margin:0}
+.k-dm .cat,.k-dm .dev{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;padding:5px 10px;width:100%;box-sizing:border-box}
+.k-dm .dev{padding-left:34px}
+.k-dm .cat:hover,.k-dm .dev:hover{background:var(--chip)}
+.k-dm .dev.sel{background:var(--chip);outline:2px solid var(--accent);outline-offset:-2px}
+.k-dm .ic{width:18px;height:18px;flex:none}
+.k-dm .car{width:14px;font:700 13px var(--f-mono);color:var(--muted)}
+.k-props{border:2px solid var(--line);border-radius:10px;background:var(--surface)}
+.k-props .ptabs{display:flex;border-bottom:2px solid var(--line)}
+.k-props .ptabs button{all:unset;cursor:pointer;padding:8px 14px;font:600 15px var(--f-body)}
+.k-props .ptabs button[aria-pressed="true"]{background:var(--chip);box-shadow:inset 0 -3px 0 var(--accent)}
+.k-props .pbody{padding:14px 16px;font-size:16px;min-height:170px}
+.k-props .pbody .mono{background:var(--bg);padding:8px 10px;border-radius:6px;display:block;overflow-wrap:anywhere;margin-top:6px}
+.k-svgfig{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.k-svgfig svg{display:block;width:100%;height:auto}
+.seg.k-acts,.k-stage .seg{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%}
+.k-q .qt b{color:var(--accent-ink)}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Tema 1 · Sistemas operativos monopuesto · TSMR</div>
+    <h1>Laboratorio de Sistemas Operativos</h1>
+  </div>
+  <label class="speed" for="slow"><input type="checkbox" id="slow"> Ritmo lento en las animaciones</label>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Demostraciones">
+  <button class="tab" role="tab" data-t="sistema"><b>El sistema informático</b><span>Sesión 1 · Elementos de un sistema informático</span></button>
+  <button class="tab" role="tab" data-t="binario"><b>Bits y bombillas</b><span>Sesión 2 · Representación de la información</span></button>
+  <button class="tab" role="tab" data-t="divisiones"><b>Divisiones sucesivas</b><span>Sesión 2 · Representación de la información</span></button>
+  <button class="tab" role="tab" data-t="funciones"><b>¿Qué hace el sistema operativo?</b><span>Sesión 3 · El sistema operativo</span></button>
+  <button class="tab" role="tab" data-t="terminal"><b>Terminal: kernel, shell y servicios</b><span>Sesión 4 · Kernel, shell, controladores, servicios y utilidades</span></button>
+  <button class="tab" role="tab" data-t="licencias"><b>Sistemas actuales y licencias</b><span>Sesión 5 · Sistemas operativos actuales, software libre y licencias</span></button>
+</nav>
+
+<!-- 1. BITS -->
+<section class="panel" id="p-binario" role="tabpanel">
+  <h2>Bits y bombillas</h2>
+  <p class="lead">Cada bombilla es un bit. Encendida vale su peso; apagada vale 0. Toca las bombillas y mira cómo cambia el número en decimal, hexadecimal y octal.</p>
+  <div class="bulbs" id="bulbs"></div>
+  <div class="nibbles"><div>Grupo de 4 bits → hex <strong id="nhi">0</strong></div><div>Grupo de 4 bits → hex <strong id="nlo">0</strong></div></div>
+  <p class="sum" id="sum">0</p>
+  <div class="readouts">
+    <div class="ro big"><small>Decimal</small><div id="rdec">0</div></div>
+    <div class="ro"><small>Binario (1 byte)</small><div id="rbin">0000 0000</div></div>
+    <div class="ro"><small>Hexadecimal</small><div id="rhex">0x00</div></div>
+    <div class="ro"><small>Octal (grupos de 3)</small><div id="roct">0</div></div>
+    <div class="ro"><small>Letra en ASCII</small><div id="rasc">—</div></div>
+  </div>
+  <div class="row">
+    <label class="lbl" for="bdec">Decimal (0–255)</label><input type="number" id="bdec" min="0" max="255" value="106">
+    <button class="btn alt" id="bset">Encender ese número</button>
+    <button class="btn alt" id="bclear">Apagar todo</button>
+    <button class="btn" id="breto">Reto: consigue un número</button>
+    <span class="target" id="btarget" hidden></span>
+  </div>
+  <div class="note"><b>Qué observar:</b> el peso se duplica de derecha a izquierda (1, 2, 4… 128). Con 8 bits el máximo es 255 (todas encendidas) y hay 256 combinaciones contando el 0. Cada grupo de 4 bits es exactamente una cifra hexadecimal; por eso el técnico escribe <span class="mono">6A</span> en lugar de <span class="mono">01101010</span>.</div>
+</section>
+
+<!-- 2. DIVISIONES -->
+<section class="panel" id="p-divisiones" role="tabpanel" hidden>
+  <h2>Divisiones sucesivas</h2>
+  <p class="lead">Para pasar de decimal a otra base se divide entre la base hasta que el cociente sea 0. El número se lee con los restos <b>de abajo arriba</b>. Pulsa «Siguiente división» y ve paso a paso.</p>
+  <div class="row">
+    <label class="lbl" for="dnum">Número decimal</label><input type="number" id="dnum" min="0" max="65535" value="25">
+    <label class="lbl" for="dbase">Pasar a base</label>
+    <select id="dbase"><option value="2">2 (binario)</option><option value="8">8 (octal)</option><option value="16">16 (hex)</option></select>
+    <button class="btn" id="dnext">Siguiente división</button>
+    <button class="btn alt" id="dall">Ver todo</button>
+    <button class="btn alt" id="dreset">Empezar de nuevo</button>
+  </div>
+  <div class="divs" id="divs"></div>
+  <div id="dres"></div>
+  <div class="note"><b>Error típico:</b> leer los restos de arriba abajo. El primer resto es la cifra de la derecha (la que menos pesa). Para comprobar, se suman los pesos: lo explicamos en «Bits y bombillas».</div>
+</section>
+<section class="panel" id="p-sistema" role="tabpanel" hidden>
+  <h2>El sistema informático</h2>
+  <div id="r-sistema"></div>
+</section>
+
+<section class="panel" id="p-funciones" role="tabpanel" hidden>
+  <h2>¿Qué hace el sistema operativo?</h2>
+  <div id="r-funciones"></div>
+</section>
+
+<section class="panel" id="p-terminal" role="tabpanel" hidden>
+  <h2>Terminal: kernel, shell y servicios</h2>
+  <div id="r-terminal"></div>
+</section>
+
+<section class="panel" id="p-licencias" role="tabpanel" hidden>
+  <h2>Sistemas actuales y licencias</h2>
+  <div id="r-licencias"></div>
+</section>
+
+
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const slowBox=$('#slow');
+const T=ms=>reduce?Math.min(ms,120):ms*(slowBox.checked?1.9:1);
+const sleep=ms=>new Promise(r=>setTimeout(r,T(ms)));
+function S(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function txt(parent,x,y,s,attrs={}){const e=S('text',Object.assign({x,y},attrs),parent);e.textContent=s;return e}
+// Mueve una ficha (círculo + etiqueta) de un punto a otro
+function token(svg,x1,y1,x2,y2,{label='',color='var(--accent)',dur=700,r=12}={}){
+  return new Promise(res=>{
+    const g=S('g',{},svg);
+    S('circle',{r,fill:color,stroke:'var(--surface)','stroke-width':3},g);
+    if(label){const t=txt(g,0,-r-8,label,{'text-anchor':'middle','font-size':17,'font-weight':700});t.style.fontFamily='var(--f-mono)'}
+    const d=T(dur),t0=performance.now();
+    function f(now){const k=Math.min(1,(now-t0)/d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      g.setAttribute('transform',`translate(${x1+(x2-x1)*e},${y1+(y2-y1)*e})`);
+      if(k<1)requestAnimationFrame(f);else{g.remove();res()}}
+    requestAnimationFrame(f);
+  });
+}
+
+// ---------- pestañas ----------
+const tabs=[...document.querySelectorAll('.tab')];
+function show(id){
+  if(!document.getElementById('p-'+id))id=tabs[0].dataset.t;
+  tabs.forEach(t=>t.setAttribute('aria-selected',t.dataset.t===id));
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='p-'+id);
+  try{history.replaceState(null,'','#'+id)}catch(e){}
+}
+tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.t)));
+show((location.hash||'').slice(1));
+
+// ---------- 1. BITS ----------
+(function(){
+  const W=[128,64,32,16,8,4,2,1],bits=[0,0,0,0,0,0,0,0],box=$('#bulbs');let target=null;
+  const els=W.map((w,i)=>{const b=document.createElement('button');b.className='bulb';b.setAttribute('aria-label','Bit de peso '+w);
+    b.innerHTML=`<span class="w">${w}</span><span class="lamp"></span><span class="bit">0</span>`;
+    b.onclick=()=>{bits[i]^=1;render()};box.appendChild(b);return b});
+  const HEX='0123456789ABCDEF';
+  function render(){
+    const v=bits.reduce((a,b,i)=>a+b*W[i],0);
+    els.forEach((e,i)=>{e.classList.toggle('on',!!bits[i]);e.querySelector('.bit').textContent=bits[i];e.setAttribute('aria-pressed',!!bits[i])});
+    const on=W.filter((w,i)=>bits[i]);
+    $('#sum').textContent=on.length?on.join(' + ')+' = '+v:'Todas apagadas = 0';
+    $('#rdec').textContent=v;
+    $('#rbin').textContent=bits.slice(0,4).join('')+' '+bits.slice(4).join('');
+    $('#nhi').textContent=HEX[v>>4];$('#nlo').textContent=HEX[v&15];
+    $('#rhex').textContent='0x'+HEX[v>>4]+HEX[v&15];
+    const s=v.toString(2).padStart(9,'0');
+    $('#roct').textContent=`${s.slice(0,3)} ${s.slice(3,6)} ${s.slice(6)} → ${v.toString(8)}`;
+    $('#rasc').textContent=v===32?'espacio':(v>32&&v<127)?`«${String.fromCharCode(v)}»`:v<32?'control (no se ve)':'fuera de ASCII';
+    if(target!==null){const t=$('#btarget');if(v===target){t.textContent=`¡Conseguido! ${target} = ${bits.join('')}`;t.classList.add('ok')}else{t.textContent=`Consigue el ${target}`;t.classList.remove('ok')}}
+  }
+  function set(v){v=Math.max(0,Math.min(255,v|0));W.forEach((w,i)=>bits[i]=(v&w)?1:0);render()}
+  $('#bset').onclick=()=>set(+$('#bdec').value);
+  $('#bclear').onclick=()=>set(0);
+  $('#breto').onclick=()=>{target=1+Math.floor(Math.random()*255);$('#btarget').hidden=false;set(0)};
+  set(106);
+})();
+
+// ---------- 2. DIVISIONES ----------
+(function(){
+  const HEX='0123456789ABCDEF';let rows=[],step=0;
+  function build(){
+    let n=Math.max(0,Math.min(65535,parseInt($('#dnum').value)||0));$('#dnum').value=n;
+    const b=+$('#dbase').value;rows=[];
+    if(n===0)rows.push({n:0,q:0,r:0});
+    while(n>0){rows.push({n,q:Math.floor(n/b),r:n%b});n=Math.floor(n/b)}
+    step=0;render();
+  }
+  function render(){
+    const b=+$('#dbase').value,box=$('#divs');box.innerHTML='';
+    rows.slice(0,step).forEach((r,i)=>{const d=document.createElement('div');d.className='r'+(i===step-1?' new':'');d.style.paddingLeft=(i*1.2)+'em';
+      d.innerHTML=`<span>${r.n} ÷ ${b} = ${r.q}</span><span>resto <span class="rest">${r.r}${r.r>9?' = '+HEX[r.r]:''}</span></span>`;box.appendChild(d)});
+    const res=$('#dres');
+    if(step<rows.length){res.innerHTML=step===0?'':'<p class="lead" style="margin:0">El cociente aún no es 0: seguimos dividiendo.</p>';$('#dnext').disabled=false}
+    else{const digits=rows.map(r=>HEX[r.r]).reverse().join('');
+      res.innerHTML=`<p class="lead" style="margin:0 0 8px">Cociente 0: hemos terminado. Leemos los restos de abajo arriba ↑</p><div class="result">${rows[0].n}<sub>10</sub> = ${digits}<sub>${b}</sub></div>`;$('#dnext').disabled=true}
+  }
+  $('#dnext').onclick=()=>{if(step<rows.length){step++;render()}};
+  $('#dall').onclick=()=>{step=rows.length;render()};
+  $('#dreset').onclick=build;$('#dnum').onchange=build;$('#dbase').onchange=build;
+  build();
+})();
+
+})();
+</script>
+<script>
+
+/* ===== Kit de actividades ===== */
+const K=(function(){
+  const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){if(k==='class')e.className=attrs[k];else if(k==='html')e.innerHTML=attrs[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k])}kids.flat().forEach(c=>{if(c==null)return;e.append(c.nodeType?c:document.createTextNode(c))});return e};
+  const md=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<span class="mono">$1</span>');
+  const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  function msg(el,cls,html){el.className='k-msg'+(cls?' '+cls:'');el.innerHTML=html}
+
+  // Selector de actividades dentro de una pestaña
+  function acts(root,list){
+    const seg=h('div',{class:'seg k-acts',role:'group','aria-label':'Actividad'});
+    const stage=h('div',{class:'k-stage'});
+    root.append(seg,stage);
+    const views=list.map(()=>null);
+    const btns=list.map((a,i)=>{const b=h('button',{'aria-pressed':i===0?'true':'false',onclick:()=>go(i)},a.label);seg.append(b);return b});
+    function go(i){btns.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));views.forEach(v=>v&&(v.hidden=true));
+      if(!views[i]){views[i]=h('div');stage.append(views[i]);list[i].render(views[i])}views[i].hidden=false}
+    go(0);
+  }
+
+  // Clasificar: tocar ficha + tocar caja, o arrastrar
+  function sort(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const score=h('div',{class:'k-score'});
+    const pool=h('div',{class:'k-pool','aria-label':'Fichas sin colocar'});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    const grid=h('div',{class:'k-buckets'});
+    const bk={};
+    cfg.buckets.forEach(b=>{const el=h('div',{class:'k-bucket',tabindex:0,role:'button','aria-label':'Caja '+b.name,'data-b':b.id},h('h4',{html:md(b.name)+(b.sub?'<small>'+md(b.sub)+'</small>':'')}));
+      el.addEventListener('click',()=>{if(sel)drop(sel,b.id)});
+      el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel){e.preventDefault();drop(sel,b.id)}});
+      bk[b.id]=el;grid.append(el)});
+    const row=h('div',{class:'row',style:'margin-top:14px'},
+      h('button',{class:'btn alt',onclick:reset},'Empezar de nuevo'),
+      h('button',{class:'btn alt',onclick:solve},'Ver solución'));
+    root.append(score,pool,m,grid,row);
+    let sel=null,ok=0,ko=0,chips=[];
+    const bname=id=>cfg.buckets.find(b=>b.id===id).name.replace(/\*\*/g,'');
+    function upd(){score.innerHTML=`<span>Colocadas: <b>${ok}/${cfg.items.length}</b></span><span>Fallos: <b>${ko}</b></span>`;
+      Object.values(bk).forEach(b=>b.classList.toggle('armed',!!sel))}
+    function pick(c){if(c.classList.contains('ok'))return;if(sel===c){c.classList.remove('sel');sel=null}else{sel&&sel.classList.remove('sel');sel=c;c.classList.add('sel');
+      msg(m,'','<b>'+md(c._it.t)+'</b>. Ahora toca la caja donde va (o arrástrala).')}upd()}
+    function drop(c,b){const it=c._it;c.classList.remove('sel');sel=null;
+      if(it.b===b||(Array.isArray(it.b)&&it.b.includes(b))){c.classList.add('ok');c.setAttribute('tabindex','-1');bk[b].append(c);ok++;
+        msg(m,'good','✓ <b>'+md(it.t)+'</b> → '+md(bname(b))+(it.why?'. '+md(it.why):''));
+        if(ok===cfg.items.length)msg(m,'good','<b>¡Completado!</b> '+ok+' fichas con '+ko+' fallo'+(ko===1?'':'s')+'. '+(it.why?md(it.why):''))}
+      else{ko++;c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);
+        msg(m,'bad','✗ <b>'+md(it.t)+'</b> no va en «'+md(bname(b))+'». '+(it.hint?md(it.hint):'Piénsalo otra vez.'))}
+      upd()}
+    function build(){pool.innerHTML='';Object.values(bk).forEach(b=>[...b.querySelectorAll('.k-chip')].forEach(c=>c.remove()));
+      chips=shuffle(cfg.items).map(it=>{const c=h('button',{class:'k-chip',type:'button',html:md(it.t)});c._it=it;
+        c.addEventListener('pointerdown',e=>startDrag(e,c));
+        c.addEventListener('click',e=>{if(c._dragged){c._dragged=false;return}pick(c)});
+        pool.append(c);return c});
+      ok=0;ko=0;sel=null;msg(m,'',cfg.start||'Toca una ficha y después la caja donde va. También puedes arrastrarla.');upd()}
+    function reset(){build()}
+    function solve(){chips.forEach(c=>{if(!c.classList.contains('ok')){const b=Array.isArray(c._it.b)?c._it.b[0]:c._it.b;c.classList.add('ok');c.classList.remove('sel');bk[b].append(c)}});sel=null;msg(m,'warn','Solución a la vista. Pulsa «Empezar de nuevo» para intentarlo sin ayuda.');upd()}
+    let dr=null;
+    function startDrag(e,c){if(c.classList.contains('ok')||e.button>0)return;dr={c,x:e.clientX,y:e.clientY,g:null,id:e.pointerId}}
+    window.addEventListener('pointermove',e=>{if(!dr||e.pointerId!==dr.id)return;
+      if(!dr.g){if(Math.hypot(e.clientX-dr.x,e.clientY-dr.y)<8)return;dr.g=dr.c.cloneNode(true);dr.g.classList.add('k-ghost');document.body.append(dr.g);dr.c.style.opacity=.35}
+      e.preventDefault();dr.g.style.left=e.clientX+'px';dr.g.style.top=e.clientY+'px';
+      Object.values(bk).forEach(b=>b.classList.remove('over'));const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))b.classList.add('over')},{passive:false});
+    window.addEventListener('pointerup',e=>{if(!dr||e.pointerId!==dr.id)return;const d=dr;dr=null;if(!d.g)return;
+      d.g.remove();d.c.style.opacity='';d.c._dragged=true;setTimeout(()=>d.c._dragged=false,0);Object.values(bk).forEach(b=>b.classList.remove('over'));
+      const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))drop(d.c,b.dataset.b)});
+    window.addEventListener('pointercancel',()=>{if(dr&&dr.g){dr.g.remove();dr.c.style.opacity=''}dr=null});
+    build();
+  }
+
+  // Ordenar
+  function order(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    if(cfg.top)root.append(h('div',{class:'k-olabel'},'▲ '+cfg.top));
+    const ol=h('ol',{class:'k-olist'});root.append(ol);
+    if(cfg.bottom)root.append(h('div',{class:'k-olabel'},'▼ '+cfg.bottom));
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    root.append(m,h('div',{class:'row'},h('button',{class:'btn',onclick:check},'Comprobar'),h('button',{class:'btn alt',onclick:()=>{cur=shuffleNotSorted();sel=-1;draw();msg(m,'','Ordena de nuevo.')}},'Mezclar'),h('button',{class:'btn alt',onclick:()=>{cur=cfg.items.map((_,i)=>i);sel=-1;draw(true);msg(m,'warn','Este es el orden correcto. Fíjate en las explicaciones en gris.')}},'Ver solución')));
+    let sel=-1,cur=shuffleNotSorted(),tries=0;
+    function shuffleNotSorted(){let a;do{a=shuffle(cfg.items.map((_,i)=>i))}while(a.every((v,i)=>v===i)&&a.length>1);return a}
+    function swap(i,j){if(j<0||j>=cur.length)return;[cur[i],cur[j]]=[cur[j],cur[i]];draw()}
+    function draw(showD){ol.innerHTML='';cur.forEach((v,i)=>{const it=cfg.items[v];
+      const li=h('li',{class:'k-oi'+(sel===i?' sel':''),tabindex:0},h('span',{class:'n'},String(i+1)),h('span',{class:'t',html:md(it.t)+(showD&&it.d?'<small>'+md(it.d)+'</small>':'')}),
+        h('span',{class:'mv'},h('button',{'aria-label':'Subir',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i-1)}},'↑'),h('button',{'aria-label':'Bajar',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i+1)}},'↓')));
+      li.addEventListener('click',()=>{if(sel<0){sel=i;draw()}else if(sel===i){sel=-1;draw()}else{const s=sel;sel=-1;swap(s,i)}});
+      ol.append(li)})}
+    function check(){tries++;let n=0;[...ol.children].forEach((li,i)=>{const good=cur[i]===i;if(good)n++;li.classList.add(good?'ok':'ko')});
+      if(n===cur.length){draw(true);[...ol.children].forEach(li=>li.classList.add('ok'));msg(m,'good','<b>¡Perfecto!</b> Todo en orden'+(tries>1?' (en '+tries+' intentos)':'')+'. '+(cfg.done?md(cfg.done):''))}
+      else msg(m,'bad',`<b>${n} de ${cur.length}</b> en su sitio (en verde). Mueve los rojos: toca uno y luego otro para intercambiarlos, o usa las flechas.`)}
+    draw();msg(m,'',cfg.start||'Toca un elemento y después otro para intercambiarlos, o usa las flechas ↑ ↓. Cuando acabes, pulsa «Comprobar».');
+  }
+
+  // Test de una pregunta cada vez
+  function quiz(root,cfg){
+    if(cfg.intro)root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const box=h('div',{class:'k-q'});root.append(box);
+    let qs,i,ok,answered;
+    function start(){qs=(cfg.noShuffle?cfg.questions:shuffle(cfg.questions)).map(q=>{const o=q.o.map((t,j)=>({t,c:j===q.a}));return Object.assign({},q,{opts:cfg.fixed||q.fixed?o:shuffle(o)})});i=0;ok=0;draw()}
+    function draw(){box.innerHTML='';
+      if(i>=qs.length){box.append(h('div',{class:'k-end'},`Resultado: ${ok} de ${qs.length}`),h('p',{},ok===qs.length?'¡Todas bien!':ok>=qs.length*.7?'Muy bien. Repasa las que fallaste.':'Vuelve a intentarlo: lee bien la explicación de cada pregunta.'),h('button',{class:'btn',onclick:start},'Otra vez (en otro orden)'));return}
+      const q=qs[i];answered=false;
+      const bar=h('div',{class:'k-bar'},h('i',{style:`width:${i/qs.length*100}%`}));
+      const opts=h('div',{class:'k-opts'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Elige una respuesta.');
+      const next=h('button',{class:'btn',onclick:()=>{i++;draw()},hidden:''},i===qs.length-1?'Ver resultado':'Siguiente pregunta');
+      q.opts.forEach(o=>{const b=h('button',{class:'k-opt',html:md(o.t)});b.onclick=()=>{if(answered)return;answered=true;
+        if(o.c){ok++;b.classList.add('ok');msg(m,'good','✓ <b>Correcto.</b> '+md(q.why||''))}
+        else{b.classList.add('ko');[...opts.children].forEach((x,k)=>{if(q.opts[k].c)x.classList.add('ok')});msg(m,'bad','✗ <b>No.</b> '+md(q.why||''))}
+        [...opts.children].forEach(x=>x.setAttribute('disabled',''));next.hidden=false;next.focus()};opts.append(b)});
+      box.append(h('div',{class:'qn'},`Pregunta ${i+1} de ${qs.length} · aciertos: ${ok}`),bar,h('div',{class:'qt',html:md(q.q)}));
+      if(q.fig){const f=h('div',{class:'qfig'});q.fig(f);box.append(f)}
+      box.append(opts,m,next)}
+    start();
+  }
+  return {h,md,shuffle,msg,acts,sort,order,quiz};
+})();
+
+
+(function(){
+const {h,md,acts,sort,order,quiz,msg}=K;
+
+/* ================= S1 · EL SISTEMA INFORMÁTICO ================= */
+acts(document.getElementById('r-sistema'),[
+  {label:'Hardware, software o firmware',render:el=>sort(el,{intro:'Clasifica cada elemento. El software se divide en **de sistema**, **de aplicación** y **de programación**. El **firmware** es software grabado dentro de un componente.',
+    buckets:[{id:'hw',name:'Hardware',sub:'se puede tocar'},{id:'fw',name:'Firmware',sub:'grabado en el componente'},{id:'sis',name:'Software de sistema'},{id:'app',name:'Software de aplicación'},{id:'prog',name:'Software de programación'}],
+    items:[{t:'Memoria RAM',b:'hw'},{t:'Teclado',b:'hw'},{t:'Disco SSD',b:'hw'},{t:'UEFI de la placa base',b:'fw',why:'comprueba el hardware al encender (POST) y arranca el sistema.'},{t:'Programa interno de un router',b:'fw'},{t:'Firmware de un SSD',b:'fw'},{t:'Windows 11',b:'sis'},{t:'Controlador de la impresora',b:'sis',why:'los controladores son software de sistema.'},{t:'Administrador de tareas',b:'sis',why:'es una utilidad del sistema.'},{t:'LibreOffice',b:'app'},{t:'Firefox',b:'app'},{t:'Programa de facturación',b:'app'},{t:'Visual Studio Code',b:'prog'},{t:'Intérprete de Python',b:'prog'}]})},
+  {label:'¿Qué pasa al encender?',render:el=>order(el,{intro:'Ordena lo que ocurre desde que pulsas el botón de encendido hasta que ves el escritorio.',
+    items:[{t:'Corriente',d:'La fuente de alimentación entrega energía a la placa y a los componentes.'},{t:'Firmware (POST)',d:'La UEFI comprueba que el hardware básico funciona: memoria, procesador, gráfica.'},{t:'Busca el dispositivo de arranque',d:'La UEFI busca en el disco o SSD configurado el programa que arranca el sistema.'},{t:'Carga el sistema operativo',d:'Se copia desde el almacenamiento a la memoria RAM.'},{t:'Carga los controladores',d:'El sistema operativo carga los drivers de cada dispositivo.'},{t:'Escritorio',d:'El usuario inicia sesión y abre sus aplicaciones.'}]})},
+  {label:'¿En qué capa está el problema?',render:el=>quiz(el,{intro:'Distinguir en qué capa está un problema es una de las habilidades básicas de un técnico. Capas: usuario → aplicaciones → sistema operativo (+ controladores) → firmware → hardware.',questions:[
+    {q:'La impresora está encendida y bien conectada, pero no imprime porque <b>falta su controlador</b>. ¿Qué parte falla?',o:['Software de sistema (controlador)','Hardware','Aplicación'],a:0,why:'Sin controlador el sistema operativo no puede hablar con la impresora, aunque el hardware esté perfecto.'},
+    {q:'Al encender, el equipo pita y no pasa de la comprobación inicial. ¿Quién hace esa comprobación?',o:['El firmware (UEFI, POST)','El navegador','El sistema operativo'],a:0,why:'El POST lo hace el firmware antes de cargar el sistema operativo.'},
+    {q:'Un usuario borra sin querer una carpeta del servidor. ¿Qué elemento del sistema informático ha causado la incidencia?',o:['El elemento humano','El hardware','El firmware'],a:0,why:'El elemento humano también forma parte del sistema y es origen frecuente de incidencias.'},
+    {q:'Cuando guardas un documento en Writer, ¿quién habla directamente con el disco?',o:['El sistema operativo, a través del controlador','Writer directamente','El usuario'],a:0,why:'Las aplicaciones se lo piden al sistema operativo: así un programa funciona igual con discos de cualquier marca (independencia del hardware).'},
+    {q:'¿Cuál de estas es la función de <b>proceso</b>?',o:['Calcular, ordenar, comparar los datos','Mostrar el resultado en pantalla','Guardar el archivo en el disco','Escribir con el teclado'],a:0,why:'Entrada (teclado), proceso (calcular), almacenamiento (guardar) y salida (pantalla).'},
+    {q:'¿Qué es un sistema informático?',o:['Elementos físicos, lógicos y humanos que tratan la información de forma automática','Solo el ordenador y sus piezas','Solo los programas instalados'],a:0,why:'Hardware + software + personas. Si falta alguno, el sistema no cumple su función.'}]})}]);
+
+/* ================= S3 · FUNCIONES DEL SO ================= */
+acts(document.getElementById('r-funciones'),[
+  {label:'Abrir una foto',render:el=>sort(el,{intro:'Haces doble clic en **playa.jpg**. Asigna cada cosa que ocurre a la **función del sistema operativo** que la realiza.',
+    buckets:[{id:'int',name:'Interfaz de usuario'},{id:'arc',name:'Gestión de archivos'},{id:'pro',name:'Gestión de procesos'},{id:'mem',name:'Gestión de memoria'},{id:'es',name:'Gestión de E/S'}],
+    items:[{t:'Detecta el doble clic en el Explorador',b:'int'},{t:'Comprueba que playa.jpg existe',b:'arc'},{t:'Comprueba que tienes permiso para leerlo',b:'arc',why:'los permisos de cada archivo los controla la gestión de archivos (y la seguridad).'},{t:'Busca qué programa abre los .jpg',b:'arc'},{t:'Crea un proceso nuevo para el visor',b:'pro'},{t:'Le reserva turnos de CPU',b:'pro'},{t:'Le asigna un espacio en la RAM',b:'mem'},{t:'Libera la memoria al cerrar el visor',b:'mem'},{t:'Dibuja la imagen a través del controlador de la gráfica',b:'es'}]})},
+  {label:'Imprimir un trabajo',render:el=>sort(el,{intro:'Pulsas **Imprimir** en Writer para sacar tu trabajo por la impresora compartida del aula. ¿Qué **función del sistema operativo** hace cada cosa?',
+    buckets:[{id:'int',name:'Interfaz de usuario'},{id:'seg',name:'Seguridad y usuarios'},{id:'pro',name:'Gestión de procesos'},{id:'mem',name:'Gestión de memoria'},{id:'es',name:'Gestión de E/S'},{id:'red',name:'Comunicaciones y red'}],
+    items:[{t:'Muestra la ventana de Imprimir con la lista de impresoras',b:'int'},{t:'Comprueba que tu usuario puede usar esa impresora',b:'seg',why:'los permisos dicen quién puede usar cada recurso.'},{t:'Da turnos de CPU a la cola de impresión para preparar el trabajo',b:'pro'},{t:'Guarda el trabajo preparado en la RAM mientras espera su turno',b:'mem'},{t:'Traduce el trabajo con el controlador de la impresora',b:'es',why:'el controlador hace de traductor entre el SO y el dispositivo.'},{t:'Envía el trabajo por la red hasta la impresora compartida',b:'red',why:'compartir impresoras es parte de las comunicaciones y red.'},{t:'Muestra el aviso «Documento enviado a la impresora»',b:'int'}]})},
+  {label:'Copiar a un pendrive',render:el=>sort(el,{intro:'Conectas un **pendrive** y copias en él la carpeta *Trabajos*. ¿Qué **función del sistema operativo** hace cada cosa?',
+    buckets:[{id:'es',name:'Gestión de E/S'},{id:'int',name:'Interfaz de usuario'},{id:'arc',name:'Gestión de archivos'},{id:'mem',name:'Gestión de memoria'},{id:'seg',name:'Seguridad y usuarios'}],
+    items:[{t:'Detecta el pendrive al conectarlo y carga su controlador',b:'es'},{t:'Aparece el icono del pendrive en el Explorador de archivos',b:'int'},{t:'Lee el sistema de archivos del pendrive para saber qué contiene',b:'arc'},{t:'Crea la carpeta Trabajos en el pendrive y copia dentro los archivos',b:'arc'},{t:'Reserva un trozo de RAM para ir pasando los datos',b:'mem'},{t:'Muestra la barra de progreso de la copia',b:'int'},{t:'El antivirus del sistema analiza el pendrive',b:'seg',why:'el SO protege el sistema frente a programas maliciosos.'},{t:'«Expulsar»: termina de escribir lo pendiente antes de que lo quites',b:'es',why:'controla el dispositivo para que no se pierdan datos al desconectarlo.'}]})},
+  {label:'Las 7 funciones',render:el=>sort(el,{intro:'Situaciones de todos los días con el ordenador. ¿Qué **función del sistema operativo** está trabajando en cada una?',
+    buckets:[{id:'pro',name:'Gestión de procesos'},{id:'mem',name:'Gestión de memoria'},{id:'arc',name:'Gestión de archivos'},{id:'es',name:'Gestión de E/S',sub:'entrada/salida: periféricos'},{id:'int',name:'Interfaz de usuario'},{id:'seg',name:'Seguridad y usuarios'},{id:'red',name:'Comunicaciones y red'}],
+    items:[
+      {t:'Escuchas música mientras escribes un trabajo',b:'pro',why:'varios procesos a la vez: el SO reparte la CPU entre ellos.'},{t:'Cierras un programa colgado desde el Administrador de tareas',b:'pro',why:'el SO termina ese proceso.'},{t:'Decide qué programa usa la CPU en cada momento',b:'pro'},
+      {t:'Con 40 pestañas abiertas el equipo va lento porque se llena la RAM',b:'mem'},{t:'Al cerrar un juego, su RAM queda libre para otros programas',b:'mem'},{t:'Impide que un programa escriba en la RAM de otro',b:'mem'},
+      {t:'Creas una carpeta nueva',b:'arc'},{t:'Cambias el nombre de un archivo',b:'arc'},{t:'Organiza el disco con el sistema de archivos NTFS',b:'arc'},
+      {t:'Conectas un ratón nuevo y funciona',b:'es',why:'lo reconoce y usa su controlador.'},{t:'La imagen sale por el monitor',b:'es'},{t:'El sonido sale por los auriculares',b:'es'},{t:'Lee lo que escribes con el teclado',b:'es'},
+      {t:'El menú Inicio, las ventanas y los iconos',b:'int',why:'interfaz gráfica.'},{t:'Escribes órdenes en el Símbolo del sistema',b:'int',why:'interfaz de texto.'},{t:'Haces doble clic en un icono',b:'int'},
+      {t:'Te pide la contraseña al iniciar sesión',b:'seg'},{t:'Otro usuario del equipo no puede abrir tus documentos',b:'seg',why:'permisos: quién puede leer, cambiar o borrar cada archivo.'},{t:'Seguridad de Windows detecta un programa malicioso',b:'seg'},
+      {t:'Te conectas a la Wi-Fi del instituto',b:'red'},{t:'Compartes una carpeta con los equipos del aula',b:'red'},{t:'El equipo obtiene conexión a Internet',b:'red'}]})},
+  {label:'Historia de los SO',render:el=>order(el,{intro:'Ordena las etapas de los sistemas operativos, de la más antigua a la más moderna.',top:'Más antigua',bottom:'Actualidad',
+    items:[{t:'Sin sistema operativo: tarjetas perforadas, un programa cada vez',d:'Años 40–50, válvulas de vacío.'},{t:'Procesamiento por lotes con monitor residente',d:'Años 50–60, transistores.'},{t:'Multiprogramación y tiempo compartido; nace UNIX',d:'Años 60–70, circuitos integrados. UNIX: 1969.'},{t:'Ordenadores personales: MS-DOS, Macintosh, Windows, Linux',d:'Años 80–90. MS-DOS 1981, Macintosh 1984, Windows 1985, Linux 1991.'},{t:'Móviles, redes y nube: iPhone, Android, virtualización',d:'Desde 2000. iPhone 2007, Android 2008.'}]})},
+  {label:'Recursos y estructura',render:el=>quiz(el,{intro:'Repasa los recursos que gestiona el SO, sus tipos y su estructura por dentro.',questions:[
+    {q:'¿Dónde ves en Windows 11 cómo reparte el SO el tiempo de CPU?',o:['Administrador de tareas → Rendimiento → CPU','Administrador de dispositivos','Configuración → Cuentas'],a:0,why:'El Administrador de tareas muestra CPU, memoria, disco y red.'},
+    {q:'¿Dónde ves los dispositivos de E/S y sus controladores?',o:['Administrador de dispositivos','Explorador de archivos','Seguridad de Windows'],a:0,why:'El Administrador de dispositivos muestra cada dispositivo y el estado de su controlador.'},
+    {q:'Un sistema que ejecuta varios programas a la vez es…',o:['Multitarea','Monotarea','Monousuario'],a:0,why:'Todos los sistemas actuales son multitarea. MS-DOS era monotarea.'},
+    {q:'En el ordenador de casa tenéis una cuenta para cada miembro de la familia, cada una con sus archivos. El sistema es…',o:['Multiusuario','Monousuario','Monotarea'],a:0,why:'Varios usuarios, cada uno con sus archivos y permisos.'},
+    {q:'MS-DOS solo podía ejecutar un programa cada vez. Era…',o:['Monotarea','Multitarea','Multiusuario'],a:0,why:'Todos los sistemas actuales son multitarea.'},
+    {q:'¿Qué sistema operativo usa un móvil Samsung?',o:['Android','iOS','Windows 11'],a:0,why:'iOS es solo para iPhone. Los sistemas operativos están hoy en móviles, televisores, coches y relojes.'},
+    {q:'Mientras un programa espera a que se lea un dato del disco, la CPU trabaja con otro. Esa idea se llama…',o:['Multiprogramación','Procesamiento por lotes','Tarjetas perforadas'],a:0,why:'Llegó en los años 60–70 con los circuitos integrados.'},
+    {q:'Windows Server y Ubuntu Server son sistemas…',o:['En red o de servidor','Monopuesto','Monotarea'],a:0,why:'Ofrecen servicios a otros equipos. Este módulo trata los monopuesto (Windows 11, Ubuntu Desktop, macOS).'},
+    {q:'Un juego se bloquea, pero el resto del sistema sigue funcionando. ¿Por qué?',o:['Las aplicaciones van en modo usuario, con permisos limitados','El juego tiene más prioridad que el núcleo','El hardware lo cierra solo'],a:0,why:'Solo el núcleo trabaja en modo núcleo; si una aplicación falla, normalmente se cierra solo ella.'},
+    {q:'Una aplicación necesita abrir un archivo. ¿Cómo se lo pide al núcleo?',o:['Mediante una llamada al sistema','Tocando directamente el disco','A través del navegador'],a:0,why:'La llamada al sistema es la «ventanilla» por la que se piden cosas al núcleo.'},
+    {q:'¿Qué tipo de núcleo usa Windows (núcleo NT)?',o:['Híbrido','Monolítico','Microkernel'],a:0,why:'Windows (NT) y macOS (XNU) son híbridos; Linux es monolítico con módulos; MINIX 3 es microkernel.'},
+    {q:'¿Qué es un sistema operativo?',o:['El conjunto de programas que gestiona el hardware y ofrece una forma sencilla de usarlo','Un programa para escribir documentos','La parte física del ordenador'],a:0,why:'Gestiona procesador, memoria, almacenamiento y periféricos, y hace de intermediario con el usuario y las aplicaciones.'},
+    {q:'¿Qué se carga primero al encender el equipo?',o:['El firmware (UEFI)','El sistema operativo','El navegador'],a:0,why:'El SO es el primer programa importante que se carga después del firmware, y el último que se cierra al apagar.'},
+    {q:'Haces doble clic en un icono sin saber en qué sector del disco está el archivo. ¿Qué objetivo del SO se cumple?',o:['Comodidad','Eficiencia','Seguridad'],a:0,why:'El SO hace fácil el uso del equipo: no hace falta saber cómo funciona por dentro.'},
+    {q:'El SO reparte los recursos de forma justa y segura entre los programas abiertos. ¿Qué objetivo cumple?',o:['Eficiencia','Comodidad','Movilidad'],a:0,why:'Que los recursos se aprovechen bien y se repartan entre todos los programas.'},
+    {q:'¿Qué es un <b>proceso</b>?',o:['Un programa en ejecución','Un archivo guardado en el disco','Un cable del ordenador'],a:0,why:'El SO crea los procesos, los pone en marcha, los detiene y decide cuál usa la CPU.'},
+    {q:'¿Qué función del SO organiza la información del disco en archivos y carpetas?',o:['Gestión de archivos','Gestión de procesos','Gestión de memoria'],a:0,why:'Lo hace mediante un sistema de archivos.'},
+    {q:'¿Qué sistema de archivos usa normalmente Windows?',o:['NTFS','ext4','JPG'],a:0,why:'ext4 es el habitual de Linux.'},
+    {q:'¿Y Linux?',o:['ext4','NTFS','MP3'],a:0,why:'NTFS es el de Windows.'},
+    {q:'¿Qué función controla el teclado, la pantalla, la impresora o el USB?',o:['Gestión de entrada/salida (E/S)','Gestión de memoria','Interfaz de usuario'],a:0,why:'Lo hace a través de los controladores, que traducen entre los periféricos y los programas.'},
+    {q:'Ventanas, iconos y ratón son una interfaz…',o:['Gráfica','De texto','De red'],a:0,why:'En la interfaz de texto se escriben órdenes.'},
+    {q:'¿Qué función del SO gestiona las cuentas, las contraseñas y los permisos?',o:['Seguridad y usuarios','Gestión de procesos','Comunicaciones y red'],a:0,why:'Decide quién puede leer, cambiar o borrar cada archivo y protege frente a programas maliciosos.'},
+    {q:'¿Qué función permite compartir archivos e impresoras con otros equipos?',o:['Comunicaciones y red','Gestión de memoria','Interfaz de usuario'],a:0,why:'También permite conectarse a otras máquinas y a Internet.'},
+    {q:'¿Dónde ves en Windows 11 cuánta RAM se está usando?',o:['Administrador de tareas → Rendimiento → Memoria','Explorador de archivos','Configuración → Cuentas'],a:0,why:'En Rendimiento ves CPU, Memoria, Disco y Ethernet o Wi-Fi.'},
+    {q:'¿Dónde gestionas las cuentas de usuario en Windows 11?',o:['Configuración → Cuentas','Administrador de dispositivos','Visor de eventos'],a:0,why:'Y la protección, en Seguridad de Windows.'},
+    {q:'¿Cuál es la parte central del SO, siempre cargada en memoria?',o:['El núcleo (kernel)','La shell','El escritorio'],a:0,why:'Se encarga directamente de procesos, memoria, archivos y dispositivos.'},
+    {q:'¿En qué modo trabaja el núcleo?',o:['Modo núcleo (privilegiado), con acceso total','Modo usuario, con permisos limitados','Modo avión'],a:0,why:'Las aplicaciones trabajan en modo usuario y no pueden tocar el hardware directamente.'},
+    {q:'¿Qué tipo de núcleo tiene Linux?',o:['Monolítico, con módulos que se cargan cuando hacen falta','Microkernel','Híbrido'],a:0,why:'Muy rápido, pero un fallo en una parte puede afectar a todo.'},
+    {q:'¿En qué año nació UNIX, del que descienden muchos sistemas actuales?',o:['1969','1981','2007'],a:0,why:'En los laboratorios Bell. 1981 es MS-DOS y 2007 el iPhone.'},
+    {q:'¿Cuáles son los dos objetivos de un sistema operativo?',o:['Comodidad y eficiencia','Velocidad y color','Seguridad y publicidad'],a:0,why:'Que el equipo sea fácil de usar y que los recursos se aprovechen y repartan bien.'}]})}]);
+
+/* ================= S4 · TERMINAL SIMULADA ================= */
+function terminal(root){
+  root.append(h('p',{class:'lead',html:'Terminal <b>simulada</b> para practicar los comandos de consulta de la Sección 4. Las salidas son de ejemplo: en tu equipo los números de versión pueden cambiar. Escribe el comando y pulsa <b>Intro</b>, o toca uno de los botones.'}));
+  const seg=h('div',{class:'seg',role:'group','aria-label':'Sistema'});root.append(seg);
+  const wrap=h('div',{class:'k-two',style:'margin-top:14px'});root.append(wrap);
+  const L=h('div'),R=h('div');wrap.append(L,R);
+  const term=h('div',{class:'k-term',role:'log','aria-live':'polite'});L.append(term);
+  const chips=h('div',{class:'k-chips2'});L.append(chips);
+  const ml=h('ol',{class:'k-mission'});const m=h('div',{class:'k-msg'});R.append(h('h3',{},'Misiones'),ml,m);
+  const W={name:'Windows 11 · Símbolo del sistema',prompt:'C:\\Users\\alumno>',cls:'ps',
+    cmds:{
+     'ver':'\nMicrosoft Windows [Versión 10.0.26100.4652]\n',
+     'echo %comspec%':'C:\\WINDOWS\\system32\\cmd.exe',
+     'systeminfo':'\nNombre de host:                            PC-AULA-07\nNombre del sistema operativo:              Microsoft Windows 11 Education\nVersión del sistema operativo:             10.0.26100 N/D Compilación 26100\nFabricante del sistema operativo:          Microsoft Corporation\nFabricante del sistema:                    (fabricante del equipo)\nModelo el sistema:                         (modelo del equipo)\nTipo de sistema:                           x64-based PC\nCantidad total de memoria física:          16.073 MB\nRevisiones:                                (lista de actualizaciones instaladas)\n',
+     'driverquery':'\nNombre de módulo Nombre para mostrar           Tipo de controlador Fecha de vínculo\n================ ============================= =================== ================\nACPI             Microsoft ACPI Driver         Kernel\nDisk             Disk Driver                   Kernel\nkbdhid           Keyboard HID Driver           Kernel\nrt640x64         Realtek PCIe GbE Family Contr Kernel\nNVMe             Controlador NVMe              Kernel\n... (la lista sigue)\n',
+     'net start':'Se han iniciado estos servicios de Windows:\n\n   Audio de Windows\n   Cliente DHCP\n   Cliente DNS\n   Cola de impresión\n   Windows Update\n   ... (la lista sigue)\n\nSe ha completado el comando correctamente.',
+     'whoami':'pc-aula-07\\alumno','cls':'__clear','exit':'(En el Símbolo del sistema real, exit cierra la ventana.)','services.msc':'(Abre la ventana Servicios. Practícala en la actividad «Servicios (services.msc)» de esta pestaña.)'},
+    warn:[/^(net stop|sc (stop|delete|config)|shutdown|format|del |rd |rmdir)/i],
+    unk:c=>`"${c.split(' ')[0]}" no se reconoce como un comando interno o externo,\nprograma o archivo por lotes ejecutable.`,ci:true};
+  const U={name:'Ubuntu 24.04 LTS · Bash',prompt:'alumno@pc-aula-07:~$',cls:'pr',
+    cmds:{
+     'uname -a':'Linux pc-aula-07 6.8.0-48-generic #48-Ubuntu SMP PREEMPT_DYNAMIC (fecha de compilación) x86_64 x86_64 x86_64 GNU/Linux',
+     'uname -r':'6.8.0-48-generic','uname':'Linux',
+     'echo $shell':null,'echo $SHELL':'/bin/bash',
+     'cat /etc/os-release':'PRETTY_NAME="Ubuntu 24.04.1 LTS"\nNAME="Ubuntu"\nVERSION_ID="24.04"\nVERSION="24.04.1 LTS (Noble Numbat)"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL="https://www.ubuntu.com/"',
+     'lsmod':'Module                  Size  Used by\nsnd_hda_intel          61440  3\ni915                 4247552  27\nr8169                 118784  0\nbluetooth            1032192  31 btrtl,btintel,btbcm,bnep,btusb,rfcomm\n... (la lista sigue)',
+     'modinfo r8169':'filename:       /lib/modules/6.8.0-48-generic/kernel/drivers/net/ethernet/realtek/r8169.ko.zst\nlicense:        GPL\ndescription:    RealTek RTL-8169 Gigabit Ethernet driver\n... (más líneas)',
+     'systemctl status networkmanager':'Unit networkmanager.service could not be found.',
+     'systemctl status NetworkManager':'● NetworkManager.service - Network Manager\n     Loaded: loaded (/usr/lib/systemd/system/NetworkManager.service; enabled; preset: enabled)\n     Active: active (running) since (fecha y hora); 2h ago\n   Main PID: 812 (NetworkManager)\n      Tasks: 4\n     Memory: 9.8M\n(pulsa q para salir)',
+     'systemctl status':'● pc-aula-07\n    State: running\n    Units: (número de unidades cargadas)\n     Jobs: 0 queued\n   Failed: 0 units\n    Since: (fecha y hora); 2h ago\n   CGroup: /\n           ├─init.scope\n           ├─system.slice\n           └─user.slice\n(pulsa q para salir)',
+     'modinfo snd_hda_intel':'filename:       /lib/modules/6.8.0-48-generic/kernel/sound/pci/hda/snd-hda-intel.ko.zst\nlicense:        GPL\ndescription:    Intel HDA driver\n... (más líneas)',
+     'modinfo i915':'filename:       /lib/modules/6.8.0-48-generic/kernel/drivers/gpu/drm/i915/i915.ko.zst\nlicense:        GPL and additional rights\ndescription:    Intel Graphics\n... (más líneas)',
+     'modinfo bluetooth':'filename:       /lib/modules/6.8.0-48-generic/kernel/net/bluetooth/bluetooth.ko.zst\nlicense:        GPL\ndescription:    Bluetooth Core ver 2.22\n... (más líneas)',
+     'uname -m':'x86_64','hostname':'pc-aula-07',
+     'systemctl list-units --type=service':'  UNIT                          LOAD   ACTIVE SUB     DESCRIPTION\n  bluetooth.service             loaded active running Bluetooth service\n  cron.service                  loaded active running Regular background program processing daemon\n  cups.service                  loaded active running CUPS Scheduler\n  gdm.service                   loaded active running GNOME Display Manager\n  NetworkManager.service        loaded active running Network Manager\n  rsyslog.service               loaded active running System Logging Service\n  systemd-journald.service      loaded active running Journal Service\n  systemd-timesyncd.service     loaded active running Network Time Synchronization\n  ... (la lista sigue)\n(pulsa q para salir)',
+     'systemctl status cups':'● cups.service - CUPS Scheduler\n     Loaded: loaded (/usr/lib/systemd/system/cups.service; enabled; preset: enabled)\n     Active: active (running) since (fecha y hora); 2h ago\n(pulsa q para salir)',
+     'journalctl':'(fecha) pc-aula-07 kernel: Linux version 6.8.0-48-generic ...\n(fecha) pc-aula-07 kernel: r8169 0000:02:00.0 enp2s0: Link is Up - 1Gbps/Full\n(fecha) pc-aula-07 systemd[1]: Started cups.service - CUPS Scheduler.\n(fecha) pc-aula-07 NetworkManager[812]: <info>  device (enp2s0): state change: activated\n... (miles de líneas más)\n(pulsa q para salir)',
+     'top':'top - 10:42:03 up 2:01,  1 user,  load average: 0,35, 0,41, 0,38\nTareas: 287 total,   1 ejecutar, 286 hibernar\n%Cpu(s):  3,1 us,  1,0 sy,  0,0 ni, 95,6 id\nMiB Mem :  15.882,4 total,   9.412,0 libre,   3.180,7 usado\n\n    PID USUARIO   %CPU  %MEM  ORDEN\n   2154 alumno     4,3   2,6  gnome-shell\n   3310 alumno     2,0   6,1  firefox\n    812 root       0,3   0,1  NetworkManager\n(captura fija; en un top real se actualiza cada pocos segundos y se sale con q)',
+     'free -h':'               total       usado       libre  compartido   búf/caché   disponible\nMem:            15Gi       3,1Gi       9,2Gi       412Mi       3,4Gi        12Gi\nInter.:        4,0Gi          0B       4,0Gi',
+     'df -h':'S.ficheros     Tamaño Usados  Disp Uso% Montado en\n/dev/nvme0n1p2   468G    23G  422G   6% /\n/dev/nvme0n1p1   1,1G   6,2M  1,1G   1% /boot/efi\ntmpfs            7,8G      0  7,8G   0% /dev/shm',
+     'whoami':'alumno','clear':'__clear'},
+    warn:[/^(sudo |systemctl (stop|disable|restart|mask)|rmmod|modprobe -r|rm |shutdown|reboot)/],
+    unk:c=>`${c.split(' ')[0]}: orden no encontrada`,ci:false};
+  const MIS={w:[
+    {t:'Averigua la <b>versión de Windows</b>.',c:'ver',ok:'El número interno empieza por <b>10.0</b>; lo que distingue a Windows 11 es la compilación (22000 o superior).'},
+    {t:'Comprueba qué <b>intérprete</b> estás usando.',c:'echo %comspec%',ok:'Estás en <b>cmd.exe</b>, el Símbolo del sistema.'},
+    {t:'Saca un resumen del sistema: nombre, versión y <b>memoria física</b>.',c:'systeminfo',ok:'systeminfo tarda unos segundos: recoge mucha información del equipo.'},
+    {t:'Lista los <b>controladores</b> instalados.',c:'driverquery',ok:'Mira la línea de Realtek: es el controlador de la tarjeta de red.'},
+    {t:'Lista los <b>servicios</b> que están en ejecución.',c:'net start',ok:'Son programas en segundo plano, sin ventana: Cola de impresión, Cliente DHCP…'}],
+   u:[
+    {t:'Averigua todo sobre el <b>núcleo</b> (nombre, equipo, versión, arquitectura).',c:'uname -a',ok:'Linux es el núcleo; Ubuntu es la distribución.'},
+    {t:'Muestra <b>solo la versión</b> del núcleo.',c:'uname -r',ok:'Empieza por 6. y termina en -generic.'},
+    {t:'Comprueba qué <b>shell</b> usa tu usuario.',c:'echo $SHELL',ok:'Bash es el intérprete por defecto de Ubuntu. Ojo: $SHELL va en mayúsculas.'},
+    {t:'Averigua el nombre y la versión de la <b>distribución</b>.',c:'cat /etc/os-release',ok:'Ubuntu 24.04 LTS: año 24, mes 04 (abril), soporte a largo plazo.'},
+    {t:'Muestra los <b>módulos del núcleo</b> cargados (los controladores).',c:'lsmod',ok:'r8169 es el módulo de la tarjeta de red Realtek. Prueba también <b>modinfo r8169</b>.'},
+    {t:'Elige <b>otro módulo</b> de la lista de lsmod y mira su descripción y su licencia con <b>modinfo</b>.',c:['modinfo snd_hda_intel','modinfo i915','modinfo bluetooth'],ok:'Fíjate en la línea <b>license</b>: los módulos del núcleo Linux son software libre (GPL).'},
+    {t:'Comprueba que el <b>servicio de red</b> está funcionando.',c:'systemctl status NetworkManager',ok:'«Active: active (running)»: el servicio está en marcha. En un systemctl real se sale con <b>q</b>.'},
+    {t:'Mira el <b>estado general</b> del sistema (línea State).',c:'systemctl status',ok:'State: running: el sistema funciona sin servicios fallidos (Failed: 0 units).'},
+    {t:'Lista <b>todos los servicios</b> del sistema.',c:'systemctl list-units --type=service',ok:'cups.service es el servicio de impresión de Ubuntu: el equivalente a la Cola de impresión de Windows.'},
+    {t:'Consulta los <b>mensajes del sistema</b> (el «Visor de eventos» de Ubuntu).',c:'journalctl',ok:'journalctl es la utilidad que muestra el registro del sistema. Se sale con q.'},
+    {t:'Mira los <b>procesos</b> que más CPU y memoria usan.',c:'top',ok:'top es el «Administrador de tareas» de la terminal.'},
+    {t:'Consulta la <b>memoria</b> y el <b>espacio en disco</b>.',c:['free -h','df -h'],ok:'free -h para la RAM y df -h para el disco: son utilidades del sistema.'}]};
+  let os='w',hist=[],mi=0,hi=0;const done={w:0,u:0};
+  function cfg(){return os==='w'?W:U}
+  function line(html){const d=h('pre',{html});term.insertBefore(d,term.lastChild);term.scrollTop=term.scrollHeight}
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+  function prompt(){term.innerHTML='';const C=cfg();const inp=h('input',{'aria-label':'Comando',autocomplete:'off',autocapitalize:'off',spellcheck:'false'});
+    const row=h('div',{class:'in'},h('span',{class:C.cls},C.prompt),inp);term.append(row);
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){run(inp.value);inp.value=''}else if(e.key==='ArrowUp'){if(hist.length){hi=Math.max(0,hi-1);inp.value=hist[hi]||''}e.preventDefault()}else if(e.key==='ArrowDown'){hi=Math.min(hist.length,hi+1);inp.value=hist[hi]||''}});
+    term.addEventListener('click',()=>inp.focus());
+    line(`<span class="wn">${C.name} (simulación para el aula)</span>`);}
+  function run(raw){const C=cfg();const c=raw.trim().replace(/\s+/g,' ');hist.push(c);hi=hist.length;
+    line(`<span class="${C.cls}">${C.prompt}</span> ${esc(c)}`);if(!c)return;
+    if(C.warn.some(r=>r.test(c))){line(`<span class="wn">⚠ Comando bloqueado en el laboratorio: cambia el sistema. En esta sección los servicios, controladores y archivos solo se consultan.</span>`);return}
+    let out;const key=C.ci?c.toLowerCase():c;
+    if(Object.prototype.hasOwnProperty.call(C.cmds,key))out=C.cmds[key];
+    if(out===undefined||out===null){
+      if(!C.ci&&/^[A-Z]/.test(c)&&C.cmds[c[0].toLowerCase()+c.slice(1)]!==undefined)line(`<span class="er">${esc(C.unk(c))}</span>\n<span class="wn">Pista: en Linux importan las mayúsculas. «${esc(c.split(' ')[0])}» no es lo mismo que «${esc(c.split(' ')[0].toLowerCase())}».</span>`);
+      else if(!C.ci&&/^modinfo /.test(c))line(`<span class="er">modinfo: ERROR: Module ${esc(c.slice(8))} not found.</span>\n<span class="wn">En esta simulación prueba con un módulo de la lista de lsmod: r8169, snd_hda_intel, i915 o bluetooth.</span>`);
+      else if(!C.ci&&c==='echo $shell')line('\n<span class="wn">Sale vacío: la variable se llama $SHELL, en mayúsculas.</span>');
+      else if(!C.ci&&c.toLowerCase()==='systemctl status networkmanager')line(`<span class="er">${esc(C.cmds['systemctl status networkmanager'])}</span>\n<span class="wn">Pista: el servicio se escribe NetworkManager, con N y M mayúsculas.</span>`);
+      else line(`<span class="er">${esc(C.unk(c))}</span>`);return}
+    if(out==='__clear'){prompt();return}
+    line(esc(out));
+    const x=MIS[os][done[os]];if(x){const ok=Array.isArray(x.c)?x.c:[x.c];if(ok.some(k=>(C.ci?k.toLowerCase():k)===key)){done[os]++;drawM(x.ok)}}}
+  function drawM(okMsg){ml.innerHTML='';MIS[os].forEach((x,i)=>ml.append(h('li',{class:i<done[os]?'done':i===done[os]?'cur':'',html:x.t})));
+    if(okMsg)msg(m,'good','✓ '+okMsg);else msg(m,'','Resuelve las misiones escribiendo el comando adecuado. Si no lo recuerdas, tienes los comandos en los botones de debajo de la terminal.');
+    if(done[os]>=MIS[os].length)msg(m,'good',(okMsg?'✓ '+okMsg+'<br><br>':'')+'<b>¡Todas las misiones hechas!</b> Cambia al otro sistema y repite.');
+    chips.innerHTML='';Object.keys(cfg().cmds).filter(k=>!['cls','clear','echo $shell','systemctl status networkmanager','uname','whoami','exit','services.msc','hostname','uname -m'].includes(k)).forEach(k=>chips.append(h('button',{onclick:()=>{run(k);term.querySelector('input').focus()}},k)))}
+  [['w','Windows 11 (cmd)'],['u','Ubuntu 24.04 (Bash)']].forEach(([k,t])=>seg.append(h('button',{'aria-pressed':k===os?'true':'false',onclick:()=>{os=k;[...seg.children].forEach(b=>b.setAttribute('aria-pressed',b.textContent===t));hist=[];prompt();drawM()}},t)));
+  prompt();drawM();
+}
+
+function servicesSim(root){
+  root.append(h('p',{class:'lead',html:'Simulación de la ventana <b>Servicios</b> de Windows 11 (<b>Windows + R → services.msc</b>). Haz clic en un servicio para ver sus propiedades. Los valores son los habituales de un Windows 11 sin cambios: en tu equipo pueden variar. Los botones que cambian el sistema están <b>bloqueados</b>.'}));
+  const S=[
+    ['Audio de Windows','Audiosrv','Administra el audio de los programas.','En ejecución','Automático'],
+    ['Cliente DHCP','Dhcp','Obtiene la configuración de red automáticamente.','En ejecución','Automático'],
+    ['Cliente DNS','Dnscache','Resuelve y guarda en memoria los nombres DNS.','En ejecución','Automático (desencadenar inicio)'],
+    ['Cola de impresión','Spooler','Pone en cola los trabajos de impresión.','En ejecución','Automático'],
+    ['Fax','Fax','Envía y recibe faxes.','','Manual'],
+    ['Firewall de Windows Defender','mpssvc','Protege el equipo filtrando el tráfico de red.','En ejecución','Automático'],
+    ['Hora de Windows','W32Time','Sincroniza la fecha y la hora.','','Manual (desencadenar inicio)'],
+    ['Registro de eventos de Windows','EventLog','Guarda los eventos que muestra el Visor de eventos.','En ejecución','Automático'],
+    ['Registro remoto','RemoteRegistry','Permite modificar el registro desde otro equipo.','','Deshabilitado'],
+    ['Servicio de compatibilidad con Bluetooth','bthserv','Detecta y empareja dispositivos Bluetooth.','','Manual (desencadenar inicio)'],
+    ['Windows Update','wuauserv','Busca, descarga e instala actualizaciones.','En ejecución','Manual (desencadenar inicio)']];
+  const wrap=h('div',{class:'k-two'});root.append(wrap);const L=h('div'),R=h('div');wrap.append(L,R);
+  const tb=h('table',{class:'k-tbl'});tb.innerHTML='<thead><tr><th>Nombre</th><th>Descripción</th><th>Estado</th><th>Tipo de inicio</th></tr></thead>';
+  const bd=h('tbody');tb.append(bd);L.append(h('div',{class:'k-cap'},'Servicios (locales) ',h('small',{},'simulación')),h('div',{class:'k-tblwrap'},tb));
+  const props=h('div',{class:'k-props',style:'margin-top:12px'});L.append(props);
+  let sel=null;
+  S.forEach((r,i)=>{const tr=h('tr',{style:'cursor:pointer',tabindex:0},h('td',{},h('b',{},r[0])),h('td',{},r[2]),h('td',{},r[3]||'—'),h('td',{},r[4]));tr.onclick=()=>pick(i);tr.onkeydown=e=>{if(e.key==='Enter'){pick(i)}};bd.append(tr)});
+  function pick(i){sel=i;[...bd.children].forEach((t,j)=>t.classList.toggle('hl',j===i));const r=S[i];props.innerHTML='';
+    const b=h('div',{class:'pbody',html:`<b>Propiedades: ${r[0]}</b> · pestaña General<br><br>Nombre de servicio: <span class="mono">${r[1]}</span>Nombre para mostrar: <b>${r[0]}</b><br>Tipo de inicio: <b>${r[4]}</b><br>Estado del servicio: <b>${r[3]||'Detenido'}</b>`});
+    const row=h('div',{class:'row',style:'margin-top:12px'});['Iniciar','Detener','Pausar','Reanudar','Aceptar'].forEach(t=>row.append(h('button',{class:'btn alt',style:'font-size:14px;padding:8px 12px',onclick:()=>msg(m,'warn','<b>Bloqueado.</b> «'+t+'» cambia la configuración. En esta sección los servicios solo se consultan: se cierra con <b>Cancelar</b>.')},t)));
+    row.append(h('button',{class:'btn',style:'font-size:14px;padding:8px 12px',onclick:()=>{props.innerHTML='';sel=null;[...bd.children].forEach(t=>t.classList.remove('hl'));msg(m,'','Ventana de propiedades cerrada con <b>Cancelar</b>: no se ha cambiado nada.')}},'Cancelar'));
+    b.append(row);props.append(b);check()}
+  const MIS=[
+    {t:'Abre las propiedades de la <b>Cola de impresión</b>. ¿Cuál es su <b>nombre de servicio</b>?',svc:0+3,o:['Spooler','Cola','PrintQueue'],a:0},
+    {t:'¿Qué <b>tipo de inicio</b> tiene <b>Windows Update</b>?',svc:10,o:['Manual (desencadenar inicio)','Automático','Deshabilitado'],a:0,ok:'Arranca cuando algo lo necesita (un «desencadenador»), no siempre al iniciar Windows.'},
+    {t:'¿Cuál es el nombre de servicio de <b>Audio de Windows</b>?',svc:0,o:['Audiosrv','Audio','WinAudio'],a:0},
+    {t:'Busca un servicio que <b>no pueda arrancar</b> aunque un programa lo necesite.',svc:8,o:['Registro remoto: está Deshabilitado','Fax: está en Manual','Hora de Windows: está detenido'],a:0,ok:'Deshabilitado = no puede arrancar. Manual sí puede arrancar cuando lo necesite un programa.'},
+    {t:'El equipo no obtiene IP automáticamente. ¿Qué servicio consultarías?',svc:1,o:['Cliente DHCP','Cliente DNS','Cola de impresión'],a:0,ok:'El Cliente DHCP obtiene la configuración de red. Se consulta su Estado y su Tipo de inicio, sin cambiar nada.'},
+    {t:'¿Qué servicio guarda lo que luego ves en el <b>Visor de eventos</b>?',svc:7,o:['Registro de eventos de Windows','Registro remoto','Windows Update'],a:0}];
+  let mi=0;const ml=h('ol',{class:'k-mission'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});const ask=h('div');
+  R.append(h('h3',{},'Misiones'),ml,m,ask,h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn alt',onclick:()=>{mi=0;draw()}},'Empezar de nuevo')));
+  function draw(ok){ml.innerHTML='';MIS.forEach((x,i)=>ml.append(h('li',{class:i<mi?'done':i===mi?'cur':'',html:x.t})));ask.innerHTML='';
+    if(ok)msg(m,'good','✓ '+ok);else msg(m,'','Haz clic en el servicio de la lista para abrir sus propiedades.');
+    if(mi>=MIS.length){msg(m,'good',(ok?'✓ '+ok+'<br><br>':'')+'<b>¡Misiones completadas!</b> Recuerda: en el equipo real, cierra siempre con <b>Cancelar</b>.');return}
+    check()}
+  function check(){ask.innerHTML='';const x=MIS[mi];if(!x||sel!==x.svc)return;
+    const o=h('div',{class:'k-opts',style:'grid-template-columns:1fr'});K.shuffle(x.o.map((t,i)=>[t,i])).forEach(([t,i])=>{const b=h('button',{class:'k-opt'},t);b.onclick=()=>{if(i===x.a){b.classList.add('ok');[...o.children].forEach(c=>c.setAttribute('disabled',''));mi++;setTimeout(()=>draw(x.ok||'Correcto: lo tienes en la ventana de propiedades.'),500)}else{b.classList.add('ko');b.setAttribute('disabled','');msg(m,'bad','✗ No. Mira bien la ventana de propiedades.')}};o.append(b)});ask.append(o);msg(m,'','Ya tienes las propiedades abiertas. Elige la respuesta.')}
+  draw();
+}
+acts(document.getElementById('r-terminal'),[
+  {label:'Terminal simulada',render:terminal},
+  {label:'Servicios (services.msc)',render:servicesSim},
+  {label:'¿Qué pieza es?',render:el=>sort(el,{intro:'Clasifica cada elemento según la pieza del sistema operativo que es.',
+    buckets:[{id:'k',name:'Kernel',sub:'núcleo'},{id:'s',name:'Shell',sub:'recibe las órdenes'},{id:'c',name:'Controlador',sub:'habla con un dispositivo'},{id:'v',name:'Servicio',sub:'segundo plano'},{id:'u',name:'Utilidad',sub:'consultar y mantener'}],
+    items:[{t:'ntoskrnl.exe',b:'k',why:'archivo principal del núcleo Windows NT.'},{t:'Núcleo Linux 6.8',b:'k'},{t:'Bash',b:'s'},{t:'PowerShell',b:'s'},{t:'Escritorio GNOME',b:'s',why:'es la shell gráfica de Ubuntu.'},{t:'Explorador de Windows',b:'s',why:'escritorio, barra de tareas y menú Inicio: la shell gráfica de Windows.'},{t:'Módulo r8169 (red Realtek)',b:'c'},{t:'Driver de la tarjeta gráfica',b:'c'},{t:'Cola de impresión',b:'v'},{t:'NetworkManager',b:'v'},{t:'Cliente DHCP',b:'v'},{t:'Visor de eventos',b:'u'},{t:'Administración de discos',b:'u'},{t:'Monitor del sistema',b:'u'}]})},
+  {label:'Servicios y tipos de inicio',render:el=>quiz(el,{intro:'Repasa los servicios y cómo se consultan sin cambiar nada.',questions:[
+    {q:'Un servicio con tipo de inicio <b>Automático (inicio retrasado)</b>…',o:['Arranca un poco después de iniciar Windows, para no hacer lento el inicio','No puede arrancar','Solo arranca si lo abre el usuario'],a:0,why:'Automático arranca al iniciar; Manual cuando lo necesita un programa; Deshabilitado no puede arrancar.'},
+    {q:'¿Cómo abres la ventana Servicios en Windows 11?',o:['Windows + R → services.msc','Windows + R → devmgmt.msc','Windows + R → dxdiag'],a:0,why:'services.msc muestra Nombre, Descripción, Estado, Tipo de inicio e Iniciar sesión como.'},
+    {q:'En Linux, a los servicios se les llama tradicionalmente…',o:['Demonios (daemons)','Módulos','Shells'],a:0,why:'Muchos acaban en «d». Los gestiona systemd con systemctl.'},
+    {q:'¿Qué diferencia hay entre el firmware y el controlador?',o:['El firmware está dentro del dispositivo; el controlador se instala en el sistema operativo','Son lo mismo','El controlador está dentro del dispositivo'],a:0,why:'Para que una impresora funcione hacen falta los dos.'},
+    {q:'Estás en <b>systemctl status</b> y la salida ocupa más de una pantalla. ¿Cómo sales?',o:['Pulsando q','Pulsando Ctrl + Alt + Supr','Cerrando el ordenador'],a:0,why:'También vale para top y journalctl.'},
+    {q:'¿Cuál de estas acciones <b>no</b> se debe hacer en el aula en esta sección?',o:['systemctl stop NetworkManager','systemctl status NetworkManager','uname -r'],a:0,why:'stop, disable o restart cambian el sistema: podrías dejar el equipo sin red.'}]})}]);
+
+/* ================= S5 · SISTEMAS ACTUALES Y LICENCIAS ================= */
+acts(document.getElementById('r-licencias'),[
+  {label:'¿Qué licencia tiene?',render:el=>sort(el,{intro:'Clasifica cada programa o contenido según su licencia.',
+    buckets:[{id:'p',name:'Propietaria (EULA)'},{id:'g',name:'GPL',sub:'libre con copyleft'},{id:'m',name:'Permisiva',sub:'MIT, BSD, Apache'},{id:'f',name:'Freeware',sub:'gratis, no libre'},{id:'s',name:'Shareware',sub:'prueba gratis'},{id:'d',name:'Dominio público'},{id:'c',name:'Creative Commons',sub:'contenidos'}],
+    items:[{t:'Windows 11',b:'p'},{t:'Photoshop',b:'p'},{t:'Núcleo Linux',b:'g',why:'GPL versión 2.'},{t:'Herramientas GNU',b:'g'},{t:'Base de Android (AOSP)',b:'m',why:'usa sobre todo la licencia Apache.'},{t:'Google Chrome',b:'f',why:'gratis, pero sin código fuente ni permiso para modificarlo.'},{t:'Adobe Acrobat Reader',b:'f'},{t:'WinRAR',b:'s',why:'se prueba gratis; para seguir usándolo hay que pagar.'},{t:'SQLite',b:'d'},{t:'Textos de Wikipedia',b:'c',why:'CC BY-SA.'},{t:'Foto con licencia CC BY-NC',b:'c'}]})},
+  {label:'¿Puedo hacerlo?',render:el=>quiz(el,{intro:'Situaciones reales de un técnico y de un estudiante. ¿Se puede o no?',questions:[
+    {q:'Un cliente te pide que instales en su oficina una copia de un programa de pago <b>sin licencia</b> «que tiene un amigo».',o:['No, es ilegal aunque sea fácil','Sí, si solo es para un equipo','Sí, si es para una empresa pequeña'],a:0,why:'Un técnico nunca instala software sin licencia en los equipos de un cliente.'},
+    {q:'Usas una foto <b>CC BY-NC</b> en un trabajo de clase, citando al autor.',o:['Sí','No'],a:0,fixed:1,why:'BY: hay que citar al autor. NC: no se puede usar con fines comerciales; un trabajo de clase no es comercial.'},
+    {q:'Usas la misma foto <b>CC BY-NC</b> en la publicidad de una empresa.',o:['Sí','No'],a:1,fixed:1,why:'NC = No comercial.'},
+    {q:'Modificas un programa <b>GPL</b> y lo distribuyes. ¿Qué tienes que hacer?',o:['Distribuirlo también con GPL y ofrecer el código fuente','Puedes cerrarlo y venderlo sin código','Nada'],a:0,why:'Eso es el copyleft: el software sigue siendo libre siempre.'},
+    {q:'Usas código con licencia <b>MIT</b> dentro de un programa propietario de tu empresa.',o:['Sí, manteniendo el aviso de copyright','No, nunca'],a:0,fixed:1,why:'Las licencias permisivas no tienen copyleft.'},
+    {q:'«El software libre es siempre gratis.»',o:['Falso','Verdadero'],a:0,fixed:1,why:'Libre no significa gratis: se puede cobrar por él o por su instalación y soporte. Y al revés, hay programas gratis que no son libres.'},
+    {q:'Pasas la licencia <b>OEM</b> de Windows de un portátil viejo a un equipo nuevo que acabas de montar.',o:['No: la OEM está pensada para usarse solo en el equipo con el que viene','Sí, las licencias se pueden mover siempre'],a:0,why:'La licencia OEM viene con un equipo nuevo y está pensada para ese equipo.'},
+    {q:'¿Qué libertad del software libre necesita el <b>código fuente</b>?',o:['Libertad 1: estudiar y modificar','Libertad 0: usar','Libertad 2: copiar'],a:0,why:'0 usar, 1 estudiar y modificar (código fuente), 2 copiar, 3 distribuir versiones modificadas.'},
+    {q:'Instalas <b>LibreOffice</b> en los 30 ordenadores de una empresa sin pagar nada.',o:['Sí','No'],a:0,fixed:1,why:'Es software libre: se puede usar en todos los equipos que quieras, también en empresas.'},
+    {q:'Descargas una versión «crackeada» de un programa de pago <b>solo para practicar en casa</b>.',o:['No: aunque sea uso personal, incumple la licencia','Sí, si no ganas dinero con él'],a:0,why:'El uso personal no da permiso para saltarse la licencia. Además, los programas crackeados son una vía habitual de malware.'},
+    {q:'Un programa <b>freeware</b> dice en su licencia «gratis solo para uso personal». Lo instalas en los equipos de una empresa.',o:['No: para la empresa hay que comprar la licencia comercial','Sí, el freeware siempre es gratis'],a:0,why:'Freeware significa gratis en las condiciones que diga su licencia. Hay que leerla.'},
+    {q:'En la empresa sigues usando un programa <b>shareware</b> cuando ya ha terminado el periodo de prueba.',o:['Hay que comprar la licencia o dejar de usarlo','No pasa nada mientras siga funcionando'],a:0,why:'El shareware se puede probar gratis un tiempo; después, la licencia obliga a pagar.'},
+    {q:'Usas una imagen de <b>dominio público</b> en un cartel publicitario de una tienda.',o:['Sí','No'],a:0,fixed:1,why:'En dominio público no hay derechos de explotación: se puede usar incluso con fines comerciales. Citar el origen sigue siendo buena práctica.'},
+    {q:'Recortas y cambias los colores de una foto con licencia <b>CC BY-ND</b> para tu trabajo.',o:['No: ND significa que no se puede modificar','Sí, si citas al autor'],a:0,why:'ND = sin obras derivadas: se puede compartir tal cual, pero no modificarla.'},
+    {q:'Modificas un programa <b>GPL</b> solo para usarlo dentro de tu empresa, sin dárselo a nadie. ¿Tienes que publicar el código?',o:['No: la GPL obliga a dar el código cuando lo distribuyes','Sí, siempre que lo modifiques'],a:0,why:'Las obligaciones de la GPL se activan al distribuir el programa. Si solo lo usas internamente, no hay que publicar nada.'}]})},
+  {label:'Sistemas operativos actuales',render:el=>quiz(el,{intro:'¿Cuánto sabes de los sistemas operativos actuales?',questions:[
+    {q:'¿Qué sistema operativo solo se puede instalar legalmente en ordenadores de Apple?',o:['macOS','ChromeOS','Ubuntu','Windows 11 Pro'],a:0,why:'macOS es propietario, de la familia Unix, con núcleo XNU.'},
+    {q:'Ubuntu <b>24.04</b> LTS. ¿Qué significa «24.04»?',o:['Salió en abril de 2024','Es la versión 24 y la revisión 4','Tiene 24 programas'],a:0,why:'Año y mes. LTS = soporte a largo plazo, al menos cinco años.'},
+    {q:'¿Sobre qué distribución se construye Ubuntu?',o:['Debian','Fedora','Linux Mint'],a:0,why:'Debian es la base de Ubuntu y de muchas otras. Linux Mint, a su vez, se basa en Ubuntu.'},
+    {q:'Android es…',o:['Base de código abierto (AOSP) con servicios de Google propietarios','Totalmente propietario, como iOS','Una distribución de Debian'],a:0,why:'Está basado en el núcleo Linux; Google Play, Gmail o Maps son propietarios.'},
+    {q:'¿Qué edición de Windows 11 añade BitLocker y la unión a un dominio de empresa?',o:['Pro','Home'],a:0,fixed:1,why:'Home es para uso doméstico; Pro, Education y Enterprise añaden funciones de empresa.'},
+    {q:'¿Qué <b>no</b> es un requisito de Windows 11?',o:['8 GB de RAM','TPM 2.0','UEFI con arranque seguro','Procesador de 64 bits compatible'],a:0,why:'El mínimo de RAM es 4 GB. Por TPM y UEFI, algunos equipos con pocos años no pueden actualizarse.'},
+    {q:'¿Por qué se habla de <b>GNU/Linux</b>?',o:['Linux es solo el núcleo; muchas herramientas vienen del proyecto GNU','Es el nombre comercial de Ubuntu','Porque Linux lo creó Richard Stallman'],a:0,why:'Linux lo creó Linus Torvalds (1991); GNU lo inició Richard Stallman (1983).'},
+    {q:'¿Qué empresa desarrolla <b>ChromeOS</b>, el sistema de los Chromebook?',o:['Google','Microsoft','Apple'],a:0,why:'Está basado en el núcleo Linux y pensado para trabajar sobre todo en la nube y en el navegador.'},
+    {q:'<b>iOS</b>, el sistema del iPhone, es…',o:['Propietario, de Apple','Software libre','Una versión de Android'],a:0,why:'Solo funciona en dispositivos de Apple y su código no es público.'},
+    {q:'¿Con qué herramienta se instalan programas desde la terminal en <b>Ubuntu</b> y Debian?',o:['apt','dnf','winget'],a:0,why:'apt es el gestor de paquetes de Debian y Ubuntu. dnf es el de Fedora y winget, el de Windows.'},
+    {q:'¿Cuándo terminó el soporte gratuito de <b>Windows 10</b>?',o:['El 14 de octubre de 2025','En 2030','Todavía no tiene fecha'],a:0,why:'Desde entonces no recibe actualizaciones de seguridad gratuitas, salvo con el programa de pago de actualizaciones extendidas.'},
+    {q:'¿Qué sistema operativo usan casi todos los <b>servidores web</b> y todos los superordenadores más potentes?',o:['GNU/Linux','Windows 11','macOS'],a:0,why:'Linux domina en servidores y en la lista TOP500 de superordenadores por su estabilidad, coste y personalización.'},
+    {q:'¿Qué empresa patrocina la distribución <b>Fedora</b>?',o:['Red Hat','Canonical','Microsoft'],a:0,why:'Canonical es la empresa que está detrás de Ubuntu.'},
+    {q:'Arch Linux es una distribución <b>rolling release</b>. ¿Qué significa?',o:['Se actualiza continuamente, sin grandes versiones cada cierto tiempo','Solo funciona en portátiles','Se reinstala cada año'],a:0,why:'Al contrario que Ubuntu LTS, no salta de versión en versión: va recibiendo las novedades poco a poco.'},
+    {q:'¿Sobre qué núcleo se construyen Windows 10 y Windows 11?',o:['Windows NT','Linux','XNU'],a:0,why:'Windows NT es el núcleo de todas las versiones modernas de Windows. XNU es el de macOS.'}]})}]);
+})();
+
+</script>
+
+</body></html>

@@ -1,0 +1,1048 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Laboratorio de Redes Locales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
+<style>
+/* Layout: cabecera con pestañas grandes para pizarra táctil; cada pestaña es una demostración a pantalla completa con controles grandes debajo del dibujo. Paleta tomada de las presentaciones de clase (azul marino y cian). */
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --ink:#0E1B32; --muted:#55697C; --line:#C9D5DF;
+  --accent:#00B8CF; --accent-ink:#17627C; --chip:#DFF5F9; --warn:#C9741F; --warn-bg:#FCE6CC;
+  --bad:#C2412D; --bad-bg:#FBE1DC; --good:#1F8A5B; --good-bg:#DDF2E7;
+  --lamp:#FFC93C; --lamp-glow:rgba(255,201,60,.55); --lamp-off:#DCE3EA;
+  --l-app:#FBE3C4; --l-tcp:#CFEAF7; --l-ip:#D9EBD0; --l-eth:#E6DCF4;
+  --f-head:'Poppins',system-ui,sans-serif; --f-body:'Open Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.5 var(--f-body)}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-top:6px solid var(--accent);padding-top:18px}
+.eyebrow{font:600 13px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font:700 clamp(28px,4vw,40px)/1.1 var(--f-head);margin:6px 0 0;text-wrap:balance}
+.speed{display:flex;align-items:center;gap:10px;font:600 15px var(--f-body);color:var(--muted)}
+nav.tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:20px 0 22px}
+.tab{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:12px 14px;background:var(--surface);border:2px solid var(--line);border-radius:10px;min-width:0}
+.tab b{font:600 17px/1.25 var(--f-head)}
+.tab span{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em}
+.tab[aria-selected="true"]{border-color:var(--accent);background:var(--chip)}
+.tab:focus-visible,.btn:focus-visible,.seg button:focus-visible,.bulb:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px clamp(16px,3vw,30px) 26px}
+.panel h2{font:700 clamp(24px,3vw,30px)/1.2 var(--f-head);margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:6px 0 18px;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{all:unset;cursor:pointer;font:600 17px var(--f-head);padding:12px 20px;border-radius:10px;background:var(--ink);color:var(--surface);text-align:center}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn[disabled]{opacity:.4;cursor:default}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:10px 18px;font:600 16px var(--f-head)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+input[type=number],select{font:600 20px var(--f-mono);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:7.5em}
+select{width:auto}
+label.lbl{font:600 15px var(--f-body);color:var(--muted)}
+.note{background:var(--chip);border-radius:10px;padding:14px 18px;margin-top:18px;max-width:80ch}
+.note b{font-family:var(--f-head)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.svgbox{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.svgbox svg{display:block;width:100%;min-width:560px;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+.mono{font-family:var(--f-mono)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.log li{padding:10px 12px;border-left:4px solid var(--accent);background:var(--bg);border-radius:6px;font-size:16px}
+.log li.bad{border-color:var(--bad);background:var(--bad-bg)}
+.log li.good{border-color:var(--good);background:var(--good-bg)}
+.log li.warn{border-color:var(--warn);background:var(--warn-bg)}
+.side h3{font:600 15px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--accent-ink);margin:0 0 10px}
+
+/* Bits */
+.bulbs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;max-width:900px}
+.bulb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0 12px;border-radius:12px;border:2px solid var(--line);background:var(--bg)}
+.bulb .w{font:700 clamp(15px,2.2vw,22px) var(--f-mono);color:var(--muted)}
+.bulb .lamp{width:clamp(34px,6vw,64px);aspect-ratio:1;border-radius:50%;background:var(--lamp-off);border:3px solid var(--line);transition:background .2s,box-shadow .2s}
+.bulb .bit{font:700 clamp(22px,3.4vw,36px) var(--f-mono)}
+.bulb.on{border-color:var(--lamp)}
+.bulb.on .lamp{background:var(--lamp);box-shadow:0 0 22px 6px var(--lamp-glow);border-color:var(--lamp)}
+.bulb.on .w{color:var(--ink)}
+.nibbles{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:900px;margin-top:8px}
+.nibbles div{text-align:center;font:600 16px var(--f-mono);border-top:4px solid var(--accent);padding-top:6px;color:var(--muted)}
+.nibbles strong{color:var(--ink);font-size:22px}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:20px 0;max-width:900px}
+.ro{background:var(--bg);border-radius:10px;padding:10px 14px;min-width:0}
+.ro small{display:block;font:600 13px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ro div{font:700 26px var(--f-mono);overflow-wrap:anywhere}
+.ro.big div{font-size:44px;line-height:1.1}
+.sum{font:600 20px var(--f-mono);margin:4px 0 0;color:var(--accent-ink);overflow-wrap:anywhere}
+.target{font:700 20px var(--f-head);padding:8px 14px;border-radius:8px;background:var(--warn-bg)}
+.target.ok{background:var(--good-bg);color:var(--good)}
+
+/* Divisiones */
+.divs{display:flex;flex-direction:column;gap:6px;margin:18px 0;font:600 clamp(18px,2.6vw,26px) var(--f-mono)}
+.divs .r{display:flex;gap:14px;align-items:center}
+.divs .r.new,.blk.new{animation:pop .3s ease-out}
+.divs .rest{display:inline-block;min-width:2.2em;text-align:center;padding:2px 8px;border-radius:6px;background:var(--warn-bg);color:var(--ink)}
+.result{font:700 clamp(22px,3vw,30px) var(--f-mono);padding:12px 16px;border-radius:10px;background:var(--good-bg);display:inline-block}
+@keyframes pop{from{opacity:.2;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* URL */
+.browser{border:2px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.browser .bar{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:2px solid var(--line);background:var(--surface);font:600 15px var(--f-mono);min-width:0}
+.browser .bar .lock{width:22px;text-align:center}
+.browser .bar .addr{flex:1;min-width:0;overflow-wrap:anywhere}
+.browser .page{min-height:150px;padding:16px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.urlparts{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.urlparts span{font:600 15px var(--f-mono);padding:4px 8px;border-radius:6px}
+.explain{font-size:18px;margin:14px 0 0}
+.f12{font:600 14px var(--f-mono);color:var(--accent-ink);margin-top:8px}
+
+/* Encapsulamiento */
+.encap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.encap{grid-template-columns:1fr 1fr}.encap .mid{grid-column:1/-1;order:3}}
+.stack{display:flex;flex-direction:column;gap:6px}
+.stack .tt{font:600 14px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:center}
+.layer{padding:10px;border-radius:8px;border:2px solid var(--line);text-align:center;font:600 16px var(--f-head);background:var(--bg)}
+.layer small{display:block;font:400 12px var(--f-mono);color:var(--muted)}
+.layer.cur{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.mid{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.pdu{font:700 24px var(--f-head);text-align:center}
+.packet{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;min-height:120px;align-items:stretch}
+.blk{border-radius:8px;padding:8px 10px;font:600 14px/1.3 var(--f-mono);border:2px solid var(--line);min-width:0;display:flex;flex-direction:column;justify-content:center}
+.blk b{font-family:var(--f-head);font-size:15px}
+.blk.app{background:var(--l-app);flex:2 1 110px}
+.blk.tcp{background:var(--l-tcp);flex:1 1 100px}
+.blk.ip{background:var(--l-ip);flex:1 1 120px}
+.blk.eth,.blk.fcs{background:var(--l-eth);flex:1 1 120px}
+.blk.fcs{flex:0 1 60px}
+.blk.bits{flex:1 1 100%;background:var(--bg);overflow-wrap:anywhere;letter-spacing:.06em}
+.dir{font:600 15px var(--f-mono);text-align:center;color:var(--accent-ink)}
+.size{font:600 15px var(--f-mono);text-align:center;color:var(--muted)}
+
+/* Tipos de red y elementos */
+.rgrid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:880px){.rgrid{grid-template-columns:1fr}}
+.rsvg{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow-x:auto}
+.rsvg svg{display:block;width:100%;min-width:320px;height:auto}
+.rsvg .z{cursor:pointer}
+.rsvg .z:hover .zr,.rsvg .z:focus .zr{stroke:var(--accent);stroke-width:4}
+.rsvg .z.sel .zr{stroke:var(--accent);stroke-width:5}
+.rsvg .z:focus{outline:none}
+.rsvg .el{cursor:pointer}
+.rsvg .el .hit{fill:transparent;stroke:transparent;stroke-width:3}
+.rsvg .el:hover .hit,.rsvg .el:focus .hit{stroke:var(--accent)}
+.rsvg .el.sel .hit{stroke:var(--accent);stroke-width:5;fill:rgba(0,184,207,.12)}
+.rsvg .el.good .hit{stroke:var(--good);stroke-width:5;fill:rgba(31,138,91,.18)}
+.rsvg .el.badp .hit{stroke:var(--bad);stroke-width:5;fill:rgba(194,65,45,.18)}
+.rsvg .el:focus{outline:none}
+.rsvg.nolab .elab{display:none}
+.card2{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:16px 18px}
+.card2 .grp{font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.07em;color:var(--accent-ink)}
+.side .card2 h3{font:700 clamp(22px,2.6vw,28px)/1.2 var(--f-head);margin:4px 0 10px;text-wrap:balance;text-transform:none;letter-spacing:0;color:var(--ink)}
+.card2 dl{margin:0;display:grid;gap:8px}
+.card2 dt{font:600 13px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.card2 dd{margin:0;font-size:18px}
+.crit{display:grid;gap:10px;margin-top:12px}
+.crit .lab{font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{all:unset;cursor:pointer;padding:9px 14px;border:2px solid var(--line);border-radius:999px;font:600 16px var(--f-head);background:var(--surface)}
+.chips button[aria-pressed="true"]{border-color:var(--accent);background:var(--chip)}
+.chips button.ok{border-color:var(--good);background:var(--good-bg)}
+.chips button.no{border-color:var(--bad);background:var(--bad-bg)}
+.chips button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.scard{font:700 clamp(20px,2.6vw,25px)/1.3 var(--f-head);text-wrap:balance;margin:6px 0 4px}
+.fbx{margin-top:12px;font-size:17px}
+.fbx p{margin:6px 0}
+.fbx .ok{color:var(--good);font-weight:700}.fbx .no{color:var(--bad);font-weight:700}
+.st3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+
+/* ===== Kit de actividades (clasificar, ordenar, test) ===== */
+.k-acts{margin:0 0 18px}
+.k-stage{min-height:120px}
+.k-msg{border-radius:12px;padding:12px 16px;background:var(--bg);border:2px solid var(--line);font-size:17px;margin:12px 0;min-height:52px}
+.k-msg.good{background:var(--good-bg);border-color:var(--good)}
+.k-msg.bad{background:var(--bad-bg);border-color:var(--bad)}
+.k-msg.warn{background:var(--warn-bg);border-color:var(--warn)}
+.k-msg b{font-family:var(--f-head)}
+.k-score{font:600 15px var(--f-mono);color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.k-score b{color:var(--ink)}
+.k-pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:2px dashed var(--line);border-radius:12px;min-height:64px;background:var(--bg);margin:10px 0 14px}
+.k-pool:empty::after{content:'¡Todas colocadas!';font:600 16px var(--f-head);color:var(--good);padding:8px}
+.k-chip{all:unset;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;padding:9px 13px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font:600 16px/1.3 var(--f-body);max-width:100%;overflow-wrap:anywhere}
+.k-chip.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-chip.ok{background:var(--good-bg);border-color:var(--good);cursor:default}
+.k-chip.shake{animation:kshake .35s}
+.k-chip:focus-visible,.k-bucket:focus-visible,.k-opt:focus-visible,.k-oi:focus-visible,.k-tok:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.k-ghost{position:fixed;z-index:50;pointer-events:none;opacity:.92;transform:translate(-50%,-50%) scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.k-buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.k-bucket{border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);min-height:120px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0}
+.k-bucket.over{border-color:var(--accent);background:var(--chip)}
+.k-bucket.armed{border-style:dashed;border-color:var(--accent)}
+.k-bucket h4{margin:0 0 4px;font:700 17px/1.2 var(--f-head)}
+.k-bucket h4 small{display:block;font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em;margin-top:2px}
+.k-bucket .k-chip{font-size:14px;padding:6px 9px}
+@keyframes kshake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.k-olist{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:860px}
+.k-oi{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.k-oi .n{font:700 18px var(--f-mono);color:var(--muted);min-width:1.6em;text-align:center}
+.k-oi .t{font:600 17px/1.35 var(--f-body)}
+.k-oi .t small{display:block;font-weight:400;color:var(--muted);font-size:14px}
+.k-oi .mv{display:flex;gap:4px}
+.k-oi .mv button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:8px;border:2px solid var(--line);text-align:center;font:700 18px/34px var(--f-mono);background:var(--bg)}
+.k-oi.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-oi.ok{border-color:var(--good);background:var(--good-bg)}
+.k-oi.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-olabel{font:600 13px var(--f-mono);color:var(--accent-ink);text-transform:uppercase;letter-spacing:.06em}
+.k-q{max-width:900px}
+.k-q .qn{font:600 14px var(--f-mono);color:var(--muted)}
+.k-q .qt{font:700 clamp(20px,2.4vw,24px)/1.3 var(--f-head);margin:6px 0 14px;text-wrap:pretty}
+.k-q .qfig{margin:0 0 14px}
+.k-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.k-opt{all:unset;cursor:pointer;padding:14px 16px;border:2px solid var(--line);border-radius:10px;background:var(--surface);font:600 17px/1.35 var(--f-body)}
+.k-opt:hover{border-color:var(--accent)}
+.k-opt.ok{border-color:var(--good);background:var(--good-bg)}
+.k-opt.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-opt[disabled]{cursor:default}
+.k-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:6px 0 12px;max-width:900px}
+.k-bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.k-end{font:700 24px var(--f-head);margin:8px 0}
+.k-two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+.k-two.wide{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr)}
+@media (max-width:900px){.k-two,.k-two.wide{grid-template-columns:minmax(0,1fr)}}
+.k-two>*{min-width:0}
+.k-tok{all:unset;cursor:pointer;font:700 clamp(18px,2.4vw,26px) var(--f-mono);padding:8px 12px;border-radius:8px;border:2px solid var(--line);background:var(--surface)}
+.k-tok.seen{background:var(--chip);border-color:var(--accent)}
+.k-tok.sel{box-shadow:0 0 0 3px var(--accent)}
+.k-toks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.k-tbl{border-collapse:collapse;font-size:16px;width:100%}
+.k-tbl th,.k-tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+.k-tbl th{background:var(--bg);font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.k-tbl tr.hl td{background:var(--warn-bg)}
+.k-tbl tr.new td{background:var(--good-bg);animation:pop .4s}
+.k-tbl td.fk,.k-tbl td.pk{font-family:var(--f-mono);font-weight:700}
+.k-tbl td.fk button{all:unset;cursor:pointer;color:var(--accent-ink);text-decoration:underline;text-underline-offset:3px}
+.k-tbl td.chg{background:var(--good-bg);font-weight:700}
+.k-tblwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.k-cap{font:700 16px var(--f-head);margin:14px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.k-cap small{font:600 12px var(--f-mono);color:var(--muted)}
+.k-mission{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.k-mission li{padding:10px 12px;border-radius:8px;background:var(--bg);border-left:4px solid var(--line);font-size:16px}
+.k-mission li.cur{border-color:var(--accent);background:var(--chip)}
+.k-mission li.done{border-color:var(--good);background:var(--good-bg)}
+.k-mission li.done::before{content:'✓ ';font-weight:700;color:var(--good)}
+.k-term{background:#0C1220;color:#D8E1EA;border-radius:12px;padding:14px 16px;font:500 15px/1.5 var(--f-mono);min-height:340px;max-height:460px;overflow:auto;border:2px solid var(--line)}
+.k-term .pr{color:#7FE3A0}
+.k-term .ps{color:#7CC4FF}
+.k-term .er{color:#FF9C8C}
+.k-term .wn{color:#FFD27A}
+.k-term pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+.k-term .in{display:flex;gap:8px;align-items:center}
+.k-term input{all:unset;flex:1;min-width:0;color:#fff;caret-color:#7FE3A0}
+.k-chips2{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.k-chips2 button{all:unset;cursor:pointer;font:600 14px var(--f-mono);padding:6px 10px;border-radius:8px;border:2px solid var(--line);background:var(--bg)}
+.k-chips2 button:focus-visible{outline:3px solid var(--accent)}
+.k-dm{border:2px solid var(--line);border-radius:10px;background:var(--surface);font:400 15px var(--f-body);overflow:hidden}
+.k-dm .tb{background:var(--bg);padding:6px 10px;border-bottom:1px solid var(--line);font:600 14px var(--f-body)}
+.k-dm ul{list-style:none;margin:0;padding:4px 0 8px}
+.k-dm li{margin:0}
+.k-dm .cat,.k-dm .dev{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;padding:5px 10px;width:100%;box-sizing:border-box}
+.k-dm .dev{padding-left:34px}
+.k-dm .cat:hover,.k-dm .dev:hover{background:var(--chip)}
+.k-dm .dev.sel{background:var(--chip);outline:2px solid var(--accent);outline-offset:-2px}
+.k-dm .ic{width:18px;height:18px;flex:none}
+.k-dm .car{width:14px;font:700 13px var(--f-mono);color:var(--muted)}
+.k-props{border:2px solid var(--line);border-radius:10px;background:var(--surface)}
+.k-props .ptabs{display:flex;border-bottom:2px solid var(--line)}
+.k-props .ptabs button{all:unset;cursor:pointer;padding:8px 14px;font:600 15px var(--f-body)}
+.k-props .ptabs button[aria-pressed="true"]{background:var(--chip);box-shadow:inset 0 -3px 0 var(--accent)}
+.k-props .pbody{padding:14px 16px;font-size:16px;min-height:170px}
+.k-props .pbody .mono{background:var(--bg);padding:8px 10px;border-radius:6px;display:block;overflow-wrap:anywhere;margin-top:6px}
+.k-svgfig{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.k-svgfig svg{display:block;width:100%;height:auto}
+.seg.k-acts,.k-stage .seg{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%}
+.k-q .qt b{color:var(--accent-ink)}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Tema 1 · Redes locales · TSMR</div>
+    <h1>Laboratorio de Redes Locales</h1>
+  </div>
+  <label class="speed" for="slow"><input type="checkbox" id="slow"> Ritmo lento en las animaciones</label>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Demostraciones">
+  <button class="tab" role="tab" id="t-lan" aria-controls="p-lan" aria-selected="false"><b>¿Qué es una red? La LAN</b><span>Sesión 1 · concepto, paquetes y ventajas</span></button>
+  <button class="tab" role="tab" id="t-tipos" aria-controls="p-tipos" aria-selected="true"><b>Tipos de red</b><span>Sesión 2 · PAN, LAN, WLAN, MAN, WAN</span></button>
+  <button class="tab" role="tab" id="t-elem" aria-controls="p-elem" aria-selected="false"><b>Elementos de una red local</b><span>Sesión 3 · equipos, dispositivos y medios</span></button>
+  <button class="tab" role="tab" id="t-topologias" aria-controls="p-topologias" aria-selected="false"><b>Topologías: corta un cable</b><span>Sesión 4 · qué pasa si algo falla</span></button>
+  <button class="tab" role="tab" id="t-topojuego" aria-controls="p-topojuego" aria-selected="false"><b>Topologías: identifica y construye</b><span>Sesión 4 · juego y retos</span></button>
+  <button class="tab" role="tab" id="t-doc" aria-controls="p-doc" aria-selected="false"><b>Mapa físico y diagrama lógico</b><span>Sesión 5 · documentar la red del aula</span></button>
+</nav>
+
+<section class="panel" id="p-tipos" role="tabpanel" aria-labelledby="t-tipos">
+  <h2>Tipos de red</h2>
+  <p class="lead">Toca cada zona para ver qué tipo de red cubre ese alcance. Después, en «Clasifica», decide para cada caso su alcance, su medio y su propiedad.</p>
+  <div class="row" style="margin-bottom:14px">
+    <div class="seg" role="group" aria-label="Modo" id="tpmodes">
+      <button data-m="ver" aria-pressed="true">Explorar</button>
+      <button data-m="jugar" aria-pressed="false">Clasifica</button>
+    </div>
+  </div>
+  <div class="rgrid">
+    <div class="rsvg"><svg id="tpsvg" viewBox="0 0 640 560" role="img" aria-label="Círculos de alcance de las redes: persona, edificio, ciudad y mundo"></svg></div>
+    <div class="side" id="tpside" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="panel" id="p-elem" role="tabpanel" aria-labelledby="t-elem" hidden>
+  <h2>Elementos de una red local</h2>
+  <p class="lead">La red de una oficina pequeña. Toca cada elemento para ver qué es y para qué sirve, juega a encontrarlos o elige el medio de transmisión adecuado para cada caso.</p>
+  <div class="row" style="margin-bottom:14px">
+    <div class="seg" role="group" aria-label="Modo" id="elmodes">
+      <button data-m="ver" aria-pressed="true">Explorar</button>
+      <button data-m="donde" aria-pressed="false">¿Qué elemento es?</button>
+      <button data-m="medio" aria-pressed="false">¿Qué medio usarías?</button>
+    </div>
+  </div>
+  <div class="rgrid">
+    <div class="rsvg" id="elbox"><svg id="elsvg" viewBox="0 0 680 560" role="img" aria-label="Red local de una oficina con PCs, portátil, servidor, impresora, punto de acceso, switch, router e Internet"></svg></div>
+    <div class="side" id="elside" aria-live="polite"></div>
+  </div>
+</section>
+
+
+<!-- 5. TOPOLOGÍAS -->
+<section class="panel" id="p-topologias" role="tabpanel" aria-labelledby="t-topologias" hidden>
+  <h2>Topologías: corta un cable</h2>
+  <p class="lead">Elige una topología y toca un cable para cortarlo (vuelve a tocarlo para repararlo). En estrella y árbol también puedes tocar un switch para que se averíe. En verde, los equipos que siguen comunicándose; en rojo, los que se quedan aislados.</p>
+  <div class="row" style="margin-bottom:12px">
+    <div class="seg" role="group" aria-label="Topología" id="tseg"></div>
+    <label class="speed" for="tdouble" id="tdoublew" hidden><input type="checkbox" id="tdouble"> Anillo doble</label>
+    <button class="btn alt" id="treset">Reparar todo</button>
+  </div>
+  <div class="grid2">
+    <div class="svgbox"><svg id="tsvg" viewBox="0 0 700 430" role="img" aria-label="Topología de red interactiva"></svg></div>
+    <div class="side">
+      <h3>Estado de la red</h3>
+      <p class="pdu" id="tcount" style="text-align:left"></p>
+      <p id="tmsg"></p>
+      <div class="note" id="tinfo" style="margin-top:12px"></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="panel" id="p-topojuego" role="tabpanel" aria-labelledby="t-topojuego" hidden>
+  <h2>Topologías: identifica y construye</h2>
+  <p class="lead">En «¿Qué topología es?» mira el dibujo o lee el caso y elige la topología. En «Constrúyela» toca dos equipos para tender un cable entre ellos (tócalo otra vez para quitarlo) hasta formar la topología que se pide.</p>
+  <div class="row" style="margin-bottom:14px">
+    <div class="seg" role="group" aria-label="Modo" id="tjmodes">
+      <button data-m="id" aria-pressed="true">¿Qué topología es?</button>
+      <button data-m="build" aria-pressed="false">Constrúyela</button>
+    </div>
+    <button class="btn alt" id="tjreset">Empezar de nuevo</button>
+  </div>
+  <div class="rgrid">
+    <div class="rsvg"><svg id="tjsvg" viewBox="0 0 700 430" role="img" aria-label="Dibujo de una red"></svg></div>
+    <div class="side" id="tjside" aria-live="polite"></div>
+  </div>
+</section>
+<section class="panel" id="p-lan" role="tabpanel" hidden>
+  <h2>¿Qué es una red? La LAN</h2>
+  <div id="r-lan"></div>
+</section>
+
+<section class="panel" id="p-doc" role="tabpanel" hidden>
+  <h2>Mapa físico y diagrama lógico</h2>
+  <div id="r-doc"></div>
+</section>
+
+
+
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const slowBox=$('#slow');
+const T=ms=>reduce?Math.min(ms,120):ms*(slowBox.checked?1.9:1);
+const sleep=ms=>new Promise(r=>setTimeout(r,T(ms)));
+function S(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function txt(parent,x,y,s,attrs={}){const e=S('text',Object.assign({x,y},attrs),parent);e.textContent=s;return e}
+// Mueve una ficha (círculo + etiqueta) de un punto a otro
+function token(svg,x1,y1,x2,y2,{label='',color='var(--accent)',dur=700,r=12}={}){
+  return new Promise(res=>{
+    const g=S('g',{},svg);
+    S('circle',{r,fill:color,stroke:'var(--surface)','stroke-width':3},g);
+    if(label){const t=txt(g,0,-r-8,label,{'text-anchor':'middle','font-size':17,'font-weight':700});t.style.fontFamily='var(--f-mono)'}
+    const d=T(dur),t0=performance.now();
+    function f(now){const k=Math.min(1,(now-t0)/d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      g.setAttribute('transform',`translate(${x1+(x2-x1)*e},${y1+(y2-y1)*e})`);
+      if(k<1)requestAnimationFrame(f);else{g.remove();res()}}
+    requestAnimationFrame(f);
+  });
+}
+
+
+
+// ---------- Pestañas ----------
+(function(){
+  const tabs=[...document.querySelectorAll('nav.tabs .tab')];
+  function show(id){tabs.forEach(t=>{const on=t.getAttribute('aria-controls')===id;t.setAttribute('aria-selected',on);document.getElementById(t.getAttribute('aria-controls')).hidden=!on})}
+  tabs.forEach(t=>t.onclick=()=>{show(t.getAttribute('aria-controls'));try{history.replaceState(null,'','#'+t.id.slice(2))}catch(e){}});
+  const h=(location.hash||'').slice(1);show(h&&document.getElementById('p-'+h)?'p-'+h:'p-tipos');
+})();
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+// ---------- Tipos de red ----------
+(function(){
+  const svg=$('#tpsvg'),cx=320,cy=290;
+  const T={
+    WAN:{n:'WAN · red de área extensa',a:'Regiones, países, todo el mundo',g:'Operadores de telecomunicaciones',t:'Fibra, cables submarinos, satélite',e:'Internet; la red de un banco con oficinas en toda España',r:262,lbl:'MUNDO'},
+    MAN:{n:'MAN · red de área metropolitana',a:'Una ciudad o un municipio',g:'Operador o administración pública',t:'Fibra óptica, enlaces de radio entre edificios',e:'La red de fibra que une los edificios municipales de una ciudad',r:200,lbl:'CIUDAD'},
+    LAN:{n:'LAN · red de área local',a:'Vivienda, aula, oficina o edificio',g:'La familia, la empresa o el centro',t:'Cable Ethernet y switches',e:'La red del aula de informática',r:135,lbl:'EDIFICIO'},
+    WLAN:{n:'WLAN · red de área local inalámbrica',a:'Lo mismo que una LAN, pero sin cables',g:'La familia, la empresa o el centro',t:'Wi‑Fi y puntos de acceso (2,4, 5 y 6 GHz)',e:'La Wi‑Fi del instituto',r:135,lbl:'EDIFICIO (Wi‑Fi)'},
+    PAN:{n:'PAN · red de área personal',a:'Pocos metros alrededor de una persona',g:'El propio usuario',t:'Bluetooth, USB',e:'El móvil con los auriculares inalámbricos',r:62,lbl:'PERSONA'}
+  };
+  const zones={};
+  ['WAN','MAN','LAN','PAN'].forEach((k,i)=>{
+    const g=S('g',{class:'z',tabindex:0,role:'button','aria-label':T[k].n},svg);
+    const fills=['var(--l-eth)','var(--l-ip)','var(--l-tcp)','var(--l-app)'];
+    S('circle',{class:'zr',cx,cy,r:T[k].r,fill:fills[i],stroke:'var(--line)','stroke-width':2},g);
+    txt(g,cx,cy-T[k].r+26,k==='LAN'?'LAN / WLAN':k,{'text-anchor':'middle','font-size':22,'font-weight':700});
+    txt(g,cx,cy-T[k].r+44,T[k].lbl,{'text-anchor':'middle','font-size':12,fill:'var(--muted)'}).style.fontFamily='var(--f-mono)';
+    zones[k]=g;g.addEventListener('click',e=>{e.stopPropagation();pickZ(k)});
+    g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pickZ(k)}});
+  });
+  // persona en el centro
+  S('circle',{cx,cy:cy+2,r:10,fill:'var(--ink)','pointer-events':'none'},svg);S('path',{d:`M${cx-16} ${cy+34} Q ${cx} ${cy+6} ${cx+16} ${cy+34}`,fill:'var(--ink)','pointer-events':'none'},svg);
+  let wl=false;
+  function card(k){const t=T[k];return `<div class="card2"><div class="grp">Tipo de red según su alcance</div><h3>${t.n}</h3><dl><dt>Alcance</dt><dd>${t.a}</dd><dt>Quién la gestiona</dt><dd>${t.g}</dd><dt>Tecnología habitual</dt><dd>${t.t}</dd><dt>Ejemplo</dt><dd>${t.e}</dd></dl></div>`}
+  function pickZ(k){if(mode!=='ver')return;Object.values(zones).forEach(z=>z.classList.remove('sel'));zones[k].classList.add('sel');
+    if(k==='LAN'){side.innerHTML=card(wl?'WLAN':'LAN')+`<div class="chips" style="margin-top:12px"><button id="tpw" aria-pressed="${wl}">Ver la versión sin cables (WLAN)</button></div><p class="note">La WLAN cubre el mismo espacio que una LAN. Normalmente no van separadas: los puntos de acceso se conectan por cable al switch.</p>`;$('#tpw').onclick=()=>{wl=!wl;pickZ('LAN')}}
+    else side.innerHTML=card(k)}
+  // Juego
+  const C=[
+    ['Tu móvil con los auriculares Bluetooth.','PAN','in','priv','Pocos metros, una sola persona, por radio (Bluetooth) y es tuya.'],
+    ['Pasas fotos del móvil al ordenador con un cable USB.','PAN','cab','priv','Sigue siendo una red personal de pocos metros, pero esta vez por cable.'],
+    ['El reloj inteligente conectado al móvil.','PAN','in','priv','Dispositivos de una persona, muy cerca, por Bluetooth.'],
+    ['Los PC del aula conectados por cable al switch.','LAN','cab','priv','Un aula, por cable Ethernet, y es del centro.'],
+    ['Seis ordenadores de un taller unidos por cable a un switch.','LAN','cab','priv','Un local, por cable; es del taller.'],
+    ['La Wi‑Fi de tu casa.','WLAN','in','priv','Una vivienda, sin cables (Wi‑Fi), y la gestionáis vosotros.'],
+    ['La Wi‑Fi de la biblioteca del instituto.','WLAN','in','priv','Un edificio, por Wi‑Fi, y es del centro, que decide quién se conecta.'],
+    ['La Wi‑Fi de una cafetería para sus clientes.','WLAN','in','priv','La usan los clientes, pero es de la cafetería: ella decide quién entra y cómo se configura.'],
+    ['La red de fibra de un operador que da Internet a todos los hogares de Talavera.','MAN','cab','pub','Cubre una ciudad, va por fibra (cable) y es de un operador que la ofrece a muchos clientes.'],
+    ['La red de un banco que une todas sus oficinas de España con líneas contratadas a un operador.','WAN','cab','pub','Todo un país, por fibra, y usa la infraestructura del operador, que cobra el servicio.'],
+    ['El cable submarino de fibra que une Europa y América.','WAN','cab','pub','Une continentes, es un cable y es de operadores de telecomunicaciones.'],
+    ['Una casa de campo que se conecta a Internet por satélite.','WAN','in','pub','El satélite es una red de alcance mundial, sin cables, de un operador.'],
+    ['El ratón y el teclado inalámbricos de tu ordenador.','PAN','in','priv','Alrededor de una persona, sin cables, y son tuyos.'],
+    ['Una cadena de supermercados que une sus tiendas de varias provincias por la red de un operador.','WAN','cab','pub','Varias provincias: WAN. Va por la red cableada de un operador al que se paga el servicio.']
+  ];
+  const AL=['PAN','LAN','WLAN','MAN','WAN'],ME={cab:'Cableada',in:'Inalámbrica'},PR={priv:'Privada',pub:'Pública / de operador'};
+  let mode='ver',q=[],qi=0,ans={},sc={ok:0,ko:0},done=false;
+  const side=$('#tpside');
+  function chips(name,opts){return `<div><div class="lab">${name}</div><div class="chips" data-c="${name}">`+Object.entries(opts).map(([k,v])=>`<button data-k="${k}" aria-pressed="${ans[name]===k}">${v}</button>`).join('')+`</div></div>`}
+  function renderGame(fb){
+    if(qi>=q.length){side.innerHTML=`<div class="card2"><div class="grp">Fin</div><h3>${sc.ok} de ${q.length} casos sin ningún fallo</h3><button class="btn" id="tpagain">Jugar otra vez</button></div>`;$('#tpagain').onclick=start;return}
+    const c=q[qi];
+    side.innerHTML=`<div class="card2"><div class="grp">Caso ${qi+1} de ${q.length}</div><p class="scard">${c[0]}</p><div class="crit">${chips('Alcance',Object.fromEntries(AL.map(a=>[a,a])))}${chips('Medio',ME)}${chips('Propiedad',PR)}</div>
+      <div class="row" style="margin-top:14px">${done?'<button class="btn" id="tpnext">Siguiente caso ▶</button>':'<button class="btn" id="tpcheck">Comprobar</button>'}</div><div class="fbx">${fb||''}</div></div>
+      <div class="st3"><div class="ro"><small>Casos perfectos</small><div>${sc.ok}</div></div><div class="ro"><small>Con algún fallo</small><div>${sc.ko}</div></div><div class="ro"><small>Quedan</small><div>${q.length-qi}</div></div></div>`;
+    side.querySelectorAll('.chips').forEach(box=>box.querySelectorAll('button').forEach(b=>{
+      if(done){const right={Alcance:c[1],Medio:c[2],Propiedad:c[3]}[box.dataset.c];if(b.dataset.k===right)b.classList.add('ok');else if(ans[box.dataset.c]===b.dataset.k)b.classList.add('no');b.disabled=true;return}
+      b.onclick=()=>{ans[box.dataset.c]=b.dataset.k;renderGame()}}));
+    if(!done)$('#tpcheck').onclick=check;else $('#tpnext').onclick=()=>{qi++;ans={};done=false;renderGame()};
+  }
+  function check(){
+    const c=q[qi];if(!ans.Alcance||!ans.Medio||!ans.Propiedad){renderGame('<p class="no">Elige una opción en los tres criterios.</p>');return}
+    const ok=[ans.Alcance===c[1],ans.Medio===c[2],ans.Propiedad===c[3]];
+    if(ok.every(Boolean))sc.ok++;else sc.ko++;done=true;
+    const lines=[['Alcance',c[1]],['Medio',ME[c[2]]],['Propiedad',PR[c[3]]]].map(([n,v],i)=>`<p><span class="${ok[i]?'ok':'no'}">${ok[i]?'✓':'✗'} ${n}:</span> ${v}</p>`).join('');
+    renderGame(lines+`<p>${c[4]}</p>`);
+  }
+  function start(){q=shuffle(C).slice(0,8);qi=0;ans={};sc={ok:0,ko:0};done=false;renderGame()}
+  function setMode(m){mode=m;document.querySelectorAll('#tpmodes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));Object.values(zones).forEach(z=>z.classList.remove('sel'));
+    if(m==='ver')side.innerHTML='<div class="card2"><div class="grp">Explorar</div><h3>Toca una zona del dibujo</h3><p style="margin:0">Las redes se ordenan de menor a mayor alcance: PAN, LAN y WLAN, MAN y WAN. En el centro estás tú.</p></div>';else start()}
+  document.querySelectorAll('#tpmodes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+  setMode('ver');
+})();
+
+// ---------- Elementos de una red local ----------
+(function(){
+  const svg=$('#elsvg'),box=$('#elbox');
+  const E={
+    pc:{n:'Estación de trabajo (cliente)',g:'Estaciones de trabajo y servidores',f:'El equipo desde el que trabaja una persona. Pide servicios a la red: abrir archivos compartidos, imprimir, navegar…',x:'PC, portátiles, tablets y móviles. Necesita tarjeta de red, sistema operativo y la configuración de red adecuada.'},
+    portatil:{n:'Portátil por Wi‑Fi (cliente)',g:'Estaciones de trabajo y servidores',f:'Otra estación de trabajo, conectada sin cables a través del punto de acceso.',x:'Su tarjeta de red es Wi‑Fi. Para la red, es un cliente igual que los PC.'},
+    servidor:{n:'Servidor de archivos (NAS)',g:'Estaciones de trabajo y servidores',f:'Ofrece servicios al resto: guarda documentos en carpetas compartidas para que varios usuarios trabajen con ellos.',x:'Suele estar siempre encendido y en un lugar protegido. Un NAS es un aparato con discos pensado solo para compartir archivos.'},
+    impresora:{n:'Impresora de red',g:'Estaciones de trabajo y servidores',f:'Recurso compartido: cualquier equipo de la red puede mandarle trabajos.',x:'La cola de trabajos la puede gestionar un servidor de impresión.'},
+    nic:{n:'Tarjeta de red (NIC)',g:'Dispositivos de interconexión',f:'Convierte los datos en señales que viajan por el cable (Ethernet) o por el aire (Wi‑Fi), y al revés.',x:'Cada tarjeta trae de fábrica una dirección física o MAC que la identifica.'},
+    switch:{n:'Switch (conmutador)',g:'Dispositivos de interconexión',f:'Tiene muchos puertos donde se conectan los cables de la LAN. Entrega cada trama solo al equipo de destino, usando las direcciones MAC.',x:'Está en el armario de comunicaciones. No se tocan sus cables sin permiso: un cable quitado puede dejar sin red a toda el aula.'},
+    router:{n:'Router (encaminador)',g:'Dispositivos de interconexión',f:'Conecta la red local con otras redes, por ejemplo con Internet. Decide por dónde va cada paquete usando las direcciones IP.',x:'Es la puerta de enlace de la red. En casa, el «router» lleva dentro router, switch, punto de acceso y servidor DHCP.'},
+    ap:{n:'Punto de acceso (AP)',g:'Dispositivos de interconexión',f:'Emite la señal Wi‑Fi y conecta los equipos inalámbricos con la red cableada.',x:'Es el elemento central de una WLAN. Se conecta por cable al switch.'},
+    utp:{n:'Cable de par trenzado',g:'Medios de transmisión · guiado',f:'Pares de hilos de cobre enrollados que llevan señales eléctricas. Es el cable de red más común en una LAN.',x:'Termina en un conector RJ‑45. Es el que llega a los ordenadores del aula.'},
+    fibra:{n:'Fibra óptica',g:'Medios de transmisión · guiado',f:'Hilos muy finos de vidrio o plástico por los que viaja luz. Llega lejos, muy rápido y sin interferencias eléctricas.',x:'Une edificios, plantas y switches, y es la que trae Internet a muchas casas y empresas.'},
+    ondas:{n:'Ondas de radio (Wi‑Fi)',g:'Medios de transmisión · no guiado',f:'La señal viaja por el aire. Atraviesa paredes, aunque pierde fuerza.',x:'La usan la Wi‑Fi (2,4, 5 y 6 GHz) y el Bluetooth.'},
+    internet:{n:'Internet (red del operador)',g:'Fuera de la red local',f:'La red de redes: millones de redes de todo el mundo conectadas. Se llega a ella a través del router.',x:'Es una WAN, de operadores de telecomunicaciones.'}
+  };
+  const nodes={};
+  function el(id,box,draw,lab){const g=S('g',{class:'el',tabindex:0,role:'button','aria-label':E[id].n,'data-id':id},svg);draw(g);const [x,y,w,h]=box;S('rect',{class:'hit',x:x-4,y:y-4,width:w+8,height:h+8,rx:8},g);
+    if(lab){const t=txt(g,lab[0],lab[1],lab[2],{'text-anchor':'middle','font-size':13,'font-weight':700,class:'elab'});t.style.fontFamily='var(--f-mono)'}
+    (nodes[id]=nodes[id]||[]).push(g);g.addEventListener('click',()=>pick(id));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(id)}})}
+  const Rr=(g,x,y,w,h,a)=>S('rect',Object.assign({x,y,width:w,height:h},a),g);
+  const pcIcon=(g,x,y)=>{Rr(g,x,y,70,46,{rx:4,fill:'var(--slot,#1C2733)',stroke:'var(--muted)','stroke-width':2});Rr(g,x+6,y+6,58,34,{fill:'var(--l-tcp)'});Rr(g,x+28,y+46,14,8,{fill:'var(--muted)'});Rr(g,x+16,y+54,38,5,{rx:2,fill:'var(--muted)'})};
+  // Cables (primero, para que queden debajo)
+  const W=(x1,y1,x2,y2)=>[x1,y1,x2,y2];
+  [[95,316,300,420],[205,316,320,420],[325,310,350,420],[560,332,400,420]].forEach(([x1,y1,x2,y2],i)=>el('utp',[Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1)],g=>S('path',{d:`M${x1} ${y1} C ${x1} 390, ${x2} 380, ${x2} ${y2}`,fill:'none',stroke:'#2563EB','stroke-width':5},g),i===0?[150,388,'par trenzado']:null));
+  el('utp',[420,300,30,120],g=>S('path',{d:'M435 300 L 435 420',fill:'none',stroke:'#2563EB','stroke-width':5},g));
+  el('fibra',[350,470,20,40],g=>S('path',{d:'M360 470 L 360 505',fill:'none',stroke:'#F59E0B','stroke-width':5},g),[420,495,'fibra']);
+  el('fibra',[420,515,105,20],g=>S('path',{d:'M420 525 L 525 525',fill:'none',stroke:'#F59E0B','stroke-width':5},g));
+  // Equipos
+  el('pc',[60,250,70,62],g=>pcIcon(g,60,250),[95,240,'PC 1']);
+  el('pc',[170,250,70,62],g=>pcIcon(g,170,250),[205,240,'PC 2']);
+  el('portatil',[400,90,80,50],g=>{Rr(g,410,90,60,38,{rx:3,fill:'var(--l-tcp)',stroke:'var(--muted)','stroke-width':2});Rr(g,400,128,80,8,{rx:2,fill:'var(--muted)'})},[440,80,'portátil']);
+  el('servidor',[525,240,70,90],g=>{Rr(g,525,240,70,90,{rx:5,fill:'var(--slot,#1C2733)'});for(let i=0;i<4;i++)Rr(g,533,250+i*19,54,12,{rx:2,fill:'var(--muted)'})},[560,230,'servidor NAS']);
+  el('impresora',[285,250,80,60],g=>{Rr(g,290,262,70,36,{rx:5,fill:'var(--muted)'});Rr(g,302,250,46,14,{fill:'var(--surface)',stroke:'var(--muted)'});Rr(g,302,296,46,12,{fill:'var(--surface)',stroke:'var(--muted)'})},[325,240,'impresora']);
+  el('ap',[410,250,50,40],g=>{Rr(g,410,268,50,22,{rx:10,fill:'var(--surface)',stroke:'var(--muted)','stroke-width':2});S('circle',{cx:435,cy:279,r:3,fill:'var(--good)'},g)},[435,312,'AP']);
+  el('ondas',[405,150,60,100],g=>{[18,32,46].forEach(r=>S('path',{d:`M${435-r} ${255-r} A ${r} ${r} 0 0 1 ${435+r} ${255-r}`,fill:'none',stroke:'var(--accent)','stroke-width':4,transform:'translate(0,-10)'},g))},[500,190,'Wi‑Fi']);
+  el('switch',[270,420,200,48],g=>{Rr(g,270,420,200,48,{rx:6,fill:'var(--slot,#1C2733)'});for(let i=0;i<10;i++)Rr(g,282+i*18,436,12,10,{fill:i<4?'var(--good)':'var(--muted)'})},[370,410,'SWITCH']);
+  el('router',[300,505,120,40],g=>{Rr(g,300,505,120,40,{rx:8,fill:'var(--l-app)',stroke:'var(--muted)','stroke-width':2});S('circle',{cx:320,cy:525,r:4,fill:'var(--good)'},g)},[260,530,'ROUTER']);
+  el('internet',[520,495,140,60],g=>{S('path',{d:'M545 550 a24 24 0 0 1 4 -46 a32 32 0 0 1 58 -4 a26 26 0 0 1 40 26 a20 20 0 0 1 -6 24 Z',fill:'var(--l-eth)',stroke:'var(--muted)','stroke-width':2},g)},[590,535,'INTERNET']);
+  el('nic',[118,300,18,14],g=>{Rr(g,120,302,14,10,{fill:'var(--good)'})},null);
+  el('nic',[228,300,18,14],g=>{Rr(g,230,302,14,10,{fill:'var(--good)'})},null);
+  // la fibra entre switch y router: ajustar etiqueta; el enlace router-internet también fibra
+  const side=$('#elside');
+  const FIND=['pc','servidor','impresora','nic','switch','router','ap','utp','fibra','ondas','internet','portatil'];
+  const PROMPTS={pc:'Toca una estación de trabajo conectada por cable.',servidor:'Toca el equipo que ofrece carpetas compartidas a toda la oficina.',impresora:'Toca el recurso que todos comparten para imprimir.',nic:'Toca la pieza de un PC que convierte los datos en señales y tiene una dirección MAC.',switch:'Toca el aparato que entrega cada trama solo al equipo de destino.',router:'Toca la puerta de enlace que une la red local con Internet.',ap:'Toca el aparato que emite la señal Wi‑Fi.',utp:'Toca un cable de cobre que termina en RJ‑45.',fibra:'Toca el medio por el que viaja luz.',ondas:'Toca el medio no guiado de esta red.',internet:'Toca la red de redes, de los operadores.',portatil:'Toca el cliente que está conectado sin cables.'};
+  const MEDIOS={utp:'Par trenzado',coax:'Coaxial',fibra:'Fibra óptica',radio:'Ondas de radio',micro:'Microondas',ir:'Infrarrojos'};
+  const MQ=[
+    ['Conectar un PC del aula al switch.',['utp'],'Es el cable de red más común en una LAN, con conector RJ‑45.'],
+    ['Usar el portátil en el patio sin cables.',['radio'],'La Wi‑Fi usa ondas de radio.'],
+    ['Conectar los auriculares al móvil.',['radio'],'El Bluetooth también usa ondas de radio, de corto alcance.'],
+    ['Cambiar de canal con el mando de la tele.',['ir'],'Infrarrojos: muy corto alcance y visión directa.'],
+    ['Llevar la señal de la antena hasta la televisión.',['coax'],'Es el uso típico del coaxial; en redes locales ya apenas se usa.'],
+    ['Unir por cable dos edificios del instituto separados 300 metros.',['fibra'],'La fibra llega lejos, es muy rápida y no le afectan las interferencias eléctricas.'],
+    ['Unir dos edificios separados por una carretera, sin poder pasar cables, con dos antenas que se ven.',['micro'],'Enlace de microondas entre dos antenas con visión directa.'],
+    ['Traer Internet de alta velocidad a una casa.',['fibra'],'Es la que llega a muchas casas para dar Internet.'],
+    ['Unir los switches de dos plantas de un edificio con una máquina que mete muchas interferencias eléctricas cerca.',['fibra'],'La luz no sufre interferencias eléctricas.'],
+    ['Comunicarse con un satélite.',['micro'],'Las comunicaciones por satélite usan microondas.']
+  ];
+  let mode='ver',sel=null,q=[],qi=0,sc={ok:0,ko:0},lock=false,mAns=null,mDone=false;
+  function clear(){Object.values(nodes).flat().forEach(n=>n.classList.remove('sel','good','badp'))}
+  function mark(id,c){(nodes[id]||[]).forEach(n=>n.classList.add(c))}
+  function card(id){const e=E[id];return `<div class="card2"><div class="grp">${e.g}</div><h3>${e.n}</h3><dl><dt>Qué es y para qué sirve</dt><dd>${e.f}</dd><dt>Para recordar</dt><dd>${e.x}</dd></dl></div>`}
+  function stats(){return `<div class="st3"><div class="ro"><small>Aciertos</small><div>${sc.ok}</div></div><div class="ro"><small>Fallos</small><div>${sc.ko}</div></div><div class="ro"><small>Quedan</small><div>${Math.max(0,q.length-qi)}</div></div></div>`}
+  function render(fb){
+    if(mode==='ver'){side.innerHTML=sel?card(sel):'<div class="card2"><div class="grp">Explorar</div><h3>Toca cualquier elemento del dibujo</h3><p style="margin:0">Hay clientes, un servidor, dispositivos de interconexión y tres medios de transmisión distintos. Los cuadraditos verdes de los PC son sus tarjetas de red.</p></div>';return}
+    if(qi>=q.length){side.innerHTML=`<div class="card2"><div class="grp">Fin</div><h3>${sc.ok} aciertos y ${sc.ko} fallos</h3><button class="btn" id="elagain">Jugar otra vez</button></div>`;$('#elagain').onclick=start;return}
+    if(mode==='donde'){side.innerHTML=`<div class="card2"><div class="grp">¿Qué elemento es? · ${qi+1} de ${q.length}</div><p class="scard">${PROMPTS[q[qi]]}</p><div class="fbx">${fb||''}</div></div>`+stats();return}
+    const c=q[qi];
+    side.innerHTML=`<div class="card2"><div class="grp">¿Qué medio usarías? · ${qi+1} de ${q.length}</div><p class="scard">${c[0]}</p><div class="chips" id="elchips">`+Object.entries(MEDIOS).map(([k,v])=>`<button data-k="${k}">${v}</button>`).join('')+`</div><div class="fbx">${fb||''}</div>${mDone?'<button class="btn" id="elnext" style="margin-top:10px">Siguiente ▶</button>':''}</div>`+stats();
+    side.querySelectorAll('#elchips button').forEach(b=>{if(mDone){if(c[1].includes(b.dataset.k))b.classList.add('ok');else if(b.dataset.k===mAns)b.classList.add('no');b.disabled=true}
+      else b.onclick=()=>{mAns=b.dataset.k;mDone=true;if(c[1].includes(mAns)){sc.ok++;render(`<p class="ok">¡Bien!</p><p>${c[2]}</p>`)}else{sc.ko++;render(`<p class="no">No. Lo adecuado es: ${c[1].map(k=>MEDIOS[k]).join(' o ')}.</p><p>${c[2]}</p>`)}}});
+    if(mDone)$('#elnext').onclick=()=>{qi++;mDone=false;mAns=null;render()};
+  }
+  function pick(id){
+    if(mode==='ver'){clear();sel=id;mark(id,'sel');render();return}
+    if(mode!=='donde'||lock||qi>=q.length)return;
+    clear();const want=q[qi];
+    if(id===want){sc.ok++;mark(id,'good');lock=true;render(`<p class="ok">¡Bien! ${E[id].n}.</p>`);setTimeout(()=>{clear();qi++;lock=false;render()},1300)}
+    else{sc.ko++;mark(id,'badp');render(`<p class="no">No: eso es ${E[id].n.toLowerCase()}. Prueba otra vez.</p>`)}
+  }
+  function start(){qi=0;sc={ok:0,ko:0};lock=false;mDone=false;mAns=null;clear();q=mode==='donde'?shuffle(FIND):shuffle(MQ).slice(0,8);render()}
+  function setMode(m){mode=m;sel=null;clear();document.querySelectorAll('#elmodes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));box.classList.toggle('nolab',m==='donde');if(m==='ver')render();else start()}
+  document.querySelectorAll('#elmodes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+  setMode('ver');
+})();
+
+
+// ---------- Topologías: identifica y construye ----------
+(function(){
+  const svg=$('#tjsvg'),side=$('#tjside');
+  const ring=(n,cx,cy,r,st=-90)=>[...Array(n)].map((_,i)=>{const a=(st+i*360/n)*Math.PI/180;return [Math.round(cx+r*Math.cos(a)),Math.round(cy+r*Math.sin(a))]});
+  function icon(g,n){
+    const {x,y,t}=n;
+    if(t==='pc'){S('rect',{x:x-24,y:y-18,width:48,height:32,rx:4,fill:'var(--l-tcp)',stroke:'var(--muted)','stroke-width':2},g);S('rect',{x:x-12,y:y+14,width:24,height:5,rx:2,fill:'var(--muted)'},g)}
+    else if(t==='sw'||t==='swp'){S('rect',{x:x-38,y:y-15,width:76,height:30,rx:5,fill:'#1C2733'},g);for(let i=0;i<6;i++)S('rect',{x:x-30+i*10.5,y:y-4,width:7,height:7,fill:'#43C88D'},g)}
+    else if(t==='ap'){S('rect',{x:x-24,y:y-10,width:48,height:20,rx:10,fill:'var(--surface)',stroke:'var(--muted)','stroke-width':2},g);[14,24].forEach(r=>S('path',{d:`M${x-r} ${y-14-r/2} A ${r} ${r} 0 0 1 ${x+r} ${y-14-r/2}`,fill:'none',stroke:'var(--accent)','stroke-width':3},g))}
+    else if(t==='rt'){S('circle',{cx:x,cy:y,r:22,fill:'var(--l-app)',stroke:'var(--muted)','stroke-width':2},g);S('path',{d:`M${x-10} ${y} h20 M${x} ${y-10} v20`,stroke:'var(--ink)','stroke-width':3},g)}
+    else if(t==='ed'){S('rect',{x:x-26,y:y-26,width:52,height:52,rx:4,fill:'var(--l-ip)',stroke:'var(--muted)','stroke-width':2},g);for(let i=0;i<3;i++)for(let j=0;j<2;j++)S('rect',{x:x-16+j*20,y:y-18+i*14,width:12,height:8,fill:'var(--surface)'},g)}
+  }
+  function draw(spec,interactive){
+    svg.innerHTML='';const L=S('g',{},svg),N=S('g',{},svg);
+    if(spec.bus){const [y,x1,x2]=spec.bus;S('line',{x1,y1:y,x2,y2:y,stroke:'var(--ink)','stroke-width':6},L);[x1,x2].forEach(x=>S('rect',{x:x-7,y:y-14,width:14,height:28,fill:'var(--warn)'},L))}
+    (spec.links||[]).forEach(([a,b,st])=>{const A=spec.nodes[a],B=spec.nodes[b];S('line',{x1:A.x,y1:A.y,x2:B.x,y2:B.y,stroke:st==='w'?'var(--accent)':'#2563EB','stroke-width':st==='w'?3:5,'stroke-dasharray':st==='w'?'7 6':''},L)});
+    spec.nodes.forEach((n,i)=>{const g=S('g',interactive?{class:'el',tabindex:0,role:'button','aria-label':n.n||'equipo','data-i':i}:{},N);icon(g,n);if(n.n){const t=txt(g,n.x,n.y+38,n.n,{'text-anchor':'middle','font-size':13,'font-weight':700});t.style.fontFamily='var(--f-mono)'}
+      if(interactive){S('rect',{class:'hit',x:n.x-42,y:n.y-28,width:84,height:56,rx:8},g);g.addEventListener('click',()=>tap(i));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tap(i)}})}});
+    return N;
+  }
+  // ---- Dibujos para identificar ----
+  const pcs=(pts,pre='PC')=>pts.map(([x,y],i)=>({x,y,t:'pc',n:pre+(i+1)}));
+  const D={
+    bus:()=>{const xs=[110,230,350,470,590];return {nodes:xs.map((x,i)=>({x,y:150,t:'pc',n:'PC'+(i+1)})),links:[],bus:[260,60,640],drops:xs}},
+    anillo:()=>{const p=ring(6,350,215,160);return {nodes:pcs(p),links:p.map((_,i)=>[i,(i+1)%6])}},
+    estrella:()=>{const p=ring(6,350,215,165);return {nodes:[{x:350,y:215,t:'sw',n:'switch'}].concat(pcs(p)),links:p.map((_,i)=>[0,i+1])}},
+    estrellaw:()=>{const p=ring(5,350,225,160,-90);return {nodes:[{x:350,y:225,t:'ap',n:'AP'}].concat(pcs(p,'disp')),links:p.map((_,i)=>[0,i+1,'w'])}},
+    arbol:()=>{const n=[{x:350,y:60,t:'swp',n:'principal'},{x:170,y:200,t:'sw',n:'planta 0'},{x:350,y:200,t:'sw',n:'planta 1'},{x:530,y:200,t:'sw',n:'planta 2'}];
+      [[110,340],[230,340],[310,340],[390,340],[480,340],[590,340]].forEach(([x,y],i)=>n.push({x,y,t:'pc',n:'PC'+(i+1)}));
+      return {nodes:n,links:[[0,1],[0,2],[0,3],[1,4],[1,5],[2,6],[2,7],[3,8],[3,9]]}},
+    mallac:()=>{const p=ring(5,350,215,165);const l=[];for(let i=0;i<5;i++)for(let j=i+1;j<5;j++)l.push([i,j]);return {nodes:p.map(([x,y],i)=>({x,y,t:'rt',n:'R'+(i+1)})),links:l}},
+    mallap:()=>{const p=[[120,110],[330,70],[560,120],[600,320],[350,360],[130,320]];return {nodes:p.map(([x,y],i)=>({x,y,t:'rt',n:'R'+(i+1)})),links:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[0,4],[1,3]]}}
+  };
+  const ANS={bus:'Bus',anillo:'Anillo',estrella:'Estrella',arbol:'Árbol',mallac:'Malla completa',mallap:'Malla parcial'};
+  const QD=[
+    ['bus','bus','Todos los equipos cuelgan de un único cable con un terminador en cada extremo.'],
+    ['anillo','anillo','Cada equipo se une al siguiente formando un círculo cerrado, sin dispositivo central.'],
+    ['estrella','estrella','Cada equipo tiene su propio cable hasta un punto central: el switch.'],
+    ['estrellaw','estrella','Es una estrella sin cables: todos los dispositivos se conectan al punto de acceso, que es el centro.'],
+    ['arbol','arbol','Una estrella de estrellas: un switch principal del que cuelgan los switches de planta, y de ellos los equipos.'],
+    ['mallac','mallac','Todos los nodos están unidos con todos: 5 nodos, 10 enlaces.'],
+    ['mallap','mallap','Hay varios caminos entre los nodos, pero no todos están unidos con todos.']
+  ];
+  const QT=[
+    ['Las primeras redes Ethernet, con un cable coaxial que recorría toda la oficina.','bus','Un único cable común: hoy está en desuso.'],
+    ['La antigua red Token Ring de IBM.','anillo','Los datos daban la vuelta pasando de un equipo a otro.'],
+    ['Una red de fibra de un operador que sigue funcionando si se corta un tramo, porque los datos dan la vuelta por el otro lado.','anillo','Es un doble anillo: si se rompe un tramo, la información va en sentido contrario.'],
+    ['El aula de informática: cada ordenador tiene su cable hasta el switch del armario.','estrella','Cada equipo, su cable, hasta un punto central.'],
+    ['Los móviles y portátiles de casa conectados por Wi‑Fi al router.','estrella','El punto de acceso es el centro, aunque no haya cables.'],
+    ['Un instituto con un switch principal en el armario central y un switch en cada planta.','arbol','Estrella de estrellas: crece por plantas.'],
+    ['Los grandes routers del núcleo de Internet, unidos por varios caminos.','mallap','Malla parcial: varios caminos, pero no todos con todos.'],
+    ['Cuatro sedes de una empresa, cada una unida directamente con las otras tres.','mallac','Todos con todos: malla completa (6 enlaces).'],
+    ['Un sistema Wi‑Fi mesh: varios puntos de acceso de una casa que se comunican entre sí.','mallap','Los puntos de acceso tienen varios caminos entre ellos: idea de malla.']
+  ];
+  let mode='id',q=[],qi=0,sc={ok:0,ko:0},chosen=null;
+  function renderId(){
+    if(qi>=q.length){svg.innerHTML='';side.innerHTML=`<div class="card2"><div class="grp">Fin</div><h3>${sc.ok} aciertos y ${sc.ko} fallos</h3><button class="btn" id="tjagain">Jugar otra vez</button></div>`;$('#tjagain').onclick=start;return}
+    const it=q[qi];
+    if(it.k==='d'){const sp=D[it.q[0]]();draw(sp,false);if(sp.drops){const L=svg.firstChild;sp.drops.forEach(x=>S('line',{x1:x,y1:170,x2:x,y2:260,stroke:'var(--ink)','stroke-width':4},L))}}
+    else{svg.innerHTML='';const t=txt(svg,350,215,'Lee el caso de la derecha',{'text-anchor':'middle','font-size':22,fill:'var(--muted)'})}
+    const prompt=it.k==='d'?'¿Qué topología es la del dibujo?':it.q[0];
+    const right=it.k==='d'?it.q[1]:it.q[1];
+    side.innerHTML=`<div class="card2"><div class="grp">${it.k==='d'?'Dibujo':'Caso'} · ${qi+1} de ${q.length}</div><p class="scard">${prompt}</p><div class="chips" id="tjchips">`+Object.entries(ANS).map(([k,v])=>`<button data-k="${k}">${v}</button>`).join('')+`</div><div class="fbx" id="tjfb"></div></div>`+
+      `<div class="st3"><div class="ro"><small>Aciertos</small><div>${sc.ok}</div></div><div class="ro"><small>Fallos</small><div>${sc.ko}</div></div><div class="ro"><small>Quedan</small><div>${q.length-qi}</div></div></div>`;
+    side.querySelectorAll('#tjchips button').forEach(b=>b.onclick=()=>{
+      const ok=b.dataset.k===right;ok?sc.ok++:sc.ko++;
+      side.querySelectorAll('#tjchips button').forEach(x=>{x.disabled=true;if(x.dataset.k===right)x.classList.add('ok');else if(x===b)x.classList.add('no')});
+      $('#tjfb').innerHTML=`<p class="${ok?'ok':'no'}">${ok?'¡Bien!':'No: es '+ANS[right].toLowerCase()+'.'}</p><p>${it.q[2]}</p><button class="btn" id="tjnext" style="margin-top:8px">Siguiente ▶</button>`;
+      $('#tjnext').onclick=()=>{qi++;renderId()};
+    });
+  }
+  // ---- Constructor ----
+  const B=[
+    {t:'Estrella',goal:'Conecta los 5 PC formando una estrella con el switch en el centro.',nodes:()=>[{x:350,y:215,t:'sw',n:'switch'}].concat(pcs(ring(5,350,215,165))),
+      check:(n,L)=>{const deg=degrees(n,L);return L.length===5&&L.every(([a,b])=>a===0||b===0)},hint:'Cada PC necesita su propio cable hasta el switch, y nada más.',cost:'5 PC → 5 cables. Si se corta uno, solo cae ese PC; si cae el switch, toda la red.'},
+    {t:'Anillo',goal:'Une los 5 PC formando un anillo: cada uno con el de su lado, cerrando el círculo.',nodes:()=>pcs(ring(5,350,215,165)),
+      check:(n,L)=>{const deg=degrees(n,L);return L.length===n&&deg.every(d=>d===2)&&connected(n,L)},hint:'Cada PC tiene que tener exactamente 2 cables y el círculo debe quedar cerrado.',cost:'5 PC → 5 cables. Si se corta uno, el anillo simple se rompe.'},
+    {t:'Árbol',goal:'Monta un árbol: el switch principal unido a los dos switches de planta, y cada PC a un switch de planta.',nodes:()=>[{x:350,y:70,t:'swp',n:'principal'},{x:200,y:210,t:'sw',n:'planta A'},{x:500,y:210,t:'sw',n:'planta B'}].concat(pcs([[110,350],[260,350],[440,350],[590,350]])),
+      check:(n,L)=>{const has=(a,b)=>L.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a));if(L.length!==6||!has(0,1)||!has(0,2))return false;for(let p=3;p<7;p++){const c=L.filter(([a,b])=>a===p||b===p);if(c.length!==1)return false;const o=c[0][0]===p?c[0][1]:c[0][0];if(o!==1&&o!==2)return false}return true},hint:'Los PC se conectan a un switch de planta (no al principal), y los dos switches de planta al principal.',cost:'4 PC y 3 switches → 6 cables. Si cae un switch de planta, solo cae su rama.'},
+    {t:'Malla completa',goal:'Une los 5 routers en malla completa: cada uno con todos los demás.',nodes:()=>ring(5,350,215,165).map(([x,y],i)=>({x,y,t:'rt',n:'R'+(i+1)})),
+      check:(n,L)=>L.length===n*(n-1)/2,hint:'Cada router debe tener un cable con cada uno de los otros 4.',cost:'5 nodos → 10 cables. Con 6 serían 15 y con 10, 45: por eso es tan cara.'}
+  ];
+  function degrees(n,L){const d=Array(n).fill(0);L.forEach(([a,b])=>{d[a]++;d[b]++});return d}
+  function connected(n,L){const seen=new Set([0]),st=[0];while(st.length){const v=st.pop();L.forEach(([a,b])=>{const o=a===v?b:b===v?a:-1;if(o>=0&&!seen.has(o)){seen.add(o);st.push(o)}})}return seen.size===n}
+  let bi=0,links=[],nodes=[],sel=null,solved=false,done=[];
+  function renderB(msg){
+    const ch=B[bi];draw({nodes,links},true);
+    if(sel!==null){const N=svg.querySelectorAll('.el')[sel];N&&N.classList.add('sel')}
+    const ok=ch.check(nodes.length,links);
+    if(ok&&!solved){solved=true;done[bi]=true}
+    side.innerHTML=`<div class="card2"><div class="grp">Reto ${bi+1} de ${B.length} · ${ch.t}</div><p class="scard">${ch.goal}</p>
+      <div class="st3"><div class="ro"><small>Cables</small><div>${links.length}</div></div><div class="ro"><small>Retos hechos</small><div>${done.filter(Boolean).length}/${B.length}</div></div><div class="ro"><small>Estado</small><div style="font-size:18px">${ok?'✓ Correcto':'Sin terminar'}</div></div></div>
+      <div class="fbx">${ok?`<p class="ok">¡Topología correcta!</p><p>${ch.cost}</p>`:(msg||`<p>Toca un equipo y después otro para tender un cable. Pista: ${ch.hint}</p>`)}</div>
+      <div class="row" style="margin-top:10px">${bi>0?'<button class="btn alt" id="tjprev">◀ Anterior</button>':''}<button class="btn alt" id="tjclear">Quitar cables</button>${bi<B.length-1?'<button class="btn" id="tjnextb">Siguiente reto ▶</button>':''}</div></div>`;
+    $('#tjclear').onclick=()=>{links=[];sel=null;solved=false;renderB()};
+    const pv=$('#tjprev');if(pv)pv.onclick=()=>loadB(bi-1);
+    const nx=$('#tjnextb');if(nx)nx.onclick=()=>loadB(bi+1);
+  }
+  function tap(i){
+    if(mode!=='build')return;
+    if(sel===null){sel=i;renderB('<p>Ahora toca el otro extremo del cable.</p>');return}
+    if(sel===i){sel=null;renderB();return}
+    const a=Math.min(sel,i),b=Math.max(sel,i),k=links.findIndex(([x,y])=>x===a&&y===b);
+    if(k>=0)links.splice(k,1);else links.push([a,b]);
+    sel=null;solved=false;renderB();
+  }
+  function loadB(i){bi=i;nodes=B[i].nodes();links=[];sel=null;solved=false;renderB()}
+  function start(){
+    if(mode==='id'){q=shuffle(QD).slice(0,5).map(x=>({k:'d',q:x})).concat(shuffle(QT).slice(0,5).map(x=>({k:'t',q:x})));q=shuffle(q);qi=0;sc={ok:0,ko:0};renderId()}
+    else{done=[];loadB(0)}
+  }
+  function setMode(m){mode=m;document.querySelectorAll('#tjmodes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));start()}
+  document.querySelectorAll('#tjmodes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+  $('#tjreset').onclick=start;
+  setMode('id');
+})();
+
+// ---------- 5. TOPOLOGÍAS ----------
+(function(){
+  const svg=$('#tsvg');
+  function ring(n,cx,cy,r,start=-90){return [...Array(n)].map((_,i)=>{const a=(start+i*360/n)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)]})}
+  const TOP={
+    estrella:()=>{const p=ring(6,350,215,165);const nodes=[{id:'sw',x:350,y:215,t:'sw',n:'Switch'}].concat(p.map(([x,y],i)=>({id:'p'+i,x,y,t:i===0?'srv':'pc',n:i===0?'Servidor':'PC'+i})));
+      return {nodes,links:p.map((_,i)=>['sw','p'+i]),ref:'sw',info:'Es la topología de casi todas las LAN actuales: cada equipo tiene su cable hasta el switch. Si se corta un cable, solo cae ese equipo. Pero el switch es un punto único de fallo: tócalo.'}},
+    bus:()=>{const xs=[120,210,300,390,480,570],nodes=[],links=[];
+      xs.forEach((x,i)=>{nodes.push({id:'t'+i,x,y:215,t:'tap'});nodes.push({id:'p'+i,x,y:i%2?320:110,t:i===0?'srv':'pc',n:i===0?'Servidor':'PC'+i});links.push(['p'+i,'t'+i,'drop'])});
+      [['T0',55],['T1',635]].forEach(([id,x])=>nodes.push({id,x,y:215,t:'term'}));
+      links.push(['T0','t0','bb']);for(let i=0;i<5;i++)links.push(['t'+i,'t'+(i+1),'bb']);links.push(['t5','T1','bb']);
+      return {nodes,links,ref:'p0',bus:true,info:'Todos comparten un único cable con un terminador en cada extremo. Si se corta el cable de un equipo, solo cae él. Si se corta el cable principal, la señal rebota en el extremo sin terminador y deja de funcionar toda la red. Hoy está en desuso.'}},
+    anillo:()=>{const p=ring(6,350,215,165);const nodes=p.map(([x,y],i)=>({id:'p'+i,x,y,t:i===0?'srv':'pc',n:i===0?'Servidor':'PC'+i}));
+      return {nodes,links:p.map((_,i)=>['p'+i,'p'+((i+1)%6)]),ref:'p0',ring:true,info:'Cada equipo se une al siguiente formando un círculo y los datos dan la vuelta en un solo sentido. En un anillo simple, un corte para toda la red. Con anillo doble, los datos pueden dar la vuelta por el otro lado.'}},
+    arbol:()=>{const nodes=[{id:'r',x:350,y:60,t:'sw',n:'Switch central'},{id:'a',x:190,y:185,t:'sw',n:'Switch planta 1'},{id:'b',x:510,y:185,t:'sw',n:'Switch planta 2'}];const links=[['r','a'],['r','b']];
+      [[90,'a'],[190,'a'],[290,'a'],[410,'b'],[510,'b'],[610,'b']].forEach(([x,s],i)=>{nodes.push({id:'p'+i,x,y:330,t:'pc',n:'PC'+(i+1)});links.push([s,'p'+i])});
+      return {nodes,links,ref:'r',info:'Estrellas colgadas de otras estrellas: es el diseño jerárquico de un edificio con un switch por planta. Un corte entre switches aísla una rama entera, no solo un equipo.'}},
+    malla:()=>{const p=ring(5,350,220,170);const nodes=p.map(([x,y],i)=>({id:'r'+i,x,y,t:'rt',n:'R'+(i+1)}));const links=[];
+      for(let i=0;i<5;i++)for(let j=i+1;j<5;j++)links.push(['r'+i,'r'+j]);
+      return {nodes,links,ref:'r0',info:'Cada router está unido a todos los demás: con 5 nodos hacen falta 5·4/2 = 10 enlaces. Puedes cortar muchos cables y los datos buscan otro camino. Es muy fiable pero cara; Internet usa mallas parciales entre routers.'}}
+  };
+  const NAMES={estrella:'Estrella',bus:'Bus',anillo:'Anillo',arbol:'Árbol',malla:'Malla'};
+  let cur='estrella',T,cut=new Set(),failed=new Set();
+  const seg=$('#tseg');
+  Object.keys(TOP).forEach(k=>{const b=document.createElement('button');b.textContent=NAMES[k];b.dataset.k=k;b.onclick=()=>load(k);seg.appendChild(b)});
+  function load(k){cur=k;T=TOP[k]();cut=new Set();failed=new Set();
+    [...seg.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));
+    $('#tdoublew').hidden=!T.ring;$('#tinfo').textContent=T.info;draw()}
+  function status(){
+    const devs=T.nodes.filter(n=>['pc','srv','rt'].includes(n.t)),down=new Set();
+    const byId=Object.fromEntries(T.nodes.map(n=>[n.id,n]));
+    if(T.bus&&T.links.some((l,i)=>l[2]==='bb'&&cut.has(i))){devs.forEach(n=>down.add(n.id));return {devs,down,msg:'Se ha cortado el cable principal: sin terminador, la señal rebota y nadie puede comunicarse.'}}
+    if(T.ring&&!$('#tdouble').checked&&cut.size){devs.forEach(n=>down.add(n.id));return {devs,down,msg:'Anillo simple: los datos ya no pueden dar la vuelta. Se para toda la red.'}}
+    const adj={};T.nodes.forEach(n=>adj[n.id]=[]);
+    T.links.forEach((l,i)=>{if(!cut.has(i)){adj[l[0]].push(l[1]);adj[l[1]].push(l[0])}});
+    const seen=new Set();if(!failed.has(T.ref)){const q=[T.ref];seen.add(T.ref);while(q.length){const u=q.shift();for(const v of adj[u])if(!seen.has(v)&&!failed.has(v)){seen.add(v);q.push(v)}}}
+    devs.forEach(n=>{if(!seen.has(n.id))down.add(n.id)});
+    let msg=failed.size?'Un switch averiado deja sin red a todo lo que cuelga de él.':cut.size?'Los equipos en rojo han perdido el camino hacia el resto de la red.':'Todo funciona. Toca un cable para cortarlo.';
+    if(cur==='malla'&&cut.size&&!down.size)msg=`Has cortado ${cut.size} enlace${cut.size>1?'s':''} y todos siguen conectados: los datos buscan otro camino.`;
+    if(T.ring&&$('#tdouble').checked&&cut.size===1)msg='Anillo doble: con un corte, los datos dan la vuelta por el otro sentido y nadie se queda aislado.';
+    return {devs,down,msg};
+  }
+  function draw(){
+    svg.innerHTML='';const st=status(),byId=Object.fromEntries(T.nodes.map(n=>[n.id,n]));
+    T.links.forEach((l,i)=>{const a=byId[l[0]],b=byId[l[1]],isCut=cut.has(i),g=S('g',{style:'cursor:pointer'},svg);
+      S('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:isCut?'var(--bad)':l[2]==='bb'?'var(--ink)':'var(--accent-ink)','stroke-width':l[2]==='bb'?8:5,'stroke-dasharray':isCut?'8 8':'none','stroke-linecap':'round'},g);
+      if(isCut)txt(g,(a.x+b.x)/2,(a.y+b.y)/2+7,'✂',{'text-anchor':'middle','font-size':22,fill:'var(--bad)'});
+      S('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'transparent','stroke-width':26,'pointer-events':'stroke'},g);
+      g.addEventListener('click',()=>{cut.has(i)?cut.delete(i):cut.add(i);draw()})});
+    T.nodes.forEach(n=>{
+      if(n.t==='tap'){S('circle',{cx:n.x,cy:n.y,r:6,fill:'var(--ink)'},svg);return}
+      if(n.t==='term'){S('rect',{x:n.x-12,y:n.y-16,width:24,height:32,rx:4,fill:'var(--warn)'},svg);txt(svg,n.x,n.y+44,'terminador',{'text-anchor':'middle','font-size':12,fill:'var(--muted)'});return}
+      const isDev=['pc','srv','rt'].includes(n.t),down=st.down.has(n.id),fl=failed.has(n.id);
+      const fill=fl?'var(--bad)':!isDev?'var(--surface)':down?'var(--bad-bg)':'var(--good-bg)',stroke=fl||down?'var(--bad)':isDev?'var(--good)':'var(--ink)';
+      const g=S('g',{},svg);
+      if(n.t==='sw'){const w=Math.max(96,n.n.length*9+20);S('rect',{x:n.x-w/2,y:n.y-22,width:w,height:44,rx:8,fill,stroke,'stroke-width':3},g);
+        txt(g,n.x,n.y+6,n.n,{'text-anchor':'middle','font-size':15,'font-weight':700,fill:fl?'var(--surface)':'var(--ink)'});
+        g.style.cursor='pointer';g.addEventListener('click',()=>{failed.has(n.id)?failed.delete(n.id):failed.add(n.id);draw()})}
+      else if(n.t==='rt'){S('circle',{cx:n.x,cy:n.y,r:30,fill,stroke,'stroke-width':3},g);txt(g,n.x,n.y+6,n.n,{'text-anchor':'middle','font-size':17,'font-weight':700})}
+      else{const w=n.t==='srv'?92:66;S('rect',{x:n.x-w/2,y:n.y-20,width:w,height:40,rx:8,fill,stroke,'stroke-width':3},g);
+        txt(g,n.x,n.y+6,(down?'✕ ':'')+n.n,{'text-anchor':'middle','font-size':15,'font-weight':700,fill:down?'var(--bad)':'var(--ink)'})}
+    });
+    const total=st.devs.length,dn=st.down.size;
+    $('#tcount').innerHTML=`<span style="color:var(--good)">${total-dn}</span> de ${total} equipos conectados`;
+    $('#tmsg').textContent=st.msg;
+  }
+  $('#tdouble').onchange=draw;$('#treset').onclick=()=>load(cur);
+  load('estrella');
+})();
+
+})();
+</script>
+<script>
+
+/* ===== Kit de actividades ===== */
+const K=(function(){
+  const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){if(k==='class')e.className=attrs[k];else if(k==='html')e.innerHTML=attrs[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k])}kids.flat().forEach(c=>{if(c==null)return;e.append(c.nodeType?c:document.createTextNode(c))});return e};
+  const md=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<span class="mono">$1</span>');
+  const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  function msg(el,cls,html){el.className='k-msg'+(cls?' '+cls:'');el.innerHTML=html}
+
+  // Selector de actividades dentro de una pestaña
+  function acts(root,list){
+    const seg=h('div',{class:'seg k-acts',role:'group','aria-label':'Actividad'});
+    const stage=h('div',{class:'k-stage'});
+    root.append(seg,stage);
+    const views=list.map(()=>null);
+    const btns=list.map((a,i)=>{const b=h('button',{'aria-pressed':i===0?'true':'false',onclick:()=>go(i)},a.label);seg.append(b);return b});
+    function go(i){btns.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));views.forEach(v=>v&&(v.hidden=true));
+      if(!views[i]){views[i]=h('div');stage.append(views[i]);list[i].render(views[i])}views[i].hidden=false}
+    go(0);
+  }
+
+  // Clasificar: tocar ficha + tocar caja, o arrastrar
+  function sort(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const score=h('div',{class:'k-score'});
+    const pool=h('div',{class:'k-pool','aria-label':'Fichas sin colocar'});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    const grid=h('div',{class:'k-buckets'});
+    const bk={};
+    cfg.buckets.forEach(b=>{const el=h('div',{class:'k-bucket',tabindex:0,role:'button','aria-label':'Caja '+b.name,'data-b':b.id},h('h4',{html:md(b.name)+(b.sub?'<small>'+md(b.sub)+'</small>':'')}));
+      el.addEventListener('click',()=>{if(sel)drop(sel,b.id)});
+      el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel){e.preventDefault();drop(sel,b.id)}});
+      bk[b.id]=el;grid.append(el)});
+    const row=h('div',{class:'row',style:'margin-top:14px'},
+      h('button',{class:'btn alt',onclick:reset},'Empezar de nuevo'),
+      h('button',{class:'btn alt',onclick:solve},'Ver solución'));
+    root.append(score,pool,m,grid,row);
+    let sel=null,ok=0,ko=0,chips=[];
+    const bname=id=>cfg.buckets.find(b=>b.id===id).name.replace(/\*\*/g,'');
+    function upd(){score.innerHTML=`<span>Colocadas: <b>${ok}/${cfg.items.length}</b></span><span>Fallos: <b>${ko}</b></span>`;
+      Object.values(bk).forEach(b=>b.classList.toggle('armed',!!sel))}
+    function pick(c){if(c.classList.contains('ok'))return;if(sel===c){c.classList.remove('sel');sel=null}else{sel&&sel.classList.remove('sel');sel=c;c.classList.add('sel');
+      msg(m,'','<b>'+md(c._it.t)+'</b>. Ahora toca la caja donde va (o arrástrala).')}upd()}
+    function drop(c,b){const it=c._it;c.classList.remove('sel');sel=null;
+      if(it.b===b||(Array.isArray(it.b)&&it.b.includes(b))){c.classList.add('ok');c.setAttribute('tabindex','-1');bk[b].append(c);ok++;
+        msg(m,'good','✓ <b>'+md(it.t)+'</b> → '+md(bname(b))+(it.why?'. '+md(it.why):''));
+        if(ok===cfg.items.length)msg(m,'good','<b>¡Completado!</b> '+ok+' fichas con '+ko+' fallo'+(ko===1?'':'s')+'. '+(it.why?md(it.why):''))}
+      else{ko++;c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);
+        msg(m,'bad','✗ <b>'+md(it.t)+'</b> no va en «'+md(bname(b))+'». '+(it.hint?md(it.hint):'Piénsalo otra vez.'))}
+      upd()}
+    function build(){pool.innerHTML='';Object.values(bk).forEach(b=>[...b.querySelectorAll('.k-chip')].forEach(c=>c.remove()));
+      chips=shuffle(cfg.items).map(it=>{const c=h('button',{class:'k-chip',type:'button',html:md(it.t)});c._it=it;
+        c.addEventListener('pointerdown',e=>startDrag(e,c));
+        c.addEventListener('click',e=>{if(c._dragged){c._dragged=false;return}pick(c)});
+        pool.append(c);return c});
+      ok=0;ko=0;sel=null;msg(m,'',cfg.start||'Toca una ficha y después la caja donde va. También puedes arrastrarla.');upd()}
+    function reset(){build()}
+    function solve(){chips.forEach(c=>{if(!c.classList.contains('ok')){const b=Array.isArray(c._it.b)?c._it.b[0]:c._it.b;c.classList.add('ok');c.classList.remove('sel');bk[b].append(c)}});sel=null;msg(m,'warn','Solución a la vista. Pulsa «Empezar de nuevo» para intentarlo sin ayuda.');upd()}
+    let dr=null;
+    function startDrag(e,c){if(c.classList.contains('ok')||e.button>0)return;dr={c,x:e.clientX,y:e.clientY,g:null,id:e.pointerId}}
+    window.addEventListener('pointermove',e=>{if(!dr||e.pointerId!==dr.id)return;
+      if(!dr.g){if(Math.hypot(e.clientX-dr.x,e.clientY-dr.y)<8)return;dr.g=dr.c.cloneNode(true);dr.g.classList.add('k-ghost');document.body.append(dr.g);dr.c.style.opacity=.35}
+      e.preventDefault();dr.g.style.left=e.clientX+'px';dr.g.style.top=e.clientY+'px';
+      Object.values(bk).forEach(b=>b.classList.remove('over'));const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))b.classList.add('over')},{passive:false});
+    window.addEventListener('pointerup',e=>{if(!dr||e.pointerId!==dr.id)return;const d=dr;dr=null;if(!d.g)return;
+      d.g.remove();d.c.style.opacity='';d.c._dragged=true;setTimeout(()=>d.c._dragged=false,0);Object.values(bk).forEach(b=>b.classList.remove('over'));
+      const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))drop(d.c,b.dataset.b)});
+    window.addEventListener('pointercancel',()=>{if(dr&&dr.g){dr.g.remove();dr.c.style.opacity=''}dr=null});
+    build();
+  }
+
+  // Ordenar
+  function order(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    if(cfg.top)root.append(h('div',{class:'k-olabel'},'▲ '+cfg.top));
+    const ol=h('ol',{class:'k-olist'});root.append(ol);
+    if(cfg.bottom)root.append(h('div',{class:'k-olabel'},'▼ '+cfg.bottom));
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    root.append(m,h('div',{class:'row'},h('button',{class:'btn',onclick:check},'Comprobar'),h('button',{class:'btn alt',onclick:()=>{cur=shuffleNotSorted();sel=-1;draw();msg(m,'','Ordena de nuevo.')}},'Mezclar'),h('button',{class:'btn alt',onclick:()=>{cur=cfg.items.map((_,i)=>i);sel=-1;draw(true);msg(m,'warn','Este es el orden correcto. Fíjate en las explicaciones en gris.')}},'Ver solución')));
+    let sel=-1,cur=shuffleNotSorted(),tries=0;
+    function shuffleNotSorted(){let a;do{a=shuffle(cfg.items.map((_,i)=>i))}while(a.every((v,i)=>v===i)&&a.length>1);return a}
+    function swap(i,j){if(j<0||j>=cur.length)return;[cur[i],cur[j]]=[cur[j],cur[i]];draw()}
+    function draw(showD){ol.innerHTML='';cur.forEach((v,i)=>{const it=cfg.items[v];
+      const li=h('li',{class:'k-oi'+(sel===i?' sel':''),tabindex:0},h('span',{class:'n'},String(i+1)),h('span',{class:'t',html:md(it.t)+(showD&&it.d?'<small>'+md(it.d)+'</small>':'')}),
+        h('span',{class:'mv'},h('button',{'aria-label':'Subir',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i-1)}},'↑'),h('button',{'aria-label':'Bajar',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i+1)}},'↓')));
+      li.addEventListener('click',()=>{if(sel<0){sel=i;draw()}else if(sel===i){sel=-1;draw()}else{const s=sel;sel=-1;swap(s,i)}});
+      ol.append(li)})}
+    function check(){tries++;let n=0;[...ol.children].forEach((li,i)=>{const good=cur[i]===i;if(good)n++;li.classList.add(good?'ok':'ko')});
+      if(n===cur.length){draw(true);[...ol.children].forEach(li=>li.classList.add('ok'));msg(m,'good','<b>¡Perfecto!</b> Todo en orden'+(tries>1?' (en '+tries+' intentos)':'')+'. '+(cfg.done?md(cfg.done):''))}
+      else msg(m,'bad',`<b>${n} de ${cur.length}</b> en su sitio (en verde). Mueve los rojos: toca uno y luego otro para intercambiarlos, o usa las flechas.`)}
+    draw();msg(m,'',cfg.start||'Toca un elemento y después otro para intercambiarlos, o usa las flechas ↑ ↓. Cuando acabes, pulsa «Comprobar».');
+  }
+
+  // Test de una pregunta cada vez
+  function quiz(root,cfg){
+    if(cfg.intro)root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const box=h('div',{class:'k-q'});root.append(box);
+    let qs,i,ok,answered;
+    function start(){qs=(cfg.noShuffle?cfg.questions:shuffle(cfg.questions)).map(q=>{const o=q.o.map((t,j)=>({t,c:j===q.a}));return Object.assign({},q,{opts:cfg.fixed||q.fixed?o:shuffle(o)})});i=0;ok=0;draw()}
+    function draw(){box.innerHTML='';
+      if(i>=qs.length){box.append(h('div',{class:'k-end'},`Resultado: ${ok} de ${qs.length}`),h('p',{},ok===qs.length?'¡Todas bien!':ok>=qs.length*.7?'Muy bien. Repasa las que fallaste.':'Vuelve a intentarlo: lee bien la explicación de cada pregunta.'),h('button',{class:'btn',onclick:start},'Otra vez (en otro orden)'));return}
+      const q=qs[i];answered=false;
+      const bar=h('div',{class:'k-bar'},h('i',{style:`width:${i/qs.length*100}%`}));
+      const opts=h('div',{class:'k-opts'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Elige una respuesta.');
+      const next=h('button',{class:'btn',onclick:()=>{i++;draw()},hidden:''},i===qs.length-1?'Ver resultado':'Siguiente pregunta');
+      q.opts.forEach(o=>{const b=h('button',{class:'k-opt',html:md(o.t)});b.onclick=()=>{if(answered)return;answered=true;
+        if(o.c){ok++;b.classList.add('ok');msg(m,'good','✓ <b>Correcto.</b> '+md(q.why||''))}
+        else{b.classList.add('ko');[...opts.children].forEach((x,k)=>{if(q.opts[k].c)x.classList.add('ok')});msg(m,'bad','✗ <b>No.</b> '+md(q.why||''))}
+        [...opts.children].forEach(x=>x.setAttribute('disabled',''));next.hidden=false;next.focus()};opts.append(b)});
+      box.append(h('div',{class:'qn'},`Pregunta ${i+1} de ${qs.length} · aciertos: ${ok}`),bar,h('div',{class:'qt',html:md(q.q)}));
+      if(q.fig){const f=h('div',{class:'qfig'});q.fig(f);box.append(f)}
+      box.append(opts,m,next)}
+    start();
+  }
+  return {h,md,shuffle,msg,acts,sort,order,quiz};
+})();
+
+
+(function(){
+const {h,md,acts,sort,order,quiz,msg}=K;
+const NS='http://www.w3.org/2000/svg';
+function S(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function T(p,x,y,s,a={}){const e=S('text',Object.assign({x,y},a),p);e.textContent=s;return e}
+
+/* ================= S1 · ¿QUÉ ES UNA RED? ================= */
+function packets(root){
+  root.append(h('p',{class:'lead',html:'Así viaja un archivo por la red: se parte en <b>paquetes</b>, cada uno con su dirección de origen y de destino; el <b>switch</b> los entrega y el equipo de destino los vuelve a juntar. Pulsa <b>Enviar</b>. Prueba también a «perder» un paquete.'}));
+  const fig=h('div',{class:'k-svgfig'});root.append(fig);
+  const svg=S('svg',{viewBox:'0 0 900 300',role:'img','aria-label':'Un PC envía un archivo partido en paquetes a otro PC a través de un switch'});fig.append(svg);
+  const dev=(x,label,sub)=>{S('rect',{x:x-70,y:90,width:140,height:100,rx:12,fill:'var(--surface)',stroke:'var(--line)','stroke-width':3},svg);T(svg,x,130,label,{'text-anchor':'middle','font-size':20,'font-weight':700});T(svg,x,156,sub,{'text-anchor':'middle','font-size':14,style:'fill:var(--muted);font-family:var(--f-mono)'})};
+  S('line',{x1:170,y1:140,x2:380,y2:140,stroke:'var(--line)','stroke-width':6},svg);S('line',{x1:520,y1:140,x2:730,y2:140,stroke:'var(--line)','stroke-width':6},svg);
+  dev(100,'PC01','MAC …:A1');dev(450,'SWITCH','dirige tramas');dev(800,'PC05','MAC …:B5');
+  const res=T(svg,800,230,'',{'text-anchor':'middle','font-size':18,'font-weight':700});const src=T(svg,100,230,'foto.jpg (3 trozos)',{'text-anchor':'middle','font-size':16});
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Pulsa «Enviar».');
+  const lose=h('label',{class:'lbl'},h('input',{type:'checkbox',id:'rlose'}),' Perder el paquete 2 por el camino');
+  const go=h('button',{class:'btn'},'Enviar');root.append(h('div',{class:'row',style:'margin-top:12px'},go,lose),m);
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mv=(g,x1,x2,ms)=>new Promise(r=>{const t0=performance.now(),d=reduce?50:ms;(function f(n){const k=Math.min(1,(n-t0)/d);g.setAttribute('transform',`translate(${x1+(x2-x1)*k} 0)`);k<1?requestAnimationFrame(f):r()})(t0)});
+  let busy=false;
+  go.onclick=async()=>{if(busy)return;busy=true;res.textContent='';const lost=document.getElementById('rlose').checked;const got=[];
+    msg(m,'','El archivo se divide en <b>3 paquetes</b>. Cada uno lleva <b>origen A1 → destino B5</b>, como el remite y la dirección de una carta.');
+    const ps=[1,2,3].map(i=>{const g=S('g',{},svg);S('rect',{x:-34,y:52+0,width:68,height:30,rx:6,fill:'var(--lamp)',stroke:'var(--ink)','stroke-width':2},g);T(g,0,73,'['+i+'] A1→B5',{'text-anchor':'middle','font-size':12,'font-weight':700,style:'fill:#15202B;font-family:var(--f-mono)'});g.setAttribute('transform','translate(100 0)');return g});
+    for(let i=0;i<3;i++){await mv(ps[i],100,450,700);if(lost&&i===1){ps[i].setAttribute('opacity',.25);msg(m,'bad','El paquete 2 se ha perdido por el camino…');await new Promise(r=>setTimeout(r,reduce?50:700));ps[i].remove();continue}
+      msg(m,'','El <b>switch</b> lee el destino <b>B5</b> y entrega el paquete '+(i+1)+' solo por el puerto de PC05.');await mv(ps[i],450,800,700);got.push(i+1);ps[i].remove();res.textContent='Recibidos: '+got.join(', ')}
+    if(lost){msg(m,'warn','PC05 comprueba los paquetes y ve que <b>falta el 2</b>. Pide que se reenvíe <b>solo ese trozo</b>: no hace falta mandar el archivo entero otra vez.');await new Promise(r=>setTimeout(r,reduce?50:1500));
+      const g=S('g',{},svg);S('rect',{x:-34,y:52,width:68,height:30,rx:6,fill:'var(--good-bg)',stroke:'var(--good)','stroke-width':2},g);T(g,0,73,'[2] A1→B5',{'text-anchor':'middle','font-size':12,'font-weight':700,style:'fill:var(--ink);font-family:var(--f-mono)'});await mv(g,100,800,1100);g.remove();got.push(2)}
+    res.textContent='foto.jpg montada ✓';msg(m,'good','PC05 tiene <b>todos los trozos</b> y en buen estado: vuelve a juntarlos y reconstruye la foto. Todo ha funcionado porque los dos siguen los mismos <b>protocolos</b> (TCP/IP).');busy=false};
+}
+acts(document.getElementById('r-lan'),[
+  {label:'Cómo viajan los datos',render:packets},
+  {label:'¿Ventaja o inconveniente?',render:el=>sort(el,{intro:'Montar una red local en una empresa o en un centro educativo. ¿Es una **ventaja** o un **inconveniente**?',
+    buckets:[{id:'v',name:'Ventaja'},{id:'i',name:'Inconveniente'}],
+    items:[{t:'Una sola impresora sirve para toda la clase',b:'v',why:'compartición de recursos.'},{t:'Una única conexión a Internet para todos',b:'v'},{t:'Copias de seguridad desde un único punto',b:'v',why:'gestión centralizada.'},{t:'Varias personas editan el mismo documento',b:'v',why:'trabajo colaborativo.'},{t:'Se compran menos discos e impresoras',b:'v',why:'reducción de costes.'},{t:'Un virus puede pasar de un equipo a otro',b:'i',why:'vulnerabilidades de seguridad.'},{t:'Si falla el switch principal, muchos se quedan sin trabajar',b:'i',why:'dependencia de la infraestructura.'},{t:'Hay que comprar cables, switches y armario',b:'i',why:'costes de instalación.'},{t:'Hace falta alguien que la configure y repare',b:'i',why:'mantenimiento especializado: el trabajo del técnico de SMR.'}]})},
+  {label:'¿Es una LAN?',render:el=>quiz(el,{intro:'Una LAN tiene alcance reducido, alta velocidad, pocos errores, es de propiedad privada y se amplía con facilidad.',questions:[
+    {q:'La red del aula de informática, con los PC unidos a un switch.',o:['Sí, es una LAN','No es una LAN'],a:0,fixed:1,why:'Espacio limitado y gestionada por el centro.'},
+    {q:'La red de la compañía telefónica que lleva Internet hasta tu casa.',o:['Sí, es una LAN','No es una LAN'],a:1,fixed:1,why:'Cubre una zona enorme y no la gestionas tú.'},
+    {q:'Un ordenador sin ningún cable ni Wi-Fi.',o:['Forma una red','No forma parte de ninguna red'],a:1,fixed:1,why:'Para que haya red tiene que haber un camino por el que viajen los datos.'},
+    {q:'La red Wi-Fi de tu casa, con el móvil, la tele y el portátil conectados al router.',o:['Sí, es una LAN','No es una LAN'],a:0,fixed:1,why:'Es una red local de una vivienda, de propiedad privada.'},
+    {q:'¿Qué une los equipos dentro de la red local del aula?',o:['El switch','El router','La impresora'],a:0,why:'El router conecta la red local con otras redes, como Internet.'},
+    {q:'¿Qué conecta la red de casa con Internet?',o:['El router','El switch','La tarjeta de red'],a:0,why:'En el edificio de viviendas, el router es la puerta de la calle.'},
+    {q:'Lo habitual hoy es que un PC conectado por cable a la LAN trabaje a…',o:['1 Gbps','1 Mbps','1 Kbps'],a:0,why:'1 Gbps = 1000 Mbps. Los enlaces entre switches pueden ir a 10 Gbps o más.'},
+    {q:'¿Cómo se llama el conjunto de protocolos que usan Internet y casi todas las redes?',o:['TCP/IP','HTML','USB'],a:0,why:'Gracias a TCP/IP un móvil Android envía una foto a un PC con Windows sin problemas.'}]})},
+  {label:'Imprimir en el aula',render:el=>order(el,{intro:'Ordena lo que pasa cuando un alumno imprime un trabajo en la impresora del aula.',
+    items:[{t:'El alumno pulsa Imprimir; el documento se divide en paquetes con la dirección de destino'},{t:'Los paquetes salen por la tarjeta de red y viajan por el cable hasta el switch'},{t:'El switch mira la dirección de destino y los entrega al servidor de impresión'},{t:'El servidor pone el trabajo en la cola de impresión y lo envía cuando le toca'},{t:'La impresora recibe los paquetes, reconstruye el documento y lo imprime'}],done:'Todos los alumnos han usado la misma impresora: es un recurso compartido.'})}]);
+
+/* ================= S5 · MAPA FÍSICO Y DIAGRAMA LÓGICO ================= */
+const EQ=[...[1,2,3,4,5,6].map(i=>({eq:'PC0'+i,t:'T0'+i,p:i,ip:'Por DHCP',obs:'Puesto alumno'})),{eq:'PC-PROF',t:'T00',p:24,ip:'192.168.10.50',obs:'Conectado al proyector'},{eq:'IMPRESORA',t:'T07',p:23,ip:'192.168.10.60',obs:'Compartida para el aula'}];
+function docLab(root){
+  root.append(h('p',{class:'lead',html:'El aula del ejemplo de los apuntes, documentada de las dos formas. Cambia de vista y resuelve las incidencias usando el dibujo y la <b>tabla de conexiones</b>.'}));
+  const seg=h('div',{class:'seg',role:'group','aria-label':'Vista'});root.append(seg);
+  const wrap=h('div',{class:'k-two',style:'margin-top:14px'});root.append(wrap);
+  const L=h('div'),R=h('div');wrap.append(L,R);
+  const fig=h('div',{class:'k-svgfig'});L.append(fig);
+  const tw=h('div',{class:'k-tblwrap',style:'margin-top:12px'});L.append(h('div',{class:'k-cap'},'Tabla de conexiones ',h('small',{},'SW-AULA1')),tw);
+  const tb=h('table',{class:'k-tbl'});tw.append(tb);
+  tb.innerHTML='<thead><tr><th>Equipo</th><th>Toma</th><th>Puerto SW-AULA1</th><th>Dirección IP</th><th>Observaciones</th></tr></thead>';
+  const body=h('tbody');tb.append(body);EQ.forEach(e=>body.append(h('tr',{'data-eq':e.eq},h('td',{class:'pk'},e.eq),h('td',{},e.t),h('td',{},String(e.p)),h('td',{},e.ip),h('td',{},e.obs))));
+  const ml=h('ol',{class:'k-mission'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});const ask=h('div');R.append(h('h3',{},'Incidencias'),ml,m,ask,h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn alt',onclick:()=>{mi=0;view('f');drawM()}},'Empezar de nuevo')));
+  let v='f',mi=0;const hot={};
+  function drawF(){const svg=S('svg',{viewBox:'0 0 760 440',role:'img','aria-label':'Mapa físico del aula: armario con switch, canaleta, tomas de pared numeradas, puestos, mesa del profesor e impresora'});fig.innerHTML='';fig.append(svg);
+    S('rect',{x:10,y:10,width:740,height:400,fill:'var(--surface)',stroke:'var(--ink)','stroke-width':5},svg);S('rect',{x:300,y:405,width:150,height:10,fill:'var(--bg)'},svg);T(svg,375,432,'PUERTA',{'text-anchor':'middle','font-size':14,'font-weight':700,style:'font-family:var(--f-mono)'});
+    S('rect',{x:24,y:24,width:110,height:70,rx:6,fill:'var(--chip)',stroke:'var(--accent-ink)','stroke-width':3},svg);T(svg,79,50,'ARMARIO',{'text-anchor':'middle','font-size':14,'font-weight':700});T(svg,79,74,'SW-AULA1',{'text-anchor':'middle','font-size':13,style:'font-family:var(--f-mono)'});
+    S('circle',{cx:700,cy:52,r:22,fill:'var(--surface)',stroke:'var(--accent-ink)','stroke-width':3},svg);T(svg,700,57,'AP',{'text-anchor':'middle','font-size':14,'font-weight':700});T(svg,700,92,'techo',{'text-anchor':'middle','font-size':12,style:'fill:var(--muted)'});
+    S('path',{d:'M79 94 V122 H690 M79 122 V300 H600 V330',fill:'none',stroke:'var(--warn)','stroke-width':8,'stroke-linecap':'round',opacity:.7},svg);T(svg,300,116,'canaleta',{'font-size':13,style:'fill:var(--warn);font-family:var(--f-mono);font-weight:700'});
+    const tom=(x,y,id)=>{const g=S('g',{class:'tom',tabindex:0,role:'button','aria-label':'Toma '+id,style:'cursor:pointer'},svg);S('rect',{x:x-22,y:y-13,width:44,height:26,rx:4,fill:'var(--surface)',stroke:'var(--ink)','stroke-width':2.5,class:'tb'},g);T(g,x,y+5,id,{'text-anchor':'middle','font-size':14,'font-weight':700,style:'font-family:var(--f-mono)'});g.addEventListener('click',()=>pickT(id,g));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pickT(id,g)}});hot[id]=g};
+    const pc=(x,y,id)=>{S('rect',{x:x-36,y,width:72,height:46,rx:6,fill:'var(--bg)',stroke:'var(--line)','stroke-width':2},svg);T(svg,x,y+29,id,{'text-anchor':'middle','font-size':15,'font-weight':700})};
+    S('rect',{x:150,y:180,width:560,height:70,rx:6,fill:'none',stroke:'var(--line)','stroke-width':2,'stroke-dasharray':'6 5'},svg);T(svg,430,270,'fila de mesas',{'text-anchor':'middle','font-size':12,style:'fill:var(--muted)'});
+    for(let i=1;i<=6;i++){const x=190+(i-1)*95;tom(x,148,'T0'+i);pc(x,192,'PC0'+i)}
+    S('rect',{x:40,y:320,width:200,height:70,rx:6,fill:'none',stroke:'var(--line)','stroke-width':2,'stroke-dasharray':'6 5'},svg);T(svg,140,402,'mesa del profesor',{'text-anchor':'middle','font-size':12,style:'fill:var(--muted)'});
+    tom(100,300,'T00');pc(150,332,'PC-PROF');tom(600,330,'T07');S('rect',{x:630,y:330,width:100,height:52,rx:6,fill:'var(--bg)',stroke:'var(--line)','stroke-width':2},svg);T(svg,680,361,'IMPRESORA',{'text-anchor':'middle','font-size':13,'font-weight':700});
+    T(svg,24,398+0,'',{});}
+  function drawL(){const svg=S('svg',{viewBox:'0 0 760 440',role:'img','aria-label':'Diagrama lógico del aula: Internet, router del centro, switch del aula y grupos de equipos con sus direcciones IP'});fig.innerHTML='';fig.append(svg);
+    const b=(x,y,w,t,s,c)=>{S('rect',{x:x-w/2,y,width:w,height:58,rx:10,fill:c||'var(--surface)',stroke:'var(--ink)','stroke-width':2.5},svg);T(svg,x,y+25,t,{'text-anchor':'middle','font-size':16,'font-weight':700});if(s)T(svg,x,y+46,s,{'text-anchor':'middle','font-size':13,style:'font-family:var(--f-mono)'})};
+    S('path',{d:'M380 76 V110 M380 168 V200 M380 258 V290 M150 290 H610 M150 290 V320 M380 290 V320 M610 290 V320',stroke:'var(--ink)','stroke-width':3,fill:'none'},svg);
+    S('ellipse',{cx:380,cy:46,rx:90,ry:30,fill:'var(--chip)',stroke:'var(--accent-ink)','stroke-width':2.5},svg);T(svg,380,52,'Internet',{'text-anchor':'middle','font-size':17,'font-weight':700});
+    b(380,110,250,'ROUTER del centro','192.168.10.1 · puerta de enlace','var(--l-ip)');b(380,200,200,'SW-AULA1','switch del aula','var(--l-eth)');
+    b(150,320,200,'PC01 … PC06','IP por DHCP');b(380,320,200,'PC-PROF','192.168.10.50');b(610,320,200,'IMPRESORA','192.168.10.60');
+    T(svg,380,420,'Red del aula: 192.168.10.0 / 255.255.255.0',{'text-anchor':'middle','font-size':15,'font-weight':700,style:'font-family:var(--f-mono);fill:var(--accent-ink)'});}
+  function view(k){v=k;[...seg.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===k));k==='f'?drawF():drawL()}
+  [['f','Mapa físico'],['l','Diagrama lógico']].forEach(([k,t])=>seg.append(h('button',{'data-v':k,'aria-pressed':k===v?'true':'false',onclick:()=>{view(k);hint()}},t)));
+  function hint(){const x=MIS[mi];if(!x)return;if(x.tap)msg(m,'',v==='f'?'Toca la toma en el mapa.':'Esta incidencia se resuelve en el <b>mapa físico</b>: vuelve a «Mapa físico».');else msg(m,'',x.view==='l'&&v!=='l'?'Pulsa «Diagrama lógico» para verlo.':'Elige la respuesta.')}
+  const MIS=[
+    {t:'«El <b>PC04</b> no tiene red.» Toca en el mapa físico la <b>toma de pared</b> a la que va su cable.',view:'f',tap:'T04',ok:'T04. En la tabla: PC04 → T04 → <b>puerto 4</b> del switch. Ya sabes qué cable revisar en el armario.'},
+    {t:'«La impresora no imprime.» ¿A qué <b>puerto del switch</b> llega su cable?',o:['Puerto 23','Puerto 7','Puerto 24'],a:0,ok:'La impresora está en la toma T07, pero en el switch va al puerto 23: por eso hace falta la tabla de conexiones.'},
+    {t:'Vas a configurar un equipo nuevo a mano. ¿Cuál es la <b>puerta de enlace</b> del aula? Mira el diagrama lógico.',view:'l',o:['192.168.10.1','192.168.10.50','192.168.10.0'],a:0,ok:'Es la IP del router del centro: por él se sale a Internet.'},
+    {t:'¿Qué IP tiene el <b>PC-PROF</b>?',o:['192.168.10.50','Por DHCP','192.168.10.60'],a:0,ok:'Los equipos importantes (profesor, impresora, router) tienen IP fija y aparecen en el diagrama lógico.'},
+    {t:'Has cambiado el PC03 del puerto 3 al puerto 12. ¿Qué tienes que hacer?',o:['Actualizar la tabla de conexiones (fecha y versión) y la etiqueta del cable','Nada: el switch ya lo sabe','Borrar el mapa físico'],a:0,ok:'Una documentación que no coincide con la realidad lleva a errores. Cada cambio se anota.'},
+    {t:'Un compañero quiere saber <b>por dónde va el cable</b> del PC01 hasta el armario. ¿Qué dibujo le das?',o:['El mapa físico','El diagrama lógico'],a:0,fixed:1,ok:'El mapa físico es el callejero: dónde está cada cosa y por dónde van los cables. El diagrama lógico es el plano del metro.'}];
+  function drawM(okMsg){ml.innerHTML='';MIS.forEach((x,i)=>ml.append(h('li',{class:i<mi?'done':i===mi?'cur':'',html:x.t})));ask.innerHTML='';
+    if(okMsg)msg(m,'good','✓ '+okMsg);
+    if(mi>=MIS.length){msg(m,'good',(okMsg?'✓ '+okMsg+'<br><br>':'')+'<b>¡Incidencias resueltas!</b> Con un mapa físico, un diagrama lógico y una tabla de conexiones al día, cualquier técnico encuentra un fallo en minutos.');return}
+    const x=MIS[mi];
+    if(x.tap){if(!okMsg)hint();return}
+    if(!okMsg)msg(m,'',x.view==='l'&&v!=='l'?'Pulsa «Diagrama lógico» para verlo.':'Elige la respuesta.');
+    const o=h('div',{class:'k-opts',style:'grid-template-columns:1fr'});(x.fixed?x.o.map((t,i)=>[t,i]):K.shuffle(x.o.map((t,i)=>[t,i]))).forEach(([t,i])=>{const b=h('button',{class:'k-opt',html:t});b.onclick=()=>{if(i===x.a){b.classList.add('ok');[...o.children].forEach(c=>c.setAttribute('disabled',''));setTimeout(()=>{mi++;drawM(x.ok)},500)}else{b.classList.add('ko');b.setAttribute('disabled','');msg(m,'bad','✗ No. Busca el dato en la tabla de conexiones o en el diagrama.')}};o.append(b)});ask.append(o)}
+  function pickT(id,g){const x=MIS[mi];if(!x||!x.tap)return;if(id===x.tap){g.querySelector('.tb').setAttribute('fill','var(--good-bg)');g.querySelector('.tb').setAttribute('stroke','var(--good)');[...body.children].forEach(r=>r.classList.toggle('hl',r.dataset.eq==='PC04'));mi++;drawM(x.ok)}else{msg(m,'bad','✗ Esa es la '+id+'. Busca la toma que está justo encima del PC04.')}}
+  view('f');drawM();
+}
+
+const EQ2=[{eq:'SW-AULA1',c:'Cable',a:'Toma de la red del centro',ip:'—',obs:'Switch del aula, en el armario'},{eq:'ROUTER-AULA1',c:'Cable',a:'SW-AULA1 · puerto 1',ip:'192.168.0.1',obs:'Da Wi‑Fi y reparte las IP'},...[1,2,3].map(i=>({eq:'PC0'+i,c:'Wi‑Fi',a:'ROUTER-AULA1 · red AULA-REDES',ip:'Por DHCP',obs:'Puesto alumno'}))];
+function docLab2(root){
+  root.append(h('p',{class:'lead',html:'Así es <b>nuestra aula</b>: los puestos van por <b>Wi‑Fi</b> al router del aula; el router va por <b>cable</b> al switch, y el switch, a la red del centro. La red es la del aula, <b>192.168.0.0</b>; los nombres de los aparatos y del Wi‑Fi son de ejemplo. Compruébalo con <b>ipconfig /all</b>.'}));
+  const seg=h('div',{class:'seg',role:'group','aria-label':'Vista'});root.append(seg);
+  const wrap=h('div',{class:'k-two',style:'margin-top:14px'});root.append(wrap);
+  const L=h('div'),R=h('div');wrap.append(L,R);
+  const fig=h('div',{class:'k-svgfig'});L.append(fig);
+  const tw=h('div',{class:'k-tblwrap',style:'margin-top:12px'});L.append(h('div',{class:'k-cap'},'Tabla de conexiones ',h('small',{},'nuestra aula')),tw);
+  const tb=h('table',{class:'k-tbl'});tw.append(tb);
+  tb.innerHTML='<thead><tr><th>Equipo</th><th>Cómo se conecta</th><th>Se conecta a</th><th>Dirección IP</th><th>Observaciones</th></tr></thead>';
+  const body=h('tbody');tb.append(body);EQ2.forEach(e=>body.append(h('tr',{},h('td',{class:'pk'},e.eq),h('td',{},e.c),h('td',{},e.a),h('td',{},e.ip),h('td',{},e.obs))));
+  const ml=h('ol',{class:'k-mission'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});const ask=h('div');R.append(h('h3',{},'Incidencias'),ml,m,ask,h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn alt',onclick:()=>{mi=0;view('f');drawM()}},'Empezar de nuevo')));
+  let v='f',mi=0;
+  function hotBox(svg,x,y,w,hh,id,lab,sub,fill){const g=S('g',{tabindex:0,role:'button','aria-label':lab,style:'cursor:pointer'},svg);S('rect',{x,y,width:w,height:hh,rx:8,fill,stroke:'var(--ink)','stroke-width':2.5,class:'tb'},g);T(g,x+w/2,y+(sub?hh/2-3:hh/2+5),lab,{'text-anchor':'middle','font-size':14,'font-weight':700});if(sub)T(g,x+w/2,y+hh/2+15,sub,{'text-anchor':'middle','font-size':12,style:'font-family:var(--f-mono)'});g.addEventListener('click',()=>pick(id,g));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(id,g)}})}
+  function drawF(){const svg=S('svg',{viewBox:'0 0 760 440',role:'img','aria-label':'Mapa físico de nuestra aula: armario con el switch, toma de la red del centro, router Wi‑Fi unido al switch por cable, zona de cobertura Wi‑Fi y puestos de alumnos sin cable'});fig.innerHTML='';fig.append(svg);
+    S('rect',{x:10,y:10,width:740,height:400,fill:'var(--surface)',stroke:'var(--ink)','stroke-width':5},svg);S('rect',{x:300,y:405,width:150,height:10,fill:'var(--bg)'},svg);T(svg,375,432,'PUERTA',{'text-anchor':'middle','font-size':14,'font-weight':700,style:'font-family:var(--f-mono)'});
+    S('ellipse',{cx:470,cy:215,rx:255,ry:165,fill:'var(--warn)',opacity:.08,stroke:'var(--warn)','stroke-width':2.5,'stroke-dasharray':'8 6'},svg);T(svg,640,385,'cobertura Wi‑Fi',{'text-anchor':'middle','font-size':12,style:'fill:var(--warn);font-family:var(--f-mono);font-weight:700'});
+    S('rect',{x:16,y:150,width:26,height:22,rx:3,fill:'var(--accent-ink)'},svg);T(svg,48,166,'red del centro',{'font-size':12,style:'font-family:var(--f-mono);fill:var(--accent-ink);font-weight:700'});
+    S('path',{d:'M29 150 V100',stroke:'var(--accent-ink)','stroke-width':5,fill:'none'},svg);S('path',{d:'M150 62 H250',stroke:'var(--accent-ink)','stroke-width':5,fill:'none'},svg);T(svg,200,52,'cable',{'text-anchor':'middle','font-size':12,style:'font-family:var(--f-mono);fill:var(--accent-ink)'});
+    hotBox(svg,24,30,126,70,'SW','ARMARIO','SW-AULA1','var(--chip)');
+    hotBox(svg,250,34,140,56,'RT','ROUTER-AULA1','Wi‑Fi','var(--surface)');
+    for(let r=0;r<2;r++)for(let i=0;i<4;i++){const x=300+i*100,y=150+r*95,n=r*4+i+1;S('rect',{x,y,width:78,height:48,rx:6,fill:'var(--bg)',stroke:'var(--line)','stroke-width':2},svg);T(svg,x+39,y+30,'PC0'+n,{'text-anchor':'middle','font-size':15,'font-weight':700})}
+    S('rect',{x:40,y:320,width:190,height:62,rx:6,fill:'none',stroke:'var(--line)','stroke-width':2,'stroke-dasharray':'6 5'},svg);T(svg,135,357,'mesa del profesor',{'text-anchor':'middle','font-size':13,style:'fill:var(--muted)'});}
+  function drawL(){const svg=S('svg',{viewBox:'0 0 760 440',role:'img','aria-label':'Diagrama lógico de nuestra aula: red del centro, switch del aula, router Wi‑Fi del aula y puestos conectados por Wi‑Fi'});fig.innerHTML='';fig.append(svg);
+    const b=(x,y,w,t,s2,c)=>{S('rect',{x:x-w/2,y,width:w,height:58,rx:10,fill:c||'var(--surface)',stroke:'var(--ink)','stroke-width':2.5},svg);T(svg,x,y+25,t,{'text-anchor':'middle','font-size':16,'font-weight':700});if(s2)T(svg,x,y+46,s2,{'text-anchor':'middle','font-size':13,style:'font-family:var(--f-mono)'})};
+    S('path',{d:'M380 76 V110 M380 168 V200',stroke:'var(--ink)','stroke-width':3,fill:'none'},svg);S('path',{d:'M380 258 V320',stroke:'var(--warn)','stroke-width':4,'stroke-dasharray':'9 7',fill:'none'},svg);T(svg,392,295,'Wi‑Fi',{'font-size':13,style:'fill:var(--warn);font-family:var(--f-mono);font-weight:700'});
+    S('ellipse',{cx:380,cy:46,rx:150,ry:30,fill:'var(--chip)',stroke:'var(--accent-ink)','stroke-width':2.5},svg);T(svg,380,52,'Red del centro e Internet',{'text-anchor':'middle','font-size':16,'font-weight':700});
+    b(380,110,250,'SW-AULA1','switch del aula','var(--l-eth)');b(380,200,290,'ROUTER-AULA1','192.168.0.1 · puerta de enlace','var(--l-ip)');
+    b(380,320,420,'Puestos PC01, PC02…','Wi‑Fi «AULA-REDES» · IP por DHCP');
+    T(svg,380,420,'Red del aula: 192.168.0.0 / 255.255.255.0',{'text-anchor':'middle','font-size':15,'font-weight':700,style:'font-family:var(--f-mono);fill:var(--accent-ink)'});}
+  function view(k){v=k;[...seg.children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===k));k==='f'?drawF():drawL()}
+  [['f','Mapa físico'],['l','Diagrama lógico']].forEach(([k,t])=>seg.append(h('button',{'data-v':k,'aria-pressed':k===v?'true':'false',onclick:()=>{view(k);hint()}},t)));
+  const MIS=[
+    {t:'Toca en el mapa físico el aparato que da el <b>Wi‑Fi</b> a los puestos.',tap:'RT',bad:'Ese es el switch: está en el armario y va por cable. Busca el aparato del que sale la cobertura Wi‑Fi.',ok:'El ROUTER-AULA1. Los puestos no llevan cable: se conectan a él por Wi‑Fi.'},
+    {t:'«Solo el <b>PC03</b> no tiene Internet; los demás, sí.» ¿Dónde está el problema?',o:['En el propio PC03: su Wi‑Fi está desconectado o conectado a otra red','En el cable del switch al router','En la red del centro'],a:0,ok:'Si los demás funcionan, el router, el switch y la red del centro van bien. Se revisa la conexión Wi‑Fi del PC03.'},
+    {t:'«<b>Ningún</b> PC tiene Internet, pero todos siguen conectados al Wi‑Fi.» ¿Qué tramo revisas?',o:['Desde el router hacia fuera: el cable router–switch, el switch y su cable a la red del centro','La tarjeta Wi‑Fi de todos los PC','Los monitores'],a:0,ok:'El Wi‑Fi funciona, así que el fallo está en el camino de salida: mira el mapa físico y sigue los cables del router al switch y del switch a la red del centro.'},
+    {t:'Vas a añadir el <b>PC05</b> a la tabla de conexiones. ¿Qué pones en «Se conecta a»?',o:['ROUTER-AULA1 · red AULA-REDES (va por Wi‑Fi)','SW-AULA1 · puerto 5','Toma T05'],a:0,ok:'Un puesto por Wi‑Fi no tiene toma ni puerto del switch: se anota la red Wi‑Fi y el router.'},
+    {t:'¿Cuál es la <b>puerta de enlace</b> de los puestos? Mira el diagrama lógico.',view:'l',o:['192.168.0.1, el router del aula','La IP del switch','La red del centro'],a:0,ok:'Los puestos salen por el router del aula. Compruébalo con ipconfig /all: aparece como «Puerta de enlace predeterminada».'},
+    {t:'Se apaga el <b>switch</b>. ¿Qué pasa con los puestos?',o:['Siguen conectados al Wi‑Fi, pero sin salida a la red del centro ni a Internet','Se apaga el Wi‑Fi','Nada: todo sigue igual'],a:0,ok:'El router sigue dando Wi‑Fi, pero ha perdido el camino hacia fuera. Por eso el switch es un punto débil del aula.'},
+    {t:'¿En qué dibujo se ve <b>hasta dónde llega</b> el Wi‑Fi?',o:['En el mapa físico','En el diagrama lógico'],a:0,fixed:1,ok:'La cobertura es algo físico: depende de dónde está el router, las paredes y la distancia.'}];
+  function hint(){const x=MIS[mi];if(!x)return;if(x.tap)msg(m,'',v==='f'?'Toca el aparato en el mapa.':'Esta incidencia se resuelve en el <b>mapa físico</b>: vuelve a «Mapa físico».');else msg(m,'',x.view==='l'&&v!=='l'?'Pulsa «Diagrama lógico» para verlo.':'Elige la respuesta.')}
+  function drawM(okMsg){ml.innerHTML='';MIS.forEach((x,i)=>ml.append(h('li',{class:i<mi?'done':i===mi?'cur':'',html:x.t})));ask.innerHTML='';
+    if(okMsg)msg(m,'good','✓ '+okMsg);
+    if(mi>=MIS.length){msg(m,'good',(okMsg?'✓ '+okMsg+'<br><br>':'')+'<b>¡Incidencias resueltas!</b> En un aula con Wi‑Fi también hace falta documentar: dónde están el router y el switch, por dónde van los pocos cables que hay y cómo se sale a Internet.');return}
+    const x=MIS[mi];if(x.tap){if(!okMsg)hint();return}
+    if(!okMsg)hint();
+    const o=h('div',{class:'k-opts',style:'grid-template-columns:1fr'});(x.fixed?x.o.map((t,i)=>[t,i]):K.shuffle(x.o.map((t,i)=>[t,i]))).forEach(([t,i])=>{const b=h('button',{class:'k-opt',html:t});b.onclick=()=>{if(i===x.a){b.classList.add('ok');[...o.children].forEach(c=>c.setAttribute('disabled',''));setTimeout(()=>{mi++;drawM(x.ok)},500)}else{b.classList.add('ko');b.setAttribute('disabled','');msg(m,'bad','✗ No. Mira el dibujo y la tabla de conexiones.')}};o.append(b)});ask.append(o)}
+  function pick(id,g){const x=MIS[mi];if(!x||!x.tap)return;if(id===x.tap){g.querySelector('.tb').setAttribute('fill','var(--good-bg)');g.querySelector('.tb').setAttribute('stroke','var(--good)');mi++;drawM(x.ok)}else msg(m,'bad','✗ '+x.bad)}
+  view('f');drawM();
+}
+acts(document.getElementById('r-doc'),[
+  {label:'Aula de ejemplo (cable)',render:docLab},
+  {label:'Nuestra aula (Wi‑Fi)',render:docLab2},
+  {label:'¿Físico o lógico?',render:el=>sort(el,{intro:'¿Este dato aparece en el **mapa físico** o en el **diagrama lógico**?',buckets:[{id:'f',name:'Mapa físico',sub:'¿dónde está y por dónde va el cable?'},{id:'l',name:'Diagrama lógico',sub:'¿cómo se comunican y cómo están configurados?'}],
+    items:[{t:'Posición de cada mesa y cada PC',b:'f'},{t:'Tomas de pared numeradas (T01, T02…)',b:'f'},{t:'Recorrido de la canaleta',b:'f'},{t:'Dónde está el armario de comunicaciones',b:'f'},{t:'Puertas y ventanas del aula',b:'f'},{t:'Dirección IP del router',b:'l'},{t:'Puerta de enlace',b:'l'},{t:'«PC01 a PC24» en un solo bloque',b:'l',why:'se agrupan los equipos con la misma configuración.'},{t:'Conexión con Internet',b:'l'},{t:'Dirección de la red: 192.168.10.0',b:'l'}]})},
+  {label:'Normas y aplicaciones',render:el=>quiz(el,{intro:'Símbolos, etiquetas y aplicaciones para documentar una red.',questions:[
+    {q:'¿Qué aplicación gratuita funciona en el navegador y es la que se usa en este módulo?',o:['diagrams.net (draw.io)','Microsoft Visio','Cisco Packet Tracer','Dia'],a:0,why:'Se abre en app.diagrams.net, sin instalar nada.'},
+    {q:'¿Qué es Cisco Packet Tracer?',o:['Un simulador de redes; requiere cuenta gratuita de Cisco Networking Academy','Una aplicación de dibujo de pago','Un antivirus'],a:0,why:'Permite montar redes virtuales, configurarlas y probarlas. Se usará más adelante.'},
+    {q:'¿Con qué extensión guarda diagrams.net sus diagramas?',o:['.drawio','.docx','.pkt'],a:0,why:'Y se pueden exportar como PNG o PDF.'},
+    {q:'En el mapa la toma se llama T05. ¿Qué debe poner en la pared?',o:['Una etiqueta T05','Nada','El nombre del alumno'],a:0,why:'Se etiqueta en la realidad lo mismo que en el dibujo.'},
+    {q:'¿Qué comando muestra la dirección IPv4 y la puerta de enlace de tu equipo?',o:['ipconfig /all','ping','cls'],a:0,why:'Así recoges los datos lógicos para el diagrama.'},
+    {q:'¿Qué debe llevar siempre la documentación?',o:['Leyenda, fecha, autor y versión','Solo el dibujo','La contraseña del Wi-Fi'],a:0,why:'Una documentación antigua que no coincide con la realidad lleva a errores.'},
+    {q:'¿Qué aplicación de diagramas es software libre y se instala en el equipo?',o:['Dia','Microsoft Visio','diagrams.net'],a:0,why:'Es una alternativa sin conexión a Internet. Visio es de pago.'}]})}]);
+})();
+
+</script>
+
+</body></html>

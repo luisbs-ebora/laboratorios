@@ -1,0 +1,995 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Laboratorio de Aplicaciones Web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
+<style>
+/* Layout: cabecera con pestañas grandes para pizarra táctil; cada pestaña es una demostración a pantalla completa con controles grandes debajo del dibujo. Paleta tomada de las presentaciones de clase (azul marino y cian). */
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --ink:#0E1B32; --muted:#55697C; --line:#C9D5DF;
+  --accent:#00B8CF; --accent-ink:#17627C; --chip:#DFF5F9; --warn:#C9741F; --warn-bg:#FCE6CC;
+  --bad:#C2412D; --bad-bg:#FBE1DC; --good:#1F8A5B; --good-bg:#DDF2E7;
+  --lamp:#FFC93C; --lamp-glow:rgba(255,201,60,.55); --lamp-off:#DCE3EA;
+  --l-app:#FBE3C4; --l-tcp:#CFEAF7; --l-ip:#D9EBD0; --l-eth:#E6DCF4;
+  --f-head:'Poppins',system-ui,sans-serif; --f-body:'Open Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.5 var(--f-body)}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-top:6px solid var(--accent);padding-top:18px}
+.eyebrow{font:600 13px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font:700 clamp(28px,4vw,40px)/1.1 var(--f-head);margin:6px 0 0;text-wrap:balance}
+.speed{display:flex;align-items:center;gap:10px;font:600 15px var(--f-body);color:var(--muted)}
+nav.tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:20px 0 22px}
+.tab{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:12px 14px;background:var(--surface);border:2px solid var(--line);border-radius:10px;min-width:0}
+.tab b{font:600 17px/1.25 var(--f-head)}
+.tab span{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em}
+.tab[aria-selected="true"]{border-color:var(--accent);background:var(--chip)}
+.tab:focus-visible,.btn:focus-visible,.seg button:focus-visible,.bulb:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px clamp(16px,3vw,30px) 26px}
+.panel h2{font:700 clamp(24px,3vw,30px)/1.2 var(--f-head);margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:6px 0 18px;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{all:unset;cursor:pointer;font:600 17px var(--f-head);padding:12px 20px;border-radius:10px;background:var(--ink);color:var(--surface);text-align:center}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn[disabled]{opacity:.4;cursor:default}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:10px 18px;font:600 16px var(--f-head)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+input[type=number],select{font:600 20px var(--f-mono);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:7.5em}
+select{width:auto}
+label.lbl{font:600 15px var(--f-body);color:var(--muted)}
+.note{background:var(--chip);border-radius:10px;padding:14px 18px;margin-top:18px;max-width:80ch}
+.note b{font-family:var(--f-head)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.svgbox{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.svgbox svg{display:block;width:100%;min-width:560px;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+.mono{font-family:var(--f-mono)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.log li{padding:10px 12px;border-left:4px solid var(--accent);background:var(--bg);border-radius:6px;font-size:16px}
+.log li.bad{border-color:var(--bad);background:var(--bad-bg)}
+.log li.good{border-color:var(--good);background:var(--good-bg)}
+.log li.warn{border-color:var(--warn);background:var(--warn-bg)}
+.side h3{font:600 15px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--accent-ink);margin:0 0 10px}
+
+/* Bits */
+.bulbs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;max-width:900px}
+.bulb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0 12px;border-radius:12px;border:2px solid var(--line);background:var(--bg)}
+.bulb .w{font:700 clamp(15px,2.2vw,22px) var(--f-mono);color:var(--muted)}
+.bulb .lamp{width:clamp(34px,6vw,64px);aspect-ratio:1;border-radius:50%;background:var(--lamp-off);border:3px solid var(--line);transition:background .2s,box-shadow .2s}
+.bulb .bit{font:700 clamp(22px,3.4vw,36px) var(--f-mono)}
+.bulb.on{border-color:var(--lamp)}
+.bulb.on .lamp{background:var(--lamp);box-shadow:0 0 22px 6px var(--lamp-glow);border-color:var(--lamp)}
+.bulb.on .w{color:var(--ink)}
+.nibbles{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:900px;margin-top:8px}
+.nibbles div{text-align:center;font:600 16px var(--f-mono);border-top:4px solid var(--accent);padding-top:6px;color:var(--muted)}
+.nibbles strong{color:var(--ink);font-size:22px}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:20px 0;max-width:900px}
+.ro{background:var(--bg);border-radius:10px;padding:10px 14px;min-width:0}
+.ro small{display:block;font:600 13px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ro div{font:700 26px var(--f-mono);overflow-wrap:anywhere}
+.ro.big div{font-size:44px;line-height:1.1}
+.sum{font:600 20px var(--f-mono);margin:4px 0 0;color:var(--accent-ink);overflow-wrap:anywhere}
+.target{font:700 20px var(--f-head);padding:8px 14px;border-radius:8px;background:var(--warn-bg)}
+.target.ok{background:var(--good-bg);color:var(--good)}
+
+/* Divisiones */
+.divs{display:flex;flex-direction:column;gap:6px;margin:18px 0;font:600 clamp(18px,2.6vw,26px) var(--f-mono)}
+.divs .r{display:flex;gap:14px;align-items:center}
+.divs .r.new,.blk.new{animation:pop .3s ease-out}
+.divs .rest{display:inline-block;min-width:2.2em;text-align:center;padding:2px 8px;border-radius:6px;background:var(--warn-bg);color:var(--ink)}
+.result{font:700 clamp(22px,3vw,30px) var(--f-mono);padding:12px 16px;border-radius:10px;background:var(--good-bg);display:inline-block}
+@keyframes pop{from{opacity:.2;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* URL */
+.browser{border:2px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.browser .bar{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:2px solid var(--line);background:var(--surface);font:600 15px var(--f-mono);min-width:0}
+.browser .bar .lock{width:22px;text-align:center}
+.browser .bar .addr{flex:1;min-width:0;overflow-wrap:anywhere}
+.browser .page{min-height:150px;padding:16px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.urlparts{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.urlparts span{font:600 15px var(--f-mono);padding:4px 8px;border-radius:6px}
+.explain{font-size:18px;margin:14px 0 0}
+.f12{font:600 14px var(--f-mono);color:var(--accent-ink);margin-top:8px}
+
+/* Encapsulamiento */
+.encap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.encap{grid-template-columns:1fr 1fr}.encap .mid{grid-column:1/-1;order:3}}
+.stack{display:flex;flex-direction:column;gap:6px}
+.stack .tt{font:600 14px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:center}
+.layer{padding:10px;border-radius:8px;border:2px solid var(--line);text-align:center;font:600 16px var(--f-head);background:var(--bg)}
+.layer small{display:block;font:400 12px var(--f-mono);color:var(--muted)}
+.layer.cur{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.mid{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.pdu{font:700 24px var(--f-head);text-align:center}
+.packet{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;min-height:120px;align-items:stretch}
+.blk{border-radius:8px;padding:8px 10px;font:600 14px/1.3 var(--f-mono);border:2px solid var(--line);min-width:0;display:flex;flex-direction:column;justify-content:center}
+.blk b{font-family:var(--f-head);font-size:15px}
+.blk.app{background:var(--l-app);flex:2 1 110px}
+.blk.tcp{background:var(--l-tcp);flex:1 1 100px}
+.blk.ip{background:var(--l-ip);flex:1 1 120px}
+.blk.eth,.blk.fcs{background:var(--l-eth);flex:1 1 120px}
+.blk.fcs{flex:0 1 60px}
+.blk.bits{flex:1 1 100%;background:var(--bg);overflow-wrap:anywhere;letter-spacing:.06em}
+.dir{font:600 15px var(--f-mono);text-align:center;color:var(--accent-ink)}
+.size{font:600 15px var(--f-mono);text-align:center;color:var(--muted)}
+
+/* Internet humano */
+.scen{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.scen button{all:unset;cursor:pointer;padding:9px 14px;border:2px solid var(--line);border-radius:999px;font:600 15px var(--f-head);background:var(--bg)}
+.scen button[aria-pressed="true"]{border-color:var(--accent);background:var(--chip)}
+.scen button:focus-visible,.opt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.qcard{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:16px}
+.qcard .qh{font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.07em;color:var(--accent-ink)}
+.qcard .qt{font:700 clamp(19px,2.4vw,23px)/1.3 var(--f-head);margin:6px 0 12px;text-wrap:balance}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.opt{all:unset;cursor:pointer;padding:12px 14px;border:2px solid var(--line);border-radius:10px;background:var(--surface);font:600 17px/1.35 var(--f-body)}
+.opt.ok{border-color:var(--good);background:var(--good-bg)}
+.opt.no{border-color:var(--bad);background:var(--bad-bg)}
+.opt[disabled]{cursor:default}
+.fb{margin:12px 0 0;font-size:18px}
+.fb.ok b{color:var(--good)} .fb.no b{color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.photos{display:flex;gap:8px;margin-top:6px}
+.photos span{flex:1;aspect-ratio:4/3;max-width:100%;border-radius:6px;background:var(--l-ip);display:grid;place-items:center;font:600 13px var(--f-mono)}
+
+/* ===== Kit de actividades (clasificar, ordenar, test) ===== */
+.k-acts{margin:0 0 18px}
+.k-stage{min-height:120px}
+.k-msg{border-radius:12px;padding:12px 16px;background:var(--bg);border:2px solid var(--line);font-size:17px;margin:12px 0;min-height:52px}
+.k-msg.good{background:var(--good-bg);border-color:var(--good)}
+.k-msg.bad{background:var(--bad-bg);border-color:var(--bad)}
+.k-msg.warn{background:var(--warn-bg);border-color:var(--warn)}
+.k-msg b{font-family:var(--f-head)}
+.k-score{font:600 15px var(--f-mono);color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.k-score b{color:var(--ink)}
+.k-pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:2px dashed var(--line);border-radius:12px;min-height:64px;background:var(--bg);margin:10px 0 14px}
+.k-pool:empty::after{content:'¡Todas colocadas!';font:600 16px var(--f-head);color:var(--good);padding:8px}
+.k-chip{all:unset;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;padding:9px 13px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font:600 16px/1.3 var(--f-body);max-width:100%;overflow-wrap:anywhere}
+.k-chip.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-chip.ok{background:var(--good-bg);border-color:var(--good);cursor:default}
+.k-chip.shake{animation:kshake .35s}
+.k-chip:focus-visible,.k-bucket:focus-visible,.k-opt:focus-visible,.k-oi:focus-visible,.k-tok:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.k-ghost{position:fixed;z-index:50;pointer-events:none;opacity:.92;transform:translate(-50%,-50%) scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.k-buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.k-bucket{border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);min-height:120px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0}
+.k-bucket.over{border-color:var(--accent);background:var(--chip)}
+.k-bucket.armed{border-style:dashed;border-color:var(--accent)}
+.k-bucket h4{margin:0 0 4px;font:700 17px/1.2 var(--f-head)}
+.k-bucket h4 small{display:block;font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em;margin-top:2px}
+.k-bucket .k-chip{font-size:14px;padding:6px 9px}
+@keyframes kshake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.k-olist{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:860px}
+.k-oi{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.k-oi .n{font:700 18px var(--f-mono);color:var(--muted);min-width:1.6em;text-align:center}
+.k-oi .t{font:600 17px/1.35 var(--f-body)}
+.k-oi .t small{display:block;font-weight:400;color:var(--muted);font-size:14px}
+.k-oi .mv{display:flex;gap:4px}
+.k-oi .mv button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:8px;border:2px solid var(--line);text-align:center;font:700 18px/34px var(--f-mono);background:var(--bg)}
+.k-oi.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-oi.ok{border-color:var(--good);background:var(--good-bg)}
+.k-oi.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-olabel{font:600 13px var(--f-mono);color:var(--accent-ink);text-transform:uppercase;letter-spacing:.06em}
+.k-q{max-width:900px}
+.k-q .qn{font:600 14px var(--f-mono);color:var(--muted)}
+.k-q .qt{font:700 clamp(20px,2.4vw,24px)/1.3 var(--f-head);margin:6px 0 14px;text-wrap:pretty}
+.k-q .qfig{margin:0 0 14px}
+.k-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.k-opt{all:unset;cursor:pointer;padding:14px 16px;border:2px solid var(--line);border-radius:10px;background:var(--surface);font:600 17px/1.35 var(--f-body)}
+.k-opt:hover{border-color:var(--accent)}
+.k-opt.ok{border-color:var(--good);background:var(--good-bg)}
+.k-opt.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-opt[disabled]{cursor:default}
+.k-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:6px 0 12px;max-width:900px}
+.k-bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.k-end{font:700 24px var(--f-head);margin:8px 0}
+.k-two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+.k-two.wide{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr)}
+@media (max-width:900px){.k-two,.k-two.wide{grid-template-columns:minmax(0,1fr)}}
+.k-two>*{min-width:0}
+.k-tok{all:unset;cursor:pointer;font:700 clamp(18px,2.4vw,26px) var(--f-mono);padding:8px 12px;border-radius:8px;border:2px solid var(--line);background:var(--surface)}
+.k-tok.seen{background:var(--chip);border-color:var(--accent)}
+.k-tok.sel{box-shadow:0 0 0 3px var(--accent)}
+.k-toks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.k-tbl{border-collapse:collapse;font-size:16px;width:100%}
+.k-tbl th,.k-tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+.k-tbl th{background:var(--bg);font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.k-tbl tr.hl td{background:var(--warn-bg)}
+.k-tbl tr.new td{background:var(--good-bg);animation:pop .4s}
+.k-tbl td.fk,.k-tbl td.pk{font-family:var(--f-mono);font-weight:700}
+.k-tbl td.fk button{all:unset;cursor:pointer;color:var(--accent-ink);text-decoration:underline;text-underline-offset:3px}
+.k-tbl td.chg{background:var(--good-bg);font-weight:700}
+.k-tblwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.k-cap{font:700 16px var(--f-head);margin:14px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.k-cap small{font:600 12px var(--f-mono);color:var(--muted)}
+.k-mission{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.k-mission li{padding:10px 12px;border-radius:8px;background:var(--bg);border-left:4px solid var(--line);font-size:16px}
+.k-mission li.cur{border-color:var(--accent);background:var(--chip)}
+.k-mission li.done{border-color:var(--good);background:var(--good-bg)}
+.k-mission li.done::before{content:'✓ ';font-weight:700;color:var(--good)}
+.k-term{background:#0C1220;color:#D8E1EA;border-radius:12px;padding:14px 16px;font:500 15px/1.5 var(--f-mono);min-height:340px;max-height:460px;overflow:auto;border:2px solid var(--line)}
+.k-term .pr{color:#7FE3A0}
+.k-term .ps{color:#7CC4FF}
+.k-term .er{color:#FF9C8C}
+.k-term .wn{color:#FFD27A}
+.k-term pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+.k-term .in{display:flex;gap:8px;align-items:center}
+.k-term input{all:unset;flex:1;min-width:0;color:#fff;caret-color:#7FE3A0}
+.k-chips2{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.k-chips2 button{all:unset;cursor:pointer;font:600 14px var(--f-mono);padding:6px 10px;border-radius:8px;border:2px solid var(--line);background:var(--bg)}
+.k-chips2 button:focus-visible{outline:3px solid var(--accent)}
+.k-dm{border:2px solid var(--line);border-radius:10px;background:var(--surface);font:400 15px var(--f-body);overflow:hidden}
+.k-dm .tb{background:var(--bg);padding:6px 10px;border-bottom:1px solid var(--line);font:600 14px var(--f-body)}
+.k-dm ul{list-style:none;margin:0;padding:4px 0 8px}
+.k-dm li{margin:0}
+.k-dm .cat,.k-dm .dev{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;padding:5px 10px;width:100%;box-sizing:border-box}
+.k-dm .dev{padding-left:34px}
+.k-dm .cat:hover,.k-dm .dev:hover{background:var(--chip)}
+.k-dm .dev.sel{background:var(--chip);outline:2px solid var(--accent);outline-offset:-2px}
+.k-dm .ic{width:18px;height:18px;flex:none}
+.k-dm .car{width:14px;font:700 13px var(--f-mono);color:var(--muted)}
+.k-props{border:2px solid var(--line);border-radius:10px;background:var(--surface)}
+.k-props .ptabs{display:flex;border-bottom:2px solid var(--line)}
+.k-props .ptabs button{all:unset;cursor:pointer;padding:8px 14px;font:600 15px var(--f-body)}
+.k-props .ptabs button[aria-pressed="true"]{background:var(--chip);box-shadow:inset 0 -3px 0 var(--accent)}
+.k-props .pbody{padding:14px 16px;font-size:16px;min-height:170px}
+.k-props .pbody .mono{background:var(--bg);padding:8px 10px;border-radius:6px;display:block;overflow-wrap:anywhere;margin-top:6px}
+.k-svgfig{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.k-svgfig svg{display:block;width:100%;height:auto}
+.seg.k-acts,.k-stage .seg{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%}
+.k-q .qt b{color:var(--accent-ink)}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Tema 1 · Aplicaciones web · TSMR</div>
+    <h1>Laboratorio de Aplicaciones Web</h1>
+  </div>
+  <label class="speed" for="slow"><input type="checkbox" id="slow"> Ritmo lento en las animaciones</label>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Demostraciones">
+  <button class="tab" role="tab" id="t-inet" aria-controls="p-inet" aria-selected="false"><b>Internet, intranet y extranet</b><span>Sesión 1 · Internet y sus servicios</span></button>
+  <button class="tab" role="tab" id="t-ih" aria-controls="p-ih" aria-selected="true"><b>Internet humano</b><span>Cliente, DNS, routers y servidor</span></button>
+  <button class="tab" role="tab" id="t-url" aria-controls="p-url" aria-selected="false"><b>¿Qué pasa al escribir una URL?</b><span>DNS, TCP, TLS y HTTP</span></button>
+  <button class="tab" role="tab" id="t-srv" aria-controls="p-srv" aria-selected="false"><b>Dentro del servidor web</b><span>Sesión 3 · servidor web, aplicación y base de datos</span></button>
+  <button class="tab" role="tab" id="t-bd" aria-controls="p-bd" aria-selected="false"><b>La base de datos de la tienda</b><span>Sesión 4 · tablas, claves y relaciones</span></button>
+  <button class="tab" role="tab" id="t-tend" aria-controls="p-tend" aria-selected="false"><b>Tendencias de Internet</b><span>Sesión 5 · web 2.0/3.0, nube, IA, privacidad</span></button>
+</nav>
+
+<section class="panel" id="p-ih" role="tabpanel" aria-labelledby="t-ih">
+  <h2>Internet humano</h2>
+  <p class="lead">Elige una situación. En cada paso, la clase decide qué pasa ahora; al acertar, se ve el mensaje viajar por la red. Los nombres y las IP son de ejemplo.</p>
+  <div class="scen" id="ihscen" role="group" aria-label="Situación"></div>
+  <div class="row" style="margin-bottom:14px">
+    <div class="seg" role="group" aria-label="Modo">
+      <button id="ihmGame" aria-pressed="true">Modo juego</button>
+      <button id="ihmDemo" aria-pressed="false">Modo demostración</button>
+    </div>
+    <button class="btn alt" id="ihreset">Empezar de nuevo</button>
+  </div>
+  <div class="grid2">
+    <div>
+      <div class="svgbox"><svg id="ihsvg" viewBox="0 0 900 500" role="img" aria-label="Red con el navegador, dos routers, el servidor DNS y el servidor web"></svg></div>
+      <div class="qcard" id="ihq" aria-live="polite"></div>
+    </div>
+    <div class="side">
+      <div class="browser">
+        <div class="bar"><span class="lock" id="ihlock">⌕</span><span class="addr" id="ihaddr"></span></div>
+        <div class="page" id="ihpage"></div>
+      </div>
+      <div class="stats">
+        <div class="ro"><small>Peticiones al DNS</small><div id="ihnd">0</div></div>
+        <div class="ro"><small>Peticiones al servidor web</small><div id="ihnw">0</div></div>
+        <div class="ro"><small>Aciertos</small><div id="ihok">0</div></div>
+        <div class="ro"><small>Fallos</small><div id="ihko">0</div></div>
+      </div>
+      <h3 style="margin-top:18px">Mensajes enviados</h3>
+      <ol class="log" id="ihlog"></ol>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- 4. URL -->
+<section class="panel" id="p-url" role="tabpanel" aria-labelledby="t-url" hidden>
+  <h2>¿Qué pasa al escribir una URL?</h2>
+  <p class="lead">Desde que pulsas Intro hasta que ves la página hay varias peticiones y respuestas. Avanza paso a paso. La dirección y la IP son de ejemplo.</p>
+  <div class="row" style="margin-bottom:14px">
+    <button class="btn alt" id="uprev">◀ Anterior</button>
+    <button class="btn" id="unext">Siguiente ▶</button>
+    <button class="btn alt" id="ureset">Empezar de nuevo</button>
+    <label class="speed" for="u404"><input type="checkbox" id="u404"> La página no existe</label>
+  </div>
+  <div class="grid2">
+    <div class="svgbox"><svg id="usvg" viewBox="0 0 900 720" role="img" aria-label="Diagrama de mensajes entre navegador, servidor DNS y servidor web"></svg></div>
+    <div class="side">
+      <div class="browser">
+        <div class="bar"><span class="lock" id="ulock">⌕</span><span class="addr" id="uaddr">https://tienda.example.com/ofertas</span></div>
+        <div class="page" id="upage"></div>
+      </div>
+      <p class="explain" id="utext"></p>
+      <div class="f12" id="uf12"></div>
+    </div>
+  </div>
+</section>
+<section class="panel" id="p-inet" role="tabpanel" hidden>
+  <h2>Internet, intranet y extranet</h2>
+  <div id="r-inet"></div>
+</section>
+
+<section class="panel" id="p-bd" role="tabpanel" hidden>
+  <h2>La base de datos de la tienda</h2>
+  <div id="r-bd"></div>
+</section>
+
+<section class="panel" id="p-srv" role="tabpanel" hidden>
+  <h2>Dentro del servidor web</h2>
+  <div id="r-srv"></div>
+</section>
+
+<section class="panel" id="p-tend" role="tabpanel" hidden>
+  <h2>Tendencias de Internet</h2>
+  <div id="r-tend"></div>
+</section>
+
+
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const slowBox=$('#slow');
+const T=ms=>reduce?Math.min(ms,120):ms*(slowBox.checked?1.9:1);
+const sleep=ms=>new Promise(r=>setTimeout(r,T(ms)));
+function S(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function txt(parent,x,y,s,attrs={}){const e=S('text',Object.assign({x,y},attrs),parent);e.textContent=s;return e}
+// Mueve una ficha (círculo + etiqueta) de un punto a otro
+function token(svg,x1,y1,x2,y2,{label='',color='var(--accent)',dur=700,r=12}={}){
+  return new Promise(res=>{
+    const g=S('g',{},svg);
+    S('circle',{r,fill:color,stroke:'var(--surface)','stroke-width':3},g);
+    if(label){const t=txt(g,0,-r-8,label,{'text-anchor':'middle','font-size':17,'font-weight':700});t.style.fontFamily='var(--f-mono)'}
+    const d=T(dur),t0=performance.now();
+    function f(now){const k=Math.min(1,(now-t0)/d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      g.setAttribute('transform',`translate(${x1+(x2-x1)*e},${y1+(y2-y1)*e})`);
+      if(k<1)requestAnimationFrame(f);else{g.remove();res()}}
+    requestAnimationFrame(f);
+  });
+}
+
+
+
+// ---------- Pestañas ----------
+(function(){
+  const tabs=[...document.querySelectorAll('nav.tabs .tab')];
+  function show(id){tabs.forEach(t=>{const on=t.getAttribute('aria-controls')===id;t.setAttribute('aria-selected',on);document.getElementById(t.getAttribute('aria-controls')).hidden=!on})}
+  tabs.forEach(t=>t.onclick=()=>{show(t.getAttribute('aria-controls'));try{history.replaceState(null,'','#'+t.id.slice(2))}catch(e){}});
+  const h=(location.hash||'').slice(1);show(h&&document.getElementById('p-'+h)?'p-'+h:'p-ih');
+})();
+
+// ---------- Internet humano ----------
+(function(){
+  const svg=$('#ihsvg');
+  const N={cli:{x:100,y:250,a:'Navegador',b:'tu PC · 192.168.1.20'},r1:{x:320,y:250,a:'Router del aula',b:'reenvía'},r2:{x:540,y:250,a:'Router del operador',b:'reenvía'},
+           dns:{x:790,y:90,a:'Servidor DNS',b:'192.0.2.53'},web:{x:790,y:410,a:'Servidor web',b:'203.0.113.10'}};
+  const IP={dns:'192.0.2.53',web:'203.0.113.10',cli:'192.168.1.20'};
+  const ROUTE={cli:{dns:['cli','r1','r2','dns'],web:['cli','r1','r2','web']}};
+  const route=(f,t)=>ROUTE[f]?ROUTE[f][t]:ROUTE[t][f].slice().reverse();
+  [['cli','r1'],['r1','r2'],['r2','dns'],['r2','web']].forEach(([a,b])=>S('line',{x1:N[a].x,y1:N[a].y,x2:N[b].x,y2:N[b].y,stroke:'var(--line)','stroke-width':5,'stroke-linecap':'round'},svg));
+  const nodeG={};
+  Object.entries(N).forEach(([k,n])=>{
+    const g=S('g',{},svg);nodeG[k]=g;
+    const w=k[0]==='r'?200:190;
+    S('rect',{x:n.x-w/2,y:n.y-34,width:w,height:68,rx:k[0]==='r'?34:10,fill:'var(--surface)',stroke:k[0]==='r'?'var(--muted)':'var(--accent)','stroke-width':3},g);
+    txt(g,n.x,n.y-4,n.a,{'text-anchor':'middle','font-size':18,'font-weight':700});
+    const s=txt(g,n.x,n.y+20,n.b,{'text-anchor':'middle','font-size':13,fill:'var(--muted)'});s.style.fontFamily='var(--f-mono)';
+  });
+  const offMark=S('g',{opacity:0},svg);
+  S('rect',{x:N.web.x-95,y:N.web.y-34,width:190,height:68,rx:10,fill:'var(--bg)',opacity:.8},offMark);
+  txt(offMark,N.web.x,N.web.y+6,'APAGADO',{'text-anchor':'middle','font-size':20,'font-weight':700,fill:'var(--bad)'});
+  const bubbleG=S('g',{},svg),fxG=S('g',{},svg);
+
+  function bubble(k,l1,l2){
+    bubbleG.innerHTML='';const n=N[k],y=n.y-128;
+    S('rect',{x:n.x-125,y,width:250,height:76,rx:10,fill:'var(--warn-bg)',stroke:'var(--warn)','stroke-width':2},bubbleG);
+    S('polygon',{points:`${n.x-10},${y+76} ${n.x+10},${y+76} ${n.x},${y+90}`,fill:'var(--warn)'},bubbleG);
+    txt(bubbleG,n.x,y+22,'El router lee:',{'text-anchor':'middle','font-size':13,fill:'var(--muted)'});
+    const a=txt(bubbleG,n.x,y+44,l1,{'text-anchor':'middle','font-size':15,'font-weight':700});a.style.fontFamily='var(--f-mono)';
+    const b=txt(bubbleG,n.x,y+64,l2,{'text-anchor':'middle','font-size':14});b.style.fontFamily='var(--f-mono)';
+  }
+  const COL={dns:'var(--accent)',web:'var(--accent-ink)',ok:'var(--good)',bad:'var(--bad)'};
+  let busy=false,run=0;
+  async function send(m){
+    const my=run,path=route(m.f,m.t),dest=m.t==='cli'?'cli':m.t;
+    log(m);
+    if(m.t==='dns')cnt.d++; if(m.t==='web')cnt.w++; counters();
+    for(let i=0;i<path.length-1;i++){
+      if(my!==run)return;
+      const a=N[path[i]],b=N[path[i+1]];
+      const last=i===path.length-2;
+      if(last&&m.lost){await tokenTo(a,b,m,.82);if(my!==run)return;cross(b);await sleep(900);return}
+      await token1(a,b,m);
+      if(my!==run)return;
+      if(path[i+1][0]==='r'&&!m.fast){bubble(path[i+1],'Destino: '+IP[dest]+(m.port?' : '+m.port:''),m.enc?'Contenido: 🔒 cifrado':'Contenido: '+m.l);await sleep(1100);bubbleG.innerHTML=''}
+    }
+  }
+  function token1(a,b,m){return token(svg,a.x,a.y,b.x,b.y,{label:m.enc?'🔒':m.l,color:COL[m.k],dur:m.fast?380:650})}
+  function tokenTo(a,b,m,k){return token(svg,a.x,a.y,a.x+(b.x-a.x)*k,a.y+(b.y-a.y)*k,{label:m.l,color:COL[m.k],dur:600})}
+  function cross(n){fxG.innerHTML='';const g=S('g',{},fxG);txt(g,n.x-120,n.y-50,'✕ nadie responde',{'font-size':18,'font-weight':700,fill:'var(--bad)'})}
+
+  // ---- Pasos reutilizables ----
+  const Q_DNS=name=>({q:`Has escrito ${name} y pulsado Intro. ¿Qué hace primero el navegador?`,
+    o:[['Preguntar al servidor DNS qué IP tiene ese nombre',1,'El navegador solo conoce el nombre. Para enviar algo por la red necesita la dirección IP.'],
+       ['Pedir la página directamente al servidor web',0,'Todavía no puede: solo sabe el nombre, no la IP del servidor. Sin IP no sabe a dónde enviar la petición.'],
+       ['Esperar a que el servidor le envíe la página',0,'En el modelo cliente-servidor el cliente siempre empieza la comunicación. El servidor espera peticiones.']]});
+  const DNS_OK=name=>Object.assign(Q_DNS(name),{play:[{f:'cli',t:'dns',l:'¿IP de '+name+'?',k:'dns',port:53},{f:'dns',t:'cli',l:'Es 203.0.113.10',k:'dns'}],
+    after:'El DNS es la agenda de Internet: traduce el nombre a la IP del servidor. Los routers no responden: solo reenvían el mensaje hacia su destino.',page:'loading'});
+  const GET=(p,enc)=>({q:'Ya tienes la IP. ¿Qué envías ahora y a quién?',
+    o:[['Una petición GET '+p+' al servidor web 203.0.113.10',1,'El cliente pide un recurso concreto (la ruta) al servidor que lo guarda.'],
+       ['Otra pregunta al servidor DNS',0,'El DNS ya ha hecho su trabajo: te ha dado la IP. Las páginas no están en el DNS.'],
+       ['La petición al router del aula',0,'El router no guarda páginas: solo reenvía los mensajes. La petición va dirigida al servidor web, aunque pase por los routers.']],
+    play:[{f:'cli',t:'web',l:'GET '+p,k:'web',port:enc?443:80,enc}],after:'La petición pasa de router en router hasta el servidor web, que la recibe y busca la página.',page:'loading'});
+  const R200=enc=>({q:'El servidor tiene esa página. ¿Qué responde?',
+    o:[['200 OK y el contenido de la página',1,'200 significa que todo ha ido bien. Con el código llega el HTML de la página.'],
+       ['404 Not Found',0,'404 es para cuando la página no existe, y esta sí existe.'],
+       ['Nada: el servidor solo recibe',0,'Un servidor responde a cada petición: con el contenido o con un aviso de error.']],
+    play:[{f:'web',t:'cli',l:'200 OK + HTML',k:'ok',enc}],after:'El navegador recibe el HTML y lo muestra. Petición y respuesta: así funciona siempre la web.',page:'html'});
+
+  const SC={
+    normal:{n:'Pedir una página',name:'tienda.example.com',path:'/index.html',steps:[DNS_OK('tienda.example.com'),GET('/index.html'),R200()]},
+    img:{n:'Página con imágenes',name:'tienda.example.com',path:'/ofertas.html',steps:[DNS_OK('tienda.example.com'),GET('/ofertas.html'),R200(),
+      {q:'El HTML dice que la página lleva 3 fotos. ¿Cómo las consigue el navegador?',
+       o:[['Pide cada foto al servidor web: una petición por foto',1,'El HTML solo dice dónde está cada foto. El navegador las pide una a una.'],
+          ['Ya venían dentro del HTML',0,'El HTML solo trae la ruta de cada foto, no la foto. El navegador tiene que pedirlas aparte.'],
+          ['Las pide al servidor DNS',0,'El DNS solo traduce nombres a IP. Las fotos están en el servidor web.']],
+       play:[1,2,3].flatMap(i=>[{f:'cli',t:'web',l:'GET /foto'+i+'.jpg',k:'web',fast:true},{f:'web',t:'cli',l:'200 OK + foto'+i,k:'ok',fast:true}]),
+       after:'Una sola página son muchas peticiones: una para el HTML y otra por cada imagen, hoja de estilos o tipo de letra. Es lo que ves con F12 → Red.',page:'full'}]},
+    e404:{n:'La página no existe',name:'tienda.example.com',path:'/ofertas-verano.html',steps:[DNS_OK('tienda.example.com'),GET('/ofertas-verano.html'),
+      {q:'Esa página no existe en el servidor. ¿Qué responde?',
+       o:[['404 Not Found',1,'El servidor funciona, pero no encuentra ese recurso y lo avisa con el código 404.'],
+          ['Nada: se queda callado',0,'El servidor está encendido y funcionando: responde aunque sea para decir que no lo tiene.'],
+          ['200 OK',0,'200 significa que todo ha ido bien, y aquí no es así.']],
+       play:[{f:'web',t:'cli',l:'404 Not Found',k:'bad'}],after:'La conexión ha funcionado; lo que falla es la página pedida. Suele pasar por un enlace roto o una dirección mal escrita.',page:'404'}]},
+    off:{n:'Servidor apagado',name:'tienda.example.com',path:'/index.html',off:true,steps:[DNS_OK('tienda.example.com'),
+      Object.assign(GET('/index.html'),{play:[{f:'cli',t:'web',l:'GET /index.html',k:'web',port:80,lost:true}],after:'La petición llega hasta el servidor, pero está apagado: nadie la recibe.'}),
+      {q:'El servidor está apagado. ¿Qué le pasa al navegador?',
+       o:[['Espera un rato y muestra «No se puede acceder a este sitio»',1,'Nadie responde. El navegador espera un tiempo y al final muestra un error de conexión.'],
+          ['Recibe un 404',0,'El 404 lo envía un servidor que está funcionando. Un servidor apagado no puede enviar nada.'],
+          ['El router le envía la página',0,'Los routers no guardan páginas: solo reenvían mensajes.']],
+       play:[],after:'Por eso un servidor tiene que estar siempre encendido y conectado: si cae el servidor, cae el servicio para todos sus clientes.',page:'down'}]},
+    nodns:{n:'Nombre desconocido',name:'tienda-que-no-existe.example',path:'/',steps:[
+      Object.assign(Q_DNS('tienda-que-no-existe.example'),{play:[{f:'cli',t:'dns',l:'¿IP de tienda-que-no-existe.example?',k:'dns',port:53},{f:'dns',t:'cli',l:'Ese nombre no existe',k:'bad'}],
+        after:'El DNS busca el nombre en su agenda y no lo encuentra.',page:'loading'}),
+      {q:'El DNS no conoce el nombre. ¿Puede el navegador pedir la página?',
+       o:[['No: sin IP no sabe a quién enviar la petición',1,'Sin dirección IP no hay a dónde enviar nada.'],
+          ['Sí: se la pide al router del aula',0,'El router no guarda páginas: solo reenvía mensajes hacia una IP de destino.'],
+          ['Sí: se la pide a cualquier servidor web',0,'Cada servidor guarda sus propias páginas. Sin la IP no sabe cuál es el suyo.']],
+       play:[],after:'El navegador muestra un error del tipo «No se ha encontrado la dirección IP del servidor». Lo primero: comprobar que el nombre está bien escrito.',page:'nodns'}]},
+    https:{n:'HTTPS: el sobre cerrado',name:'tienda.example.com',path:'/mi-cuenta',https:true,steps:[DNS_OK('tienda.example.com'),
+      Object.assign(GET('/mi-cuenta',true),{q:'Con HTTPS, la petición va cifrada. ¿Qué puede leer de ella el router del operador?',
+       o:[['Solo a dónde va (la IP de destino)',1,'Necesita la IP de destino para reenviarla, pero el contenido va cifrado.'],
+          ['Todo: la página que pides y lo que escribes',0,'Eso pasa con HTTP. Con HTTPS el contenido viaja cifrado: solo el navegador y el servidor pueden leerlo.'],
+          ['Nada, ni siquiera el destino',0,'Entonces no sabría por dónde enviarla. La IP de destino tiene que ir a la vista.']],
+       after:'Mira la burbuja de cada router: ve el destino y el puerto 443, pero no la página ni tus datos. Ese es el candado del navegador.'}),
+      Object.assign(R200(true),{after:'La respuesta también viaja cifrada. Compara con la situación «Pedir una página», donde los routers leen todo.'})]}
+  };
+
+  let cur='normal',i=0,done=false,game=true,cnt={d:0,w:0},score={ok:0,ko:0};
+  const scenBox=$('#ihscen');
+  Object.entries(SC).forEach(([k,s],n)=>{const b=document.createElement('button');b.id='ihs-'+k;b.textContent=(n+1)+'. '+s.n;b.onclick=()=>{cur=k;reset()};scenBox.appendChild(b)});
+  function counters(){$('#ihnd').textContent=cnt.d;$('#ihnw').textContent=cnt.w;$('#ihok').textContent=score.ok;$('#ihko').textContent=score.ko}
+  function log(m){const li=document.createElement('li');li.className=m.k==='bad'?'bad':m.k==='ok'?'good':'';
+    li.textContent=`${N[m.f].a} → ${N[m.t].a}: ${m.l}${m.enc?' 🔒 (cifrado: los routers no lo leen)':''}`;const L=$('#ihlog');L.appendChild(li);L.scrollTop=L.scrollHeight}
+  function page(state){
+    const s=SC[cur],p=$('#ihpage');
+    $('#ihaddr').textContent=(s.https?'https://':'http://')+s.name+(s.path==='/'?'':s.path);
+    $('#ihlock').textContent=s.https&&['html'].includes(state)?'🔒':'⌕';
+    const M={idle:'<span style="color:var(--muted)">Escribe la dirección y pulsa Intro…</span>',
+      loading:'<span style="color:var(--muted)">Cargando…</span>',
+      html:'<b style="font:700 22px var(--f-head)">Tienda de ejemplo</b><span>La página ha llegado.</span>'+(cur==='img'?'<small style="color:var(--muted)">Faltan las 3 fotos.</small>':''),
+      full:'<b style="font:700 22px var(--f-head)">Ofertas de la semana</b><div class="photos"><span>foto1</span><span>foto2</span><span>foto3</span></div>',
+      '404':'<b style="font:700 26px var(--f-head);color:var(--bad)">404</b><span>Página no encontrada</span>',
+      down:'<b style="font:700 20px var(--f-head);color:var(--bad)">No se puede acceder a este sitio</b><span>El servidor no responde.</span>',
+      nodns:'<b style="font:700 20px var(--f-head);color:var(--bad)">No se ha encontrado la dirección IP del servidor</b><span>Comprueba si el nombre está bien escrito.</span>'};
+    p.innerHTML=M[state]||M.idle;
+  }
+  function render(fb){
+    const s=SC[cur],st=s.steps[i],q=$('#ihq');
+    [...scenBox.children].forEach(b=>b.setAttribute('aria-pressed',b.id==='ihs-'+cur));
+    const last=i===s.steps.length-1;
+    let h=`<div class="qh">Paso ${i+1} de ${s.steps.length}</div>`;
+    if(!done){
+      if(game){h+=`<div class="qt">${st.q}</div><div class="opts">`+st.o.map((o,j)=>`<button class="opt" data-j="${j}">${o[0]}</button>`).join('')+'</div>'}
+      else h+=`<div class="qt">${st.q}</div><button class="btn" id="ihgo">Ver qué pasa ▶</button>`;
+      if(fb)h+=`<p class="fb no"><b>No.</b> ${fb}</p>`;
+    }else{
+      const ok=st.o.find(o=>o[1]);
+      h+=`<div class="qt">${st.q}</div><p class="fb ok"><b>${ok[0]}.</b> ${game?ok[2]+' ':''}${st.after}</p>`;
+      h+=last?`<p class="fb"><b>Fin de la situación.</b> Elige otra arriba o empieza de nuevo.</p>`:`<button class="btn" id="ihnext" style="margin-top:12px">Siguiente paso ▶</button>`;
+    }
+    q.innerHTML=h;
+    q.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.j,b));
+    const go=$('#ihgo');if(go)go.onclick=()=>play();
+    const nx=$('#ihnext');if(nx)nx.onclick=()=>{i++;done=false;render()};
+  }
+  async function choose(j,btn){
+    if(busy)return;const o=SC[cur].steps[i].o[j];
+    if(!o[1]){score.ko++;counters();btn.classList.add('no');btn.disabled=true;const f=$('#ihq').querySelector('.fb');const p=document.createElement('p');p.className='fb no';p.innerHTML='<b>No.</b> '+o[2];if(f)f.replaceWith(p);else $('#ihq').appendChild(p);return}
+    score.ok++;counters();btn.classList.add('ok');$('#ihq').querySelectorAll('.opt').forEach(b=>b.disabled=true);
+    play();
+  }
+  async function play(){
+    if(busy)return;busy=true;const my=run;const st=SC[cur].steps[i];
+    for(const m of st.play){await send(m);if(my!==run){busy=false;return}}
+    if(st.page)page(st.page);
+    busy=false;done=true;render();
+  }
+  function reset(){run++;busy=false;i=0;done=false;cnt={d:0,w:0};bubbleG.innerHTML='';fxG.innerHTML='';$('#ihlog').innerHTML='';
+    offMark.setAttribute('opacity',SC[cur].off?1:0);page('idle');counters();render()}
+  $('#ihreset').onclick=()=>{score={ok:0,ko:0};reset()};
+  $('#ihmGame').onclick=()=>{game=true;$('#ihmGame').setAttribute('aria-pressed',true);$('#ihmDemo').setAttribute('aria-pressed',false);render()};
+  $('#ihmDemo').onclick=()=>{game=false;$('#ihmDemo').setAttribute('aria-pressed',true);$('#ihmGame').setAttribute('aria-pressed',false);render()};
+  reset();
+})();
+
+// ---------- 4. URL ----------
+(function(){
+  const svg=$('#usvg'),X={nav:120,dns:450,web:780};
+  [['nav','Navegador','tu PC'],['dns','Servidor DNS','del proveedor'],['web','Servidor web','tienda.example.com']].forEach(([k,a,b])=>{
+    S('rect',{x:X[k]-95,y:12,width:190,height:56,rx:10,fill:'var(--surface)',stroke:'var(--line)','stroke-width':2},svg);
+    txt(svg,X[k],38,a,{'text-anchor':'middle','font-size':18,'font-weight':700});
+    txt(svg,X[k],58,b,{'text-anchor':'middle','font-size':13,fill:'var(--muted)'});
+    S('line',{x1:X[k],y1:68,x2:X[k],y2:710,stroke:'var(--line)','stroke-width':2,'stroke-dasharray':'6 6'},svg)});
+  const arrowsG=S('g',{},svg);
+  const STEPS=[
+    {a:[],t:'Escribes la dirección y pulsas Intro. El navegador separa sus partes: el protocolo (https), el nombre del servidor y la ruta de la página.',f:'',parts:true,page:'Esperando…'},
+    {a:[['nav','dns','¿Qué IP tiene tienda.example.com?','DNS · UDP · puerto 53']],t:'El navegador solo conoce el nombre. Si no tiene la IP guardada, pregunta al servidor DNS: es la «agenda de teléfonos» de Internet.',f:'F12 no lo muestra; en la consola: nslookup tienda.example.com',page:'Buscando el servidor…'},
+    {a:[['dns','nav','Es la 203.0.113.10','respuesta DNS']],t:'El DNS responde con la dirección IP del servidor. Ahora el navegador ya sabe a quién llamar.',f:'',page:'Conectando…'},
+    {a:[['nav','web','SYN','TCP · puerto 443'],['web','nav','SYN + ACK',''],['nav','web','ACK','']],t:'Antes de pedir nada, el navegador y el servidor se «saludan» en tres pasos para abrir una conexión TCP fiable al puerto 443 (HTTPS).',f:'',page:'Conectando…'},
+    {a:[['nav','web','Hola, ¿hablamos cifrado?','TLS'],['web','nav','Este es mi certificado','TLS']],t:'Como es HTTPS, el servidor presenta su certificado. Si es válido, se acuerdan las claves y aparece el candado: a partir de aquí todo viaja cifrado.',f:'F12 → Seguridad / clic en el candado: datos del certificado',lock:true,page:'Conexión segura…'},
+    {a:[['nav','web','GET /ofertas','HTTP · petición']],t:'Ahora sí: el navegador pide la página con el método GET y la ruta /ofertas.',f:'F12 → Red: columna «Método» = GET',lock:true,page:'Esperando respuesta…'},
+    {a:[['web','nav','200 OK + página HTML','HTTP · respuesta']],a404:[['web','nav','404 Not Found','HTTP · respuesta']],t:'El servidor responde con un código de estado. 200 significa que todo ha ido bien, y con él llega el HTML de la página.',t404:'El servidor responde 404: esa ruta no existe en el servidor. La conexión ha funcionado; lo que falla es la página pedida.',f:'F12 → Red: columna «Estado»',lock:true,page:'html'},
+    {a:[['nav','web','GET /estilos.css, /logo.png…','más peticiones'],['web','nav','200 OK (cada archivo)','']],t:'Al leer el HTML, el navegador descubre que necesita más archivos (estilos, imágenes, scripts) y los pide uno a uno. Por eso en F12 → Red ves muchas líneas para una sola página.',t404:'El navegador muestra la página de error que envía el servidor. Si esa página tiene estilos o imágenes, también los pide.',f:'F12 → Red: una línea por cada archivo pedido',lock:true,page:'full'}
+  ];
+  let step=0;
+  function drawArrow(f,t,label,sub,y,cur){
+    const x1=X[f],x2=X[t],dir=x2>x1?1:-1,g=S('g',{},arrowsG),c=cur?'var(--accent-ink)':'var(--muted)';
+    const bad=/404/.test(label);const col=bad?'var(--bad)':c;
+    S('line',{x1:x1+dir*6,y1:y,x2:x2-dir*16,y2:y,stroke:col,'stroke-width':cur?4:2.5},g);
+    S('polygon',{points:`${x2-dir*4},${y} ${x2-dir*18},${y-8} ${x2-dir*18},${y+8}`,fill:col},g);
+    const mx=(x1+x2)/2;txt(g,mx,y-9,label,{'text-anchor':'middle','font-size':cur?17:15,'font-weight':cur?700:600,fill:bad?'var(--bad)':'var(--ink)'});
+    if(sub){const s=txt(g,mx,y+20,sub,{'text-anchor':'middle','font-size':12,fill:'var(--muted)'});s.style.fontFamily='var(--f-mono)'}
+  }
+  function render(){
+    const e404=$('#u404').checked;arrowsG.innerHTML='';let y=110;
+    STEPS.slice(0,step+1).forEach((s,i)=>{(e404&&s.a404?s.a404:s.a).forEach(a=>{drawArrow(a[0],a[1],a[2],a[3],y,i===step);y+=a[3]?60:46})});
+    const s=STEPS[step];
+    $('#utext').textContent=(e404&&s.t404)?s.t404:s.t;$('#uf12').textContent=s.f?('Compruébalo: '+s.f):'';
+    $('#ulock').textContent=s.lock?'🔒':'⌕';
+    const p=$('#upage');
+    if(s.parts){p.innerHTML='<div class="urlparts"><span style="background:var(--l-tcp)">https://</span><span style="background:var(--l-ip)">tienda.example.com</span><span style="background:var(--l-app)">/ofertas</span></div><small class="mono" style="color:var(--muted)">protocolo · nombre del servidor · ruta</small>'}
+    else if(s.page==='html'||s.page==='full'){
+      const full=s.page==='full';
+      p.innerHTML=e404?`<b style="font:700 26px var(--f-head);color:var(--bad)">404</b><span>Página no encontrada</span>`
+        :full?`<b style="font:700 22px var(--f-head)">Ofertas de la semana</b><span>Con estilos, logotipo e imágenes.</span>`
+        :`<span style="font-family:Times New Roman,serif">Ofertas de la semana</span><small style="color:var(--muted)">Solo texto: faltan los estilos y las imágenes.</small>`;
+    }else p.innerHTML=`<span style="color:var(--muted)">${s.page}</span>`;
+    $('#uprev').disabled=step===0;$('#unext').disabled=step===STEPS.length-1;
+  }
+  $('#unext').onclick=()=>{if(step<STEPS.length-1){step++;render()}};
+  $('#uprev').onclick=()=>{if(step>0){step--;render()}};
+  $('#ureset').onclick=()=>{step=0;render()};$('#u404').onchange=render;
+  render();
+})();
+
+})();
+</script>
+<script>
+
+/* ===== Kit de actividades ===== */
+const K=(function(){
+  const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){if(k==='class')e.className=attrs[k];else if(k==='html')e.innerHTML=attrs[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k])}kids.flat().forEach(c=>{if(c==null)return;e.append(c.nodeType?c:document.createTextNode(c))});return e};
+  const md=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<span class="mono">$1</span>');
+  const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  function msg(el,cls,html){el.className='k-msg'+(cls?' '+cls:'');el.innerHTML=html}
+
+  // Selector de actividades dentro de una pestaña
+  function acts(root,list){
+    const seg=h('div',{class:'seg k-acts',role:'group','aria-label':'Actividad'});
+    const stage=h('div',{class:'k-stage'});
+    root.append(seg,stage);
+    const views=list.map(()=>null);
+    const btns=list.map((a,i)=>{const b=h('button',{'aria-pressed':i===0?'true':'false',onclick:()=>go(i)},a.label);seg.append(b);return b});
+    function go(i){btns.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));views.forEach(v=>v&&(v.hidden=true));
+      if(!views[i]){views[i]=h('div');stage.append(views[i]);list[i].render(views[i])}views[i].hidden=false}
+    go(0);
+  }
+
+  // Clasificar: tocar ficha + tocar caja, o arrastrar
+  function sort(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const score=h('div',{class:'k-score'});
+    const pool=h('div',{class:'k-pool','aria-label':'Fichas sin colocar'});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    const grid=h('div',{class:'k-buckets'});
+    const bk={};
+    cfg.buckets.forEach(b=>{const el=h('div',{class:'k-bucket',tabindex:0,role:'button','aria-label':'Caja '+b.name,'data-b':b.id},h('h4',{html:md(b.name)+(b.sub?'<small>'+md(b.sub)+'</small>':'')}));
+      el.addEventListener('click',()=>{if(sel)drop(sel,b.id)});
+      el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel){e.preventDefault();drop(sel,b.id)}});
+      bk[b.id]=el;grid.append(el)});
+    const row=h('div',{class:'row',style:'margin-top:14px'},
+      h('button',{class:'btn alt',onclick:reset},'Empezar de nuevo'),
+      h('button',{class:'btn alt',onclick:solve},'Ver solución'));
+    root.append(score,pool,m,grid,row);
+    let sel=null,ok=0,ko=0,chips=[];
+    const bname=id=>cfg.buckets.find(b=>b.id===id).name.replace(/\*\*/g,'');
+    function upd(){score.innerHTML=`<span>Colocadas: <b>${ok}/${cfg.items.length}</b></span><span>Fallos: <b>${ko}</b></span>`;
+      Object.values(bk).forEach(b=>b.classList.toggle('armed',!!sel))}
+    function pick(c){if(c.classList.contains('ok'))return;if(sel===c){c.classList.remove('sel');sel=null}else{sel&&sel.classList.remove('sel');sel=c;c.classList.add('sel');
+      msg(m,'','<b>'+md(c._it.t)+'</b>. Ahora toca la caja donde va (o arrástrala).')}upd()}
+    function drop(c,b){const it=c._it;c.classList.remove('sel');sel=null;
+      if(it.b===b||(Array.isArray(it.b)&&it.b.includes(b))){c.classList.add('ok');c.setAttribute('tabindex','-1');bk[b].append(c);ok++;
+        msg(m,'good','✓ <b>'+md(it.t)+'</b> → '+md(bname(b))+(it.why?'. '+md(it.why):''));
+        if(ok===cfg.items.length)msg(m,'good','<b>¡Completado!</b> '+ok+' fichas con '+ko+' fallo'+(ko===1?'':'s')+'. '+(it.why?md(it.why):''))}
+      else{ko++;c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);
+        msg(m,'bad','✗ <b>'+md(it.t)+'</b> no va en «'+md(bname(b))+'». '+(it.hint?md(it.hint):'Piénsalo otra vez.'))}
+      upd()}
+    function build(){pool.innerHTML='';Object.values(bk).forEach(b=>[...b.querySelectorAll('.k-chip')].forEach(c=>c.remove()));
+      chips=shuffle(cfg.items).map(it=>{const c=h('button',{class:'k-chip',type:'button',html:md(it.t)});c._it=it;
+        c.addEventListener('pointerdown',e=>startDrag(e,c));
+        c.addEventListener('click',e=>{if(c._dragged){c._dragged=false;return}pick(c)});
+        pool.append(c);return c});
+      ok=0;ko=0;sel=null;msg(m,'',cfg.start||'Toca una ficha y después la caja donde va. También puedes arrastrarla.');upd()}
+    function reset(){build()}
+    function solve(){chips.forEach(c=>{if(!c.classList.contains('ok')){const b=Array.isArray(c._it.b)?c._it.b[0]:c._it.b;c.classList.add('ok');c.classList.remove('sel');bk[b].append(c)}});sel=null;msg(m,'warn','Solución a la vista. Pulsa «Empezar de nuevo» para intentarlo sin ayuda.');upd()}
+    let dr=null;
+    function startDrag(e,c){if(c.classList.contains('ok')||e.button>0)return;dr={c,x:e.clientX,y:e.clientY,g:null,id:e.pointerId}}
+    window.addEventListener('pointermove',e=>{if(!dr||e.pointerId!==dr.id)return;
+      if(!dr.g){if(Math.hypot(e.clientX-dr.x,e.clientY-dr.y)<8)return;dr.g=dr.c.cloneNode(true);dr.g.classList.add('k-ghost');document.body.append(dr.g);dr.c.style.opacity=.35}
+      e.preventDefault();dr.g.style.left=e.clientX+'px';dr.g.style.top=e.clientY+'px';
+      Object.values(bk).forEach(b=>b.classList.remove('over'));const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))b.classList.add('over')},{passive:false});
+    window.addEventListener('pointerup',e=>{if(!dr||e.pointerId!==dr.id)return;const d=dr;dr=null;if(!d.g)return;
+      d.g.remove();d.c.style.opacity='';d.c._dragged=true;setTimeout(()=>d.c._dragged=false,0);Object.values(bk).forEach(b=>b.classList.remove('over'));
+      const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))drop(d.c,b.dataset.b)});
+    window.addEventListener('pointercancel',()=>{if(dr&&dr.g){dr.g.remove();dr.c.style.opacity=''}dr=null});
+    build();
+  }
+
+  // Ordenar
+  function order(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    if(cfg.top)root.append(h('div',{class:'k-olabel'},'▲ '+cfg.top));
+    const ol=h('ol',{class:'k-olist'});root.append(ol);
+    if(cfg.bottom)root.append(h('div',{class:'k-olabel'},'▼ '+cfg.bottom));
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    root.append(m,h('div',{class:'row'},h('button',{class:'btn',onclick:check},'Comprobar'),h('button',{class:'btn alt',onclick:()=>{cur=shuffleNotSorted();sel=-1;draw();msg(m,'','Ordena de nuevo.')}},'Mezclar'),h('button',{class:'btn alt',onclick:()=>{cur=cfg.items.map((_,i)=>i);sel=-1;draw(true);msg(m,'warn','Este es el orden correcto. Fíjate en las explicaciones en gris.')}},'Ver solución')));
+    let sel=-1,cur=shuffleNotSorted(),tries=0;
+    function shuffleNotSorted(){let a;do{a=shuffle(cfg.items.map((_,i)=>i))}while(a.every((v,i)=>v===i)&&a.length>1);return a}
+    function swap(i,j){if(j<0||j>=cur.length)return;[cur[i],cur[j]]=[cur[j],cur[i]];draw()}
+    function draw(showD){ol.innerHTML='';cur.forEach((v,i)=>{const it=cfg.items[v];
+      const li=h('li',{class:'k-oi'+(sel===i?' sel':''),tabindex:0},h('span',{class:'n'},String(i+1)),h('span',{class:'t',html:md(it.t)+(showD&&it.d?'<small>'+md(it.d)+'</small>':'')}),
+        h('span',{class:'mv'},h('button',{'aria-label':'Subir',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i-1)}},'↑'),h('button',{'aria-label':'Bajar',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i+1)}},'↓')));
+      li.addEventListener('click',()=>{if(sel<0){sel=i;draw()}else if(sel===i){sel=-1;draw()}else{const s=sel;sel=-1;swap(s,i)}});
+      ol.append(li)})}
+    function check(){tries++;let n=0;[...ol.children].forEach((li,i)=>{const good=cur[i]===i;if(good)n++;li.classList.add(good?'ok':'ko')});
+      if(n===cur.length){draw(true);[...ol.children].forEach(li=>li.classList.add('ok'));msg(m,'good','<b>¡Perfecto!</b> Todo en orden'+(tries>1?' (en '+tries+' intentos)':'')+'. '+(cfg.done?md(cfg.done):''))}
+      else msg(m,'bad',`<b>${n} de ${cur.length}</b> en su sitio (en verde). Mueve los rojos: toca uno y luego otro para intercambiarlos, o usa las flechas.`)}
+    draw();msg(m,'',cfg.start||'Toca un elemento y después otro para intercambiarlos, o usa las flechas ↑ ↓. Cuando acabes, pulsa «Comprobar».');
+  }
+
+  // Test de una pregunta cada vez
+  function quiz(root,cfg){
+    if(cfg.intro)root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const box=h('div',{class:'k-q'});root.append(box);
+    let qs,i,ok,answered;
+    function start(){qs=(cfg.noShuffle?cfg.questions:shuffle(cfg.questions)).map(q=>{const o=q.o.map((t,j)=>({t,c:j===q.a}));return Object.assign({},q,{opts:cfg.fixed||q.fixed?o:shuffle(o)})});i=0;ok=0;draw()}
+    function draw(){box.innerHTML='';
+      if(i>=qs.length){box.append(h('div',{class:'k-end'},`Resultado: ${ok} de ${qs.length}`),h('p',{},ok===qs.length?'¡Todas bien!':ok>=qs.length*.7?'Muy bien. Repasa las que fallaste.':'Vuelve a intentarlo: lee bien la explicación de cada pregunta.'),h('button',{class:'btn',onclick:start},'Otra vez (en otro orden)'));return}
+      const q=qs[i];answered=false;
+      const bar=h('div',{class:'k-bar'},h('i',{style:`width:${i/qs.length*100}%`}));
+      const opts=h('div',{class:'k-opts'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Elige una respuesta.');
+      const next=h('button',{class:'btn',onclick:()=>{i++;draw()},hidden:''},i===qs.length-1?'Ver resultado':'Siguiente pregunta');
+      q.opts.forEach(o=>{const b=h('button',{class:'k-opt',html:md(o.t)});b.onclick=()=>{if(answered)return;answered=true;
+        if(o.c){ok++;b.classList.add('ok');msg(m,'good','✓ <b>Correcto.</b> '+md(q.why||''))}
+        else{b.classList.add('ko');[...opts.children].forEach((x,k)=>{if(q.opts[k].c)x.classList.add('ok')});msg(m,'bad','✗ <b>No.</b> '+md(q.why||''))}
+        [...opts.children].forEach(x=>x.setAttribute('disabled',''));next.hidden=false;next.focus()};opts.append(b)});
+      box.append(h('div',{class:'qn'},`Pregunta ${i+1} de ${qs.length} · aciertos: ${ok}`),bar,h('div',{class:'qt',html:md(q.q)}));
+      if(q.fig){const f=h('div',{class:'qfig'});q.fig(f);box.append(f)}
+      box.append(opts,m,next)}
+    start();
+  }
+  return {h,md,shuffle,msg,acts,sort,order,quiz};
+})();
+
+
+(function(){
+const {h,md,acts,sort,order,quiz,msg}=K;
+
+/* ================= S1 · INTERNET ================= */
+acts(document.getElementById('r-inet'),[
+  {label:'¿Internet, intranet o extranet?',render:el=>sort(el,{intro:'Las tres usan las mismas tecnologías. Lo que cambia es **quién puede entrar**.',
+    buckets:[{id:'i',name:'Internet',sub:'cualquiera'},{id:'n',name:'Intranet',sub:'solo personal, desde dentro'},{id:'x',name:'Extranet',sub:'personas de fuera autorizadas'}],
+    items:[{t:'Una tienda online',b:'i'},{t:'La web de un periódico',b:'i'},{t:'La Wikipedia',b:'i'},{t:'El portal interno con el horario del profesorado',b:'n'},{t:'La web de nóminas que solo se abre desde la red de la empresa',b:'n'},{t:'Las carpetas compartidas de la oficina',b:'n'},{t:'La web donde un proveedor consulta los pedidos de la empresa',b:'x'},{t:'El portal donde los clientes de un taller ven el estado de su coche',b:'x'}]})},
+  {label:'¿Es la web?',render:el=>sort(el,{intro:'Internet es la red (las carreteras). La **web** es solo uno de los servicios que funcionan sobre ella (uno de los tipos de vehículo). ¿Qué servicio de Internet se usa en cada caso?',
+    buckets:[{id:'w',name:'Web',sub:'páginas en el navegador'},{id:'c',name:'Correo electrónico'},{id:'m',name:'Mensajería y videollamadas'},{id:'s',name:'Streaming'},{id:'f',name:'Transferencia de archivos'},{id:'j',name:'Juegos online'}],
+    items:[{t:'Leer un artículo de la Wikipedia',b:'w'},{t:'Comprar en una tienda online desde el navegador',b:'w'},{t:'Enviar un correo con un adjunto',b:'c'},{t:'Un mensaje de WhatsApp',b:'m'},{t:'Una reunión por Meet',b:'m'},{t:'Ver una serie sin descargarla',b:'s'},{t:'Escuchar música en Spotify',b:'s'},{t:'Subir un archivo a la nube o a un servidor FTP',b:'f'},{t:'Una partida en línea con amigos',b:'j'}]})},
+  {label:'La historia de Internet',render:el=>order(el,{intro:'Ordena los hitos de Internet del más antiguo al más reciente.',top:'Más antiguo',bottom:'Más reciente',
+    items:[{t:'ARPANET une cuatro universidades',d:'1969. Red del Departamento de Defensa de EE. UU.'},{t:'ARPANET adopta TCP/IP: nace Internet',d:'1983.'},{t:'Tim Berners-Lee crea la World Wide Web en el CERN',d:'1989–1991.'},{t:'Navegadores gráficos y acceso desde casa',d:'Años 90.'},{t:'Banda ancha, redes sociales, Wikipedia',d:'Años 2000.'},{t:'Internet en el móvil, nube y streaming',d:'Desde 2007.'}]})}]);
+
+/* ================= S4 · LA BASE DE DATOS DE LA TIENDA ================= */
+function shop(root){
+  root.append(h('p',{class:'lead',html:'La base de datos de una tienda online de cerámica, con las tablas de los apuntes. Toca un número <b>subrayado</b> (una clave foránea) para ir al registro con el que se relaciona. Después, resuelve las misiones.'}));
+  const wrap=h('div',{class:'k-two'});root.append(wrap);const L=h('div'),R=h('div');wrap.append(L,R);
+  let DB;
+  const init=()=>({
+    Clientes:{pk:'id_cliente',cols:['id_cliente','nombre','localidad','correo'],rows:[[1,'Lucía Moreno','Talavera de la Reina','lucia@correo.es'],[2,'Javier Ruiz','Toledo','javier@correo.es'],[3,'Ana García','Oropesa','ana@correo.es']]},
+    Productos:{pk:'id_producto',cols:['id_producto','nombre','precio','stock','fecha_alta'],rows:[[1,'Taza de cerámica azul','12,50',40,'03/09/2026'],[2,'Plato llano decorado','18,00',25,'03/09/2026'],[3,'Jarra de cerámica','24,90',12,'15/09/2026'],[4,'Azulejo decorativo','9,95',100,'01/10/2026']]},
+    Pedidos:{pk:'id_pedido',cols:['id_pedido','fecha','id_cliente','estado'],fk:{id_cliente:'Clientes'},rows:[[1001,'05/10/2026',1,'Enviado'],[1002,'06/10/2026',3,'Pendiente'],[1003,'06/10/2026',1,'Pendiente']]},
+    'Líneas de pedido':{cols:['id_pedido','id_producto','cantidad'],fk:{id_pedido:'Pedidos',id_producto:'Productos'},rows:[[1001,2,1],[1001,4,6],[1002,3,1],[1003,1,2]]}});
+  const tw={};let hl=null,newR=null,chg=null;
+  function draw(){L.innerHTML='';Object.entries(DB).forEach(([name,t])=>{
+    const tb=h('table',{class:'k-tbl'});const th=h('tr');t.cols.forEach(c=>th.append(h('th',{},c+(c===t.pk?' 🔑':t.fk&&t.fk[c]?' 🔗':''))));tb.append(h('thead',{},th));const bd=h('tbody');
+    t.rows.forEach((r,ri)=>{const tr=h('tr',{class:(hl&&hl[0]===name&&hl[1]===ri?'hl':'')+(newR&&newR[0]===name&&newR.includes(ri,1)?' new':'')});
+      r.forEach((v,ci)=>{const c=t.cols[ci];const td=h('td',{class:(c===t.pk?'pk':'')+(t.fk&&t.fk[c]?' fk':'')+(chg&&chg[0]===name&&chg[1]===ri&&chg[2]===ci?' chg':'')});
+        if(t.fk&&t.fk[c]){td.append(h('button',{title:'Ir a '+t.fk[c],onclick:()=>follow(t.fk[c],v,name,c)},String(v)))}else td.append(String(v));tr.append(td)});bd.append(tr)});
+    tb.append(bd);const w=h('div',{class:'k-tblwrap'},tb);tw[name]=w;
+    L.append(h('div',{class:'k-cap'},'Tabla «'+name+'» ',h('small',{},t.pk?'clave primaria: '+t.pk:'tabla intermedia: une Pedidos y Productos')),w)})}
+  function follow(tn,v,from,col){const t=DB[tn];const ri=t.rows.findIndex(r=>r[0]===v);hl=[tn,ri];newR=null;draw();tw[tn].scrollIntoView({behavior:'smooth',block:'nearest'});
+    msg(m,'','En «'+from+'», <b>'+col+' = '+v+'</b> es una <b>clave foránea</b>: guarda la clave primaria de «'+tn+'». Registro encontrado: <b>'+t.rows[ri].join(' · ')+'</b>.');check({follow:[tn,v]})}
+  const MIS=[
+    {t:'¿Quién hizo el pedido <b>1002</b>? Toca su id_cliente.',follow:['Clientes',3],ok:'Ana García, de Oropesa. El pedido no repite su nombre ni su correo: solo guarda su número.'},
+    {t:'¿Cuántos pedidos ha hecho <b>Lucía Moreno</b>?',o:['2','1','3'],a:0,ok:'Los pedidos 1001 y 1003 tienen id_cliente = 1. Es una relación <b>uno a varios</b>: un cliente, muchos pedidos.'},
+    {t:'¿Qué producto va en el pedido <b>1002</b>? Toca su id_producto en «Líneas de pedido».',follow:['Productos',3],ok:'La jarra de cerámica. Las líneas de pedido resuelven la relación varios a varios entre Pedidos y Productos.'},
+    {t:'¿Cuántos <b>registros</b> tiene la tabla Productos? ¿Y cuántos <b>campos</b>?',o:['4 registros y 5 campos','5 registros y 4 campos','4 registros y 4 campos'],a:0,ok:'Cada fila es un registro (un producto) y cada columna un campo.'},
+    {t:'Javier Ruiz compra <b>2 tazas azules</b>. Pulsa «Finalizar compra» y mira qué cambia en las tablas.',buy:1}];
+  let mi=0;const ml=h('ol',{class:'k-mission'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});const ask=h('div');
+  R.append(h('h3',{},'Misiones'),ml,m,ask,h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn alt',onclick:start},'Empezar de nuevo')));
+  function drawM(ok){ml.innerHTML='';MIS.forEach((x,i)=>ml.append(h('li',{class:i<mi?'done':i===mi?'cur':'',html:x.t})));ask.innerHTML='';if(ok)msg(m,'good','✓ '+ok);
+    if(mi>=MIS.length)return;const x=MIS[mi];
+    if(x.o){const o=h('div',{class:'k-opts'});K.shuffle(x.o.map((t,i)=>[t,i])).forEach(([t,i])=>{const b=h('button',{class:'k-opt'},t);b.onclick=()=>{if(i===x.a){[...o.children].forEach(c=>c.setAttribute('disabled',''));b.classList.add('ok');mi++;setTimeout(()=>drawM(x.ok),400)}else{b.classList.add('ko');b.setAttribute('disabled','');msg(m,'bad','✗ No. Cuenta en las tablas.')}};o.append(b)});ask.append(o)}
+    if(x.buy){const b=h('button',{class:'btn',style:'background:var(--good)'},'Finalizar compra (paso a paso)');ask.append(b);let st=0;
+      const steps=[()=>{hl=['Clientes',1];newR=null;draw();msg(m,'','<b>1.</b> Javier inicia sesión. La aplicación busca su registro en <b>Clientes</b>: <b>id_cliente = 2</b>.')},
+        ()=>{hl=null;DB.Pedidos.rows.push([1004,'(hoy)',2,'Pendiente']);newR=['Pedidos',3];draw();msg(m,'','<b>2.</b> Se añade un registro en <b>Pedidos</b>: el SGBD le asigna <b>id_pedido = 1004</b> y guarda la clave foránea <b>id_cliente = 2</b>.')},
+        ()=>{DB['Líneas de pedido'].rows.push([1004,1,2]);newR=['Líneas de pedido',4];draw();msg(m,'','<b>3.</b> Por el producto del carrito, se añade una <b>línea de pedido</b>: pedido 1004, producto 1 (taza azul), cantidad 2.')},
+        ()=>{DB.Productos.rows[0][3]=38;newR=null;chg=['Productos',0,3];draw();msg(m,'','<b>4.</b> Se actualiza el campo <b>stock</b> del producto 1: de 40 pasa a <b>38</b>.')},
+        ()=>{chg=null;hl=null;draw();mi++;drawM('Cada dato se guarda <b>una sola vez</b>. Si el nombre y el correo de Javier se copiaran en cada pedido, al cambiar su correo habría que corregirlo en todos.');msg(m,'good','<b>¡Misiones completadas!</b> Cada dato se guarda una sola vez: si el nombre y el correo de Javier se copiaran en cada pedido, al cambiar su correo habría que corregirlo en todos.')}];
+      b.onclick=()=>{steps[st++]();b.textContent=st<steps.length-1?'Siguiente paso':'Terminar';if(st>=steps.length)b.remove()}}
+    if(x.follow&&!ok)msg(m,'','Toca el número subrayado en la tabla correcta.')}
+  function check(ev){const x=MIS[mi];if(x&&x.follow&&ev.follow&&ev.follow[0]===x.follow[0]&&ev.follow[1]===x.follow[1]){mi++;drawM(x.ok)}}
+  function start(){DB=init();mi=0;hl=null;newR=null;chg=null;draw();msg(m,'','Toca un número subrayado para seguir una relación.');drawM()}
+  start();
+}
+acts(document.getElementById('r-bd'),[
+  {label:'Explora la tienda',render:shop},
+  {label:'¿Archivo o base de datos?',render:el=>sort(el,{intro:'Un servicio web guarda su información en dos sitios. ¿Dónde se guarda cada cosa? (Por eso la copia de seguridad debe incluir **los dos**).',
+    buckets:[{id:'a',name:'Archivos del servidor',sub:'carpeta raíz, p. ej. /var/www/html'},{id:'b',name:'Base de datos',sub:'MySQL / MariaDB'}],
+    items:[{t:'Los programas de WordPress',b:'a'},{t:'El tema (plantilla) y las hojas de estilo',b:'a'},{t:'La foto de un producto (el archivo .jpg)',b:'a',why:'en WordPress, en wp-content/uploads. La base de datos solo guarda su nombre, su ruta y su descripción.'},{t:'El archivo de configuración con los datos de conexión',b:'a'},{t:'El texto de una noticia',b:'b'},{t:'Los usuarios y sus contraseñas (cifradas)',b:'b'},{t:'Los pedidos y los clientes',b:'b'},{t:'Los mensajes del foro',b:'b'},{t:'Los precios de los productos',b:'b'}]})},
+  {label:'Tablas, claves y relaciones',render:el=>quiz(el,{intro:'Repasa la estructura de una base de datos relacional.',questions:[
+    {q:'En una tabla, cada <b>fila</b> es…',o:['Un registro','Un campo','Una base de datos'],a:0,why:'El conjunto de datos de un elemento concreto. Las columnas son los campos.'},
+    {q:'¿Qué tipo de dato le pones al <b>código postal</b>?',o:['Texto','Número entero','Número decimal'],a:0,why:'Nunca se suma y el texto conserva los ceros a la izquierda (04001).'},
+    {q:'¿Y al <b>precio</b> de un producto?',o:['Número decimal','Texto','Sí / No'],a:0,why:'Así el SGBD puede calcular y ordenar.'},
+    {q:'¿Por qué el <b>nombre</b> del cliente no sirve como clave primaria?',o:['Puede repetirse o cambiar','Es demasiado largo','Porque es texto'],a:0,why:'Puede haber dos Ana García. La clave primaria no se repite, no queda vacía y no debería cambiar.'},
+    {q:'El campo id_cliente de la tabla Pedidos es…',o:['Una clave foránea','La clave primaria de Pedidos','Un registro'],a:0,why:'Guarda el valor de la clave primaria de otra tabla y crea la relación.'},
+    {q:'Un cliente hace varios pedidos; cada pedido es de un solo cliente. Es una relación…',o:['Uno a varios (1:N)','Uno a uno (1:1)','Varios a varios (N:M)'],a:0,why:'Es, con diferencia, la más frecuente.'},
+    {q:'Un pedido incluye varios productos y un producto aparece en muchos pedidos. ¿Cómo se guarda?',o:['Con una tabla intermedia (Líneas de pedido)','Con una clave foránea en Productos','No se puede guardar'],a:0,why:'Las relaciones N:M se resuelven con una tabla intermedia que contiene las claves de las dos tablas.'},
+    {q:'Cada usuario tiene un único perfil y cada perfil es de un único usuario.',o:['Uno a uno (1:1)','Uno a varios (1:N)','Varios a varios (N:M)'],a:0,why:'1:1.'},
+    {q:'¿Qué tabla de WordPress guarda las entradas y páginas?',o:['wp_posts','wp_users','wp_options'],a:0,why:'wp_users: usuarios; wp_comments: comentarios; wp_options: configuración.'},
+    {q:'¿Cuál es la carpeta raíz predeterminada de Apache en Ubuntu 24.04?',o:['/var/www/html','C:\\inetpub\\wwwroot','/home/www'],a:0,why:'C:\\inetpub\\wwwroot es la de Microsoft IIS.'}]})}]);
+
+/* ================= S5 · TENDENCIAS ================= */
+acts(document.getElementById('r-tend'),[
+  {label:'IaaS, PaaS o SaaS',render:el=>sort(el,{intro:'¿Qué modelo de nube es? Piensa en la pizza: **IaaS** te alquilan la cocina, **PaaS** te dan la masa y el horno, **SaaS** te la traen a casa. Y **servidor propio**: lo haces todo tú.',
+    buckets:[{id:'p',name:'Servidor propio'},{id:'i',name:'IaaS',sub:'infraestructura'},{id:'a',name:'PaaS',sub:'plataforma'},{id:'s',name:'SaaS',sub:'aplicación terminada'}],
+    items:[{t:'Gmail',b:'s'},{t:'Microsoft 365',b:'s'},{t:'Google Drive',b:'s'},{t:'Canva',b:'s'},{t:'WordPress.com (ya instalado y mantenido)',b:'s'},{t:'Alquilar una máquina virtual (Amazon EC2) e instalar WordPress',b:'i',why:'tú instalas y administras el sistema y la aplicación.'},{t:'Máquinas virtuales de Microsoft Azure',b:'i'},{t:'Subir tu aplicación a Google App Engine',b:'a',why:'te dan el sistema, el servidor web y la base de datos preparados.'},{t:'Heroku',b:'a'},{t:'Un servidor en el armario de la empresa con WordPress instalado por ti',b:'p'}]})},
+  {label:'Web 1.0, 2.0 o 3.0',render:el=>sort(el,{intro:'¿A qué etapa de la web corresponde cada característica o ejemplo?',buckets:[{id:'1',name:'Web 1.0',sub:'leer'},{id:'2',name:'Web 2.0',sub:'participar y crear'},{id:'3',name:'Web 3.0',sub:'datos, IA, descentralización'}],
+    items:[{t:'Páginas estáticas que solo cambia su autor',b:'1'},{t:'La primera web del CERN',b:'1'},{t:'Comunicación en un solo sentido, como un periódico de papel',b:'1'},{t:'Blogs, wikis y comentarios',b:'2'},{t:'Redes sociales y plataformas de vídeo',b:'2'},{t:'Gestores de contenidos y foros que instalarás en el módulo',b:'2'},{t:'Un asistente que responde «restaurantes abiertos ahora cerca de mí» combinando datos de muchas webs',b:'3',why:'web semántica: las máquinas entienden el significado.'},{t:'Servicios basados en cadena de bloques (blockchain)',b:'3',why:'la propuesta de web descentralizada (Web3), todavía en evolución.'}]})},
+  {label:'Huella digital',render:el=>sort(el,{intro:'La **huella digital** es el rastro que dejamos al usar Internet. ¿Es **activa** (lo publicamos a propósito) o **pasiva** (se registra sin que lo hagamos a propósito)?',buckets:[{id:'a',name:'Activa'},{id:'p',name:'Pasiva'}],
+    items:[{t:'Subir una foto a Instagram',b:'a'},{t:'Escribir una reseña de un restaurante',b:'a'},{t:'Comentar en un foro',b:'a'},{t:'Tu perfil de LinkedIn',b:'a'},{t:'Las cookies de seguimiento de una web',b:'p'},{t:'La ubicación que registra el móvil',b:'p'},{t:'El historial de páginas visitadas',b:'p'},{t:'Los datos que recoge una app sobre su uso',b:'p'}]})},
+  {label:'IA, nube y privacidad',render:el=>quiz(el,{intro:'Valorar ventajas y riesgos es parte del trabajo de un técnico.',questions:[
+    {q:'Un asistente de IA te da un dato con total seguridad. ¿Qué haces?',o:['Lo compruebo en una fuente fiable','Lo copio tal cual: la IA no se equivoca'],a:0,fixed:1,why:'La IA generativa puede dar respuestas falsas con total seguridad («alucinaciones»).'},
+    {q:'Para redactar un correo más rápido, ¿pegas en un chatbot la lista de clientes con sus teléfonos?',o:['No: nunca se meten datos personales de clientes en herramientas no autorizadas','Sí, si el correo es urgente'],a:0,fixed:1,why:'Lo que se escribe en un servicio de IA puede guardarse en los servidores del proveedor.'},
+    {q:'Una empresa lo tiene todo en la nube y se cae su conexión a Internet. ¿Qué pasa?',o:['Se queda sin servicio','No pasa nada, la nube funciona sin conexión'],a:0,fixed:1,why:'La dependencia de la conexión es uno de los riesgos de la nube.'},
+    {q:'Un empleado borra por error un documento compartido en la nube. ¿De quién es la responsabilidad de los datos?',o:['Del cliente (la empresa)','Del proveedor de la nube'],a:0,fixed:1,why:'Los datos siempre son responsabilidad del cliente, aunque estén en la nube.'},
+    {q:'Quieres saber qué datos tiene una empresa sobre ti. ¿Qué derecho del RGPD ejerces?',o:['Acceso','Portabilidad','Oposición'],a:0,why:'Acceso: saber qué datos tiene una empresa sobre ti. También están rectificación, supresión, oposición y portabilidad.'},
+    {q:'Instalas una tienda online. ¿Qué tienes que comprobar además del ordenador?',o:['Que se ve bien en el móvil (diseño adaptable)','Que funciona en Internet Explorer','Nada más'],a:0,why:'La mayoría de clientes compran desde el móvil.'},
+    {q:'¿Cómo se financian la mayoría de las redes sociales?',o:['Con publicidad personalizada a partir de nuestros datos','Con lo que pagan los usuarios','Con dinero público'],a:0,why:'«Si no pagas por el producto, el producto eres tú.»'},
+    {q:'¿Qué hace falta antes de publicar en el perfil de una empresa una foto donde salen clientes?',o:['Su permiso','Nada, si la foto es buena','Ponerle un filtro'],a:0,why:'Las fotos de otras personas necesitan su permiso.'}]})}]);
+})();
+
+/* ================= S3 · DENTRO DEL SERVIDOR WEB ================= */
+(function(){
+const {h,md,acts,sort,order,quiz,msg}=K;
+const NS='http://www.w3.org/2000/svg';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const slowF=()=>{const s=document.getElementById('slow');return s&&s.checked?1.9:1};
+const wait=ms=>new Promise(r=>setTimeout(r,reduce?30:ms*slowF()));
+function S(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function T(p,x,y,s,a={}){const e=S('text',Object.assign({x,y},a),p);e.textContent=s;return e}
+function mv(g,x1,y1,x2,y2,ms){return new Promise(r=>{const d=reduce?40:ms*slowF(),t0=performance.now();(function f(n){const k=Math.min(1,(n-t0)/d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;g.setAttribute('transform',`translate(${x1+(x2-x1)*e} ${y1+(y2-y1)*e})`);k<1?requestAnimationFrame(f):r()})(t0)})}
+
+const PIECES={
+  nav:{t:'Navegador (cliente)',a:'El cliente sentado a la mesa',d:'Es el programa que usas para ver webs. <b>Pide</b> las páginas al servidor y las <b>dibuja</b> en pantalla a partir de HTML (estructura), CSS (aspecto) y JavaScript (comportamiento).',e:'Chrome, Firefox, Edge, Safari'},
+  web:{t:'Servidor web',a:'El camarero',d:'Es un <b>programa</b> instalado en el servidor que está siempre «escuchando» en los <b>puertos 80 (HTTP) y 443 (HTTPS)</b>. Recibe cada petición: si lo pedido es un archivo ya hecho, lo entrega él mismo; si hay que «cocinarlo», se lo pasa a la aplicación web. Además, apunta todo lo que pasa en su <b>registro (log)</b>.',e:'Apache HTTP Server, Nginx, Microsoft IIS'},
+  files:{t:'Carpeta de la web (disco)',a:'La barra con el pan y la bebida ya preparados',d:'Los <b>archivos ya hechos</b> que el servidor web entrega tal cual: imágenes, hojas de estilo y páginas estáticas. En Apache sobre Ubuntu suele ser la carpeta <b>/var/www/html</b>.',e:'logo.png, estilos.css, quienes-somos.html'},
+  app:{t:'Aplicación web',a:'El cocinero',d:'Es un <b>programa que se ejecuta en el servidor</b> y que construye las páginas <b>en el momento</b>, distintas para cada usuario, consultando la base de datos. Es lo que instalaréis en este módulo. Muchas están escritas en <b>PHP</b>.',e:'WordPress, PrestaShop, Moodle, phpBB, Roundcube'},
+  db:{t:'Base de datos',a:'La despensa ordenada',d:'Guarda de forma ordenada todo lo que <b>cambia</b>: usuarios, productos, precios, pedidos, mensajes… La gestiona un programa llamado <b>SGBD</b>. La aplicación web le pregunta y ella responde con los datos.',e:'MySQL, MariaDB, PostgreSQL'}};
+
+function restaurant(root){
+  root.append(h('p',{class:'lead',html:'Dentro de un servidor trabajan varias piezas, como en un restaurante. <b>Toca cada pieza</b> del dibujo para saber qué es. Después elige qué pide el navegador y pulsa <b>Siguiente paso</b> para seguir la petición por dentro.'}));
+  const reqSeg=h('div',{class:'seg',role:'group','aria-label':'Petición'});root.append(reqSeg);
+  const tog=h('div',{class:'row',style:'margin:12px 0'});root.append(tog);
+  const fig=h('div',{class:'k-svgfig'});root.append(fig);
+  const wrap=h('div',{class:'k-two',style:'margin-top:14px'});root.append(wrap);
+  const L=h('div'),R=h('div');wrap.append(L,R);
+  const svg=S('svg',{viewBox:'0 0 1000 520',role:'img','aria-label':'Navegador conectado por Internet a un servidor con el servidor web, la carpeta de archivos, la aplicación web y la base de datos'});fig.append(svg);
+  const res=h('div',{class:'browser'});
+  const bar=h('div',{class:'bar'},h('span',{class:'lock'},'🔒'),h('span',{class:'addr'},''));const page=h('div',{class:'page'});res.append(bar,page);
+  const info=h('div',{class:'card2',style:'background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:14px 16px'});
+  const steps=h('ol',{class:'k-mission'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+  const bNext=h('button',{class:'btn'},'Siguiente paso'),bAll=h('button',{class:'btn alt'},'Todo seguido'),bRe=h('button',{class:'btn alt'},'Empezar de nuevo');
+  const logBox=h('pre',{class:'k-term',style:'min-height:0;max-height:150px;font-size:13px;margin-top:10px'},'(todavía no hay peticiones)\n');
+  L.append(m,h('div',{class:'row'},bNext,bAll,bRe),h('h3',{style:'margin-top:14px'},'Paso a paso'),steps);
+  R.append(h('div',{class:'k-cap',style:'margin-top:0'},'Lo que ve el usuario en el navegador'),res,h('div',{class:'k-cap'},'Registro (log) del servidor web ',h('small',{},'lo que apunta el camarero')),logBox,h('div',{style:'margin-top:12px'},info));
+
+  // ---- dibujo
+  const boxes={};
+  const box=(id,x,y,w,hh,title,sub,ex,fill)=>{const g=S('g',{tabindex:0,role:'button','aria-label':PIECES[id].t,style:'cursor:pointer'},svg);
+    const r=S('rect',{x,y,width:w,height:hh,rx:14,fill:fill||'var(--surface)',stroke:'var(--line)','stroke-width':3,class:'bx'},g);
+    T(g,x+w/2,y+32,title,{'text-anchor':'middle','font-size':21,'font-weight':700,style:'font-family:var(--f-head)'});
+    T(g,x+w/2,y+58,sub,{'text-anchor':'middle','font-size':18,style:'fill:var(--accent-ink);font-style:italic'});
+    if(ex)T(g,x+w/2,y+hh-14,ex,{'text-anchor':'middle','font-size':15,style:'fill:var(--muted);font-family:var(--f-mono)'});
+    g.addEventListener('click',()=>showPiece(id));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showPiece(id)}});
+    boxes[id]={g,r,x,y,w,h:hh,cx:x+w/2,cy:y+hh/2};return g};
+  S('rect',{x:290,y:14,width:696,height:492,rx:18,fill:'var(--bg)',stroke:'var(--ink)','stroke-width':2.5,'stroke-dasharray':'10 6'},svg);
+  T(svg,306,40,'EL SERVIDOR · el ordenador de la empresa o del hosting',{'font-size':14,'font-weight':700,style:'font-family:var(--f-mono);fill:var(--accent-ink)'});
+  S('path',{d:'M220 220 C 260 220, 260 200, 312 200',fill:'none',stroke:'var(--accent)','stroke-width':6,'stroke-dasharray':'2 10','stroke-linecap':'round'},svg);
+  T(svg,262,184,'Internet',{'text-anchor':'middle','font-size':13,'font-weight':700,style:'fill:var(--muted)'});
+  box('nav',14,110,206,220,'Navegador','el cliente','Chrome · Firefox');
+  // mini navegador dibujado
+  const ng=boxes.nav.g;S('rect',{x:38,y:178,width:158,height:96,rx:6,fill:'var(--bg)',stroke:'var(--line)','stroke-width':2},ng);S('rect',{x:38,y:178,width:158,height:18,rx:6,fill:'var(--line)'},ng);
+  box('web',312,64,220,236,'Servidor web','el camarero','Apache · Nginx · IIS');
+  T(boxes.web.g,422,150,'escucha en los',{'text-anchor':'middle','font-size':17});T(boxes.web.g,422,174,'puertos 80 y 443',{'text-anchor':'middle','font-size':17,'font-weight':700});
+  box('files',312,330,220,160,'Carpeta de la web','archivos ya hechos','/var/www/html');
+  const fl=T(boxes.files.g,422,420,'logo.png · estilos.css',{'text-anchor':'middle','font-size':15,style:'font-family:var(--f-mono)'});T(boxes.files.g,422,442,'quienes-somos.html',{'text-anchor':'middle','font-size':15,style:'font-family:var(--f-mono)'});
+  box('app',566,64,200,236,'Aplicación web','el cocinero','WordPress · PHP');
+  T(boxes.app.g,666,150,'construye',{'text-anchor':'middle','font-size':17});T(boxes.app.g,666,174,'la página',{'text-anchor':'middle','font-size':17});T(boxes.app.g,666,198,'en el momento',{'text-anchor':'middle','font-size':17,'font-weight':700});
+  box('db',796,64,176,236,'Base de datos','la despensa','MySQL · MariaDB');
+  // cilindro
+  const dg=boxes.db.g;S('path',{d:'M834 120 v70 a50 14 0 0 0 100 0 v-70',fill:'var(--l-ip)',stroke:'var(--ink)','stroke-width':2},dg);S('ellipse',{cx:884,cy:120,rx:50,ry:14,fill:'var(--l-ip)',stroke:'var(--ink)','stroke-width':2},dg);
+  const dbList=S('g',{},dg);
+  // apagados
+  const offWeb=S('g',{opacity:0,'pointer-events':'none'},svg);S('rect',{x:312,y:64,width:220,height:236,rx:14,fill:'var(--bad)',opacity:.25},offWeb);T(offWeb,422,250,'APAGADO',{'text-anchor':'middle','font-size':24,'font-weight':700,style:'fill:var(--bad)'});
+  const offDb=S('g',{opacity:0,'pointer-events':'none'},svg);S('rect',{x:796,y:64,width:176,height:236,rx:14,fill:'var(--bad)',opacity:.25},offDb);T(offDb,884,280,'APAGADA',{'text-anchor':'middle','font-size':22,'font-weight':700,style:'fill:var(--bad)'});
+  // token
+  const tok=S('g',{opacity:0,'pointer-events':'none'},svg);const tokR=S('rect',{x:-90,y:-20,width:180,height:40,rx:9,fill:'var(--lamp)',stroke:'var(--ink)','stroke-width':2},tok);const tokT=T(tok,0,6,'',{'text-anchor':'middle','font-size':16,'font-weight':700,style:'font-family:var(--f-mono);fill:#15202B'});
+
+  let products=['Taza de cerámica azul','Taza grande blanca','Taza con asa de madera'];
+  function drawDb(){dbList.innerHTML='';T(dbList,884,228,'productos «taza»:',{'text-anchor':'middle','font-size':14,style:'fill:var(--muted)'});T(dbList,884,250,products.length+' registros',{'text-anchor':'middle','font-size':18,'font-weight':700})}
+  drawDb();
+
+  function hl(ids){Object.entries(boxes).forEach(([k,b])=>{const on=ids.includes(k);b.r.setAttribute('stroke',on?'var(--accent)':'var(--line)');b.r.setAttribute('stroke-width',on?6:3)})}
+  function showPiece(id){const p=PIECES[id];hl([id]);info.innerHTML=`<div class="grp" style="font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.07em;color:var(--accent-ink)">${p.a}</div><h3 style="font:700 22px var(--f-head);margin:4px 0 8px;text-transform:none;letter-spacing:0;color:var(--ink)">${p.t}</h3><p style="margin:0 0 8px">${p.d}</p><p style="margin:0;color:var(--muted);font-size:15px"><b>Ejemplos:</b> ${p.e}</p>`}
+  info.innerHTML='<p style="margin:0;color:var(--muted)">Toca una pieza del dibujo para ver qué es y a qué se parece en el restaurante.</p>';
+
+  let user='Ana';let webOn=true,dbOn=true;
+  const swWeb=h('label',{class:'lbl'},h('input',{type:'checkbox'}),' Apagar el servidor web');
+  const swDb=h('label',{class:'lbl'},h('input',{type:'checkbox'}),' Apagar la base de datos');
+  const addP=h('button',{class:'btn alt',style:'font-size:15px;padding:9px 14px'},'Añadir una taza nueva (desde el panel de administración)');
+  const usr=h('div',{class:'seg',role:'group','aria-label':'Usuario'});['Ana','Javier'].forEach(u=>usr.append(h('button',{'data-u':u,'aria-pressed':u===user?'true':'false',onclick:()=>{user=u;[...usr.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.u===u?'true':'false'));if(cur==='carrito')start();else msg(m,'','Ahora la sesión es de <b>'+u+'</b>. Elige <b>Mi carrito</b> para ver la diferencia.')}},'Sesión de '+u)));
+  tog.append(swWeb,swDb,addP,usr);
+  swWeb.querySelector('input').onchange=e=>{webOn=!e.target.checked;offWeb.setAttribute('opacity',webOn?0:1);start()};
+  swDb.querySelector('input').onchange=e=>{dbOn=!e.target.checked;offDb.setAttribute('opacity',dbOn?0:1);start()};
+  addP.onclick=()=>{if(products.length>=5)return msg(m,'warn','Ya hay suficientes tazas en la despensa.');products.push(['Taza verde de Talavera','Taza de desayuno XL'][products.length-3]);drawDb();msg(m,'good','El administrador ha añadido una taza desde el <b>panel de administración</b>: se ha guardado <b>en la base de datos</b> y no se ha tocado ningún archivo. Vuelve a hacer la búsqueda y mira el resultado.')};
+
+  const P=(id)=>[boxes[id].cx,boxes[id].cy];
+  const REQ={
+    logo:{label:'Una imagen: /logo.png',url:'tienda.example.com/logo.png'},
+    est:{label:'Página fija: /quienes-somos.html',url:'tienda.example.com/quienes-somos.html'},
+    buscar:{label:'Buscar: /buscar?q=taza',url:'tienda.example.com/buscar?q=taza'},
+    carrito:{label:'Mi carrito: /carrito',url:'tienda.example.com/carrito'},
+    e404:{label:'Algo que no existe: /ofertas-2019.html',url:'tienda.example.com/ofertas-2019.html'}};
+  let cur='logo',plan=[],si=0,busy=false;
+  Object.entries(REQ).forEach(([k,r])=>reqSeg.append(h('button',{'aria-pressed':k===cur?'true':'false',onclick:()=>{cur=k;[...reqSeg.children].forEach((b,i)=>b.setAttribute('aria-pressed',Object.keys(REQ)[i]===k));start()}},r.label)));
+  function log(code,path){if(!webOn)return;const t=new Date();const hh=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+':'+String(t.getSeconds()).padStart(2,'0');if(logBox.textContent.startsWith('('))logBox.textContent='';logBox.textContent+=`${hh}  GET ${path}  ${code}\n`;logBox.scrollTop=logBox.scrollHeight}
+  const cart={Ana:['Taza de cerámica azul × 2','Plato llano decorado × 1'],Javier:['Jarra de cerámica × 1']};
+
+  function build(){const r=REQ[cur],path=r.url.replace('tienda.example.com','');const pl=[];
+    const go=(a,b,label,text,ids,after)=>pl.push({a,b,label,text,ids,after});
+    if(!webOn){go('nav','web','GET '+path,`El navegador intenta conectar con el servidor en el puerto 443… pero <b>el servidor web está apagado</b>: no hay ningún camarero atendiendo. Nadie contesta y no se apunta nada en el registro.`,['nav','web'],()=>show('noconn'));return pl}
+    go('nav','web','GET '+path,`El navegador envía la <b>petición</b> por Internet: «dame <b>${path}</b>». Va por HTTPS, al <b>puerto 443</b>, donde escucha el servidor web. <i>(El cliente llama al camarero y le pide algo.)</i>`,['nav','web']);
+    if(cur==='logo'||cur==='est'){
+      go('web','files','busca '+path.slice(1),`El servidor web mira en su carpeta: <b>${path.slice(1)}</b> existe como archivo ya hecho. Es <b>estático</b>: no hay que cocinar nada. <i>(El camarero coge el pan de la barra.)</i>`,['web','files']);
+      go('files','web',path.slice(1),'Lo coge <b>tal cual</b>, sin cambiar nada. Si mañana lo pide otra persona, recibirá exactamente lo mismo.',['files','web']);
+      go('web','nav','200 OK',`Responde <b>200 OK</b> («todo bien») con el archivo y lo apunta en su <b>registro</b>. ${!dbOn?'Fíjate: aunque la base de datos esté apagada, esto funciona, porque los archivos estáticos no la necesitan.':''}`,['web','nav'],()=>{log(200,path);show(cur)});
+    }else if(cur==='e404'){
+      go('web','files','busca '+path.slice(1),'El servidor web busca <b>ofertas-2019.html</b> en su carpeta… y <b>no existe</b>. Tampoco es una dirección que gestione la aplicación.',['web','files']);
+      go('files','web','✗ no está','No lo encuentra. <i>(El camarero vuelve: «eso no lo tenemos en la carta».)</i>',['files','web']);
+      go('web','nav','404 Not Found','Responde <b>404 Not Found</b>: «no encontrado». Lo apunta en el registro: mirando los logs, el técnico ve qué enlaces están rotos.',['web','nav'],()=>{log(404,path);show('404')});
+    }else{
+      const isB=cur==='buscar';
+      go('web','app','pasa la petición',`Como <b>no existe ningún archivo</b> llamado así ${isB?'(el <b>?</b> de la dirección lo delata: lleva datos)':''}, el servidor web se la pasa a la <b>aplicación web</b>. <i>(El camarero lleva la comanda a la cocina.)</i>`,['web','app']);
+      if(!dbOn){
+        go('app','db',isB?'¿productos «taza»?':'¿carrito de '+user+'?','La aplicación intenta preguntar a la base de datos… pero <b>está apagada</b>. <i>(El cocinero va a la despensa y está cerrada.)</i>',['app','db']);
+        go('db','app','✗ sin respuesta','No hay datos: la aplicación <b>no puede construir la página</b>.',['db','app']);
+        go('app','web','error','La aplicación avisa al servidor web de que algo ha fallado en el servidor.',['app','web']);
+        go('web','nav','500 Error','El servidor web responde <b>500</b>: error interno del servidor. El usuario ve un mensaje de error de conexión con la base de datos. Las imágenes y páginas estáticas, en cambio, siguen funcionando.',['web','nav'],()=>{log(500,path);show('500')});
+      }else{
+        go('app','db',isB?'¿productos «taza»?':'¿carrito de '+user+'?',isB?'La aplicación le pregunta a la <b>base de datos</b>: «dame los productos cuyo nombre contenga <b>taza</b>, con su precio y su foto». <i>(El cocinero va a la despensa.)</i>':`La aplicación sabe que es <b>${user}</b> por la <b>cookie</b> de su sesión, y pregunta a la base de datos: «dame el carrito de ${user}».`,['app','db']);
+        go('db','app',isB?products.length+' productos':'carrito de '+user,isB?`La base de datos devuelve <b>${products.length} productos</b>.`:`La base de datos devuelve los productos del carrito de ${user}.`,['db','app']);
+        go('app','web','página HTML',`La aplicación <b>construye en este momento</b> una página HTML con esos datos y se la da al servidor web. Esta página <b>no existía</b> antes: es <b>dinámica</b>. <i>(El cocinero prepara el plato.)</i>`,['app','web']);
+        go('web','nav','200 OK',`El servidor web responde <b>200 OK</b> con la página y lo apunta en el registro. El navegador la dibuja y pide después las fotos y los estilos (archivos estáticos). ${isB?'':'<b>Cambia de usuario arriba y repite: cada uno ve su propio carrito.</b>'}`,['web','nav'],()=>{log(200,path);show(cur)});
+      }}
+    return pl}
+  function show(k){const r=REQ[cur];bar.lastChild.textContent=r.url;page.innerHTML='';
+    const P=(html)=>page.append(h('div',{html}));
+    if(k==='noconn'){bar.firstChild.textContent='⚠';P('<b style="font-size:20px">No se puede acceder a este sitio</b>');P('<span style="color:var(--muted)">El servidor no responde. (Error de conexión: el servidor web está apagado.)</span>');return}
+    bar.firstChild.textContent='🔒';
+    if(k==='logo')P('<div style="display:flex;align-items:center;gap:12px"><div style="width:56px;height:56px;border-radius:50%;background:var(--accent);display:grid;place-items:center;font:700 26px var(--f-head);color:#06222A">C</div><b style="font-size:20px">Cerámicas Ribera</b></div><span style="color:var(--muted)">(la imagen logo.png)</span>');
+    if(k==='est')P('<b style="font-size:20px">Quiénes somos</b>'),P('Somos una tienda de cerámica de Talavera desde 1987.'),P('<span style="color:var(--muted)">Página estática: es igual para todos los visitantes.</span>');
+    if(k==='buscar'){P(`<b style="font-size:20px">Resultados para «taza» (${products.length})</b>`);products.forEach(p=>P('☕ '+p))}
+    if(k==='carrito'){P(`<b style="font-size:20px">Carrito de ${user}</b>`);cart[user].forEach(p=>P('🛒 '+p))}
+    if(k==='404')P('<b style="font-size:22px">404 · Página no encontrada</b>'),P('<span style="color:var(--muted)">La página que buscas no existe.</span>');
+    if(k==='500')P('<b style="font-size:20px;color:var(--bad)">Error al conectar con la base de datos</b>'),P('<span style="color:var(--muted)">Código 500: el fallo está en el servidor, no en tu equipo.</span>')}
+  function start(){plan=build();si=0;busy=false;tok.setAttribute('opacity',0);hl([]);steps.innerHTML='';plan.forEach(p=>steps.append(h('li',{html:p.label.replace(/</g,'&lt;')})));
+    bar.firstChild.textContent='🔒';bar.lastChild.textContent=REQ[cur].url;page.innerHTML='<span style="color:var(--muted)">Esperando la respuesta…</span>';
+    msg(m,'',`El usuario escribe <b>${REQ[cur].url}</b>. Pulsa <b>Siguiente paso</b>.`);upd()}
+  function upd(){[...steps.children].forEach((li,i)=>li.className=i<si?'done':i===si?'cur':'');bNext.toggleAttribute('disabled',busy||si>=plan.length);bAll.toggleAttribute('disabled',busy||si>=plan.length)}
+  async function step(){if(busy||si>=plan.length)return;busy=true;upd();const p=plan[si];hl(p.ids);tokT.textContent=p.label;
+    const w=Math.max(120,p.label.length*10+28);tokR.setAttribute('width',w);tokR.setAttribute('x',-w/2);
+    const [x1,y1]=P(p.a),[x2,y2]=P(p.b);tok.setAttribute('opacity',1);msg(m,'',p.text);await mv(tok,x1,y1,x2,y2,1100);
+    if(si===plan.length-1)tok.setAttribute('opacity',0);
+    if(p.after)p.after();si++;busy=false;upd();
+    if(si>=plan.length)msg(m,'good',p.text+'<br><br><b>Fin.</b> Prueba otra petición o apaga alguna pieza para ver qué pasa.')}
+  bNext.onclick=step;bRe.onclick=start;bAll.onclick=async()=>{while(si<plan.length){await step();await wait(900)}};
+  start();
+}
+
+acts(document.getElementById('r-srv'),[
+  {label:'El restaurante web',render:restaurant},
+  {label:'¿Qué pieza es?',render:el=>sort(el,{intro:'Clasifica cada programa o cada tarea según la **pieza** del servicio web a la que pertenece.',
+    buckets:[{id:'n',name:'Navegador',sub:'el cliente'},{id:'w',name:'Servidor web',sub:'el camarero'},{id:'a',name:'Aplicación web',sub:'el cocinero'},{id:'d',name:'Base de datos',sub:'la despensa'}],
+    items:[{t:'Chrome',b:'n'},{t:'Firefox',b:'n'},{t:'Apache',b:'w'},{t:'Nginx',b:'w'},{t:'Microsoft IIS',b:'w'},{t:'WordPress',b:'a'},{t:'PrestaShop',b:'a'},{t:'Moodle',b:'a'},{t:'MySQL',b:'d'},{t:'MariaDB',b:'d'},
+      {t:'Escucha en los puertos 80 y 443',b:'w'},{t:'Apunta cada petición en el registro (log)',b:'w'},{t:'Entrega una imagen tal cual',b:'w',why:'los archivos estáticos los sirve el servidor web directamente.'},{t:'Construye la página del carrito en el momento',b:'a'},{t:'Guarda los usuarios y sus contraseñas',b:'d'},{t:'Dibuja la página a partir del HTML y el CSS',b:'n'},{t:'Guarda las cookies de la sesión',b:'n'}]})},
+  {label:'¿Estática o dinámica?',render:el=>sort(el,{intro:'**Estática:** un archivo ya hecho, igual para todos. **Dinámica:** la aplicación la construye en el momento, normalmente con la base de datos.',buckets:[{id:'e',name:'Estática'},{id:'d',name:'Dinámica'}],
+    items:[{t:'La página «Quiénes somos» de una tienda que nunca cambia',b:'e'},{t:'La primera web de la historia, en el CERN',b:'e'},{t:'El horario fijo de un museo',b:'e'},{t:'Tu carrito de la compra',b:'d'},{t:'Los resultados de un buscador',b:'d',why:'cambian según lo que busques.'},{t:'Tu bandeja de correo web',b:'d'},{t:'tienda.es/buscar?q=jarra',b:'d',why:'el ? con datos delata una página dinámica.'},{t:'La portada de un foro con los últimos mensajes',b:'d'},{t:'Tus notas en la plataforma del instituto',b:'d'}]})},
+  {label:'Tipos de aplicaciones',render:el=>sort(el,{intro:'Estas son las aplicaciones web que se instalan en este módulo. ¿De qué tipo es cada una?',
+    buckets:[{id:'c',name:'Gestor de contenidos (CMS)'},{id:'t',name:'Tienda online'},{id:'f',name:'Foro'},{id:'w',name:'Wiki'},{id:'l',name:'Plataforma educativa (LMS)'},{id:'m',name:'Correo web'}],
+    items:[{t:'WordPress',b:'c'},{t:'Joomla',b:'c'},{t:'Drupal',b:'c'},{t:'PrestaShop',b:'t'},{t:'WooCommerce',b:'t',why:'es un complemento de WordPress para vender.'},{t:'phpBB',b:'f'},{t:'MediaWiki',b:'w',why:'la que usa Wikipedia.'},{t:'Moodle',b:'l'},{t:'Roundcube',b:'m'}]})},
+  {label:'Tres capas y LAMP',render:el=>quiz(el,{intro:'Repasa cómo encajan todas las piezas.',questions:[
+    {q:'¿Qué es el <b>servidor web</b>?',o:['Un programa que recibe las peticiones y entrega las respuestas','Un ordenador muy grande','La página principal de una web'],a:0,why:'Es un programa (Apache, Nginx, IIS) instalado en el ordenador servidor.'},
+    {q:'¿En qué puertos escucha normalmente un servidor web?',o:['80 (HTTP) y 443 (HTTPS)','21 y 22','25 y 110'],a:0,why:'El 443 es el de HTTPS, el cifrado.'},
+    {q:'Pides <b>/logo.png</b> y la base de datos está apagada. ¿Qué pasa?',o:['Se ve igual: es un archivo estático','Sale un error 500','Sale un 404'],a:0,why:'Los archivos estáticos los entrega el servidor web sin usar la base de datos.'},
+    {q:'Pides <b>/buscar?q=taza</b> y la base de datos está apagada. ¿Qué pasa?',o:['Error: la aplicación no puede construir la página','Se ven los resultados igual','Se ve la página de ayer'],a:0,why:'Las páginas dinámicas necesitan los datos para construirse.'},
+    {q:'Pides una página que no existe. ¿Qué código responde el servidor?',o:['404','200','500'],a:0,why:'404 = no encontrado. 200 = todo bien. 500 = error en el servidor.'},
+    {q:'Un editor publica una noticia desde el panel de WordPress. ¿Dónde se guarda?',o:['En la base de datos','En un archivo HTML nuevo','En el navegador del editor'],a:0,why:'Cuando alguien la pide, la aplicación la lee de la base de datos y construye la página.'},
+    {q:'¿Qué significa <b>LAMP</b>?',o:['Linux + Apache + MySQL/MariaDB + PHP','Lámpara de servidor','Local Area Mail Protocol'],a:0,why:'La combinación habitual para instalar WordPress, Moodle, PrestaShop…'},
+    {q:'En la arquitectura en tres capas, ¿qué es la <b>capa de datos</b>?',o:['La base de datos (SGBD)','El navegador','El servidor web'],a:0,why:'Presentación = navegador; lógica = servidor web + aplicación; datos = base de datos.'},
+    {q:'¿Cómo sabe la tienda que el carrito es el <b>tuyo</b>?',o:['Por la cookie de tu sesión, que envía el navegador','Porque adivina por la IP','Porque cada usuario tiene su propio servidor'],a:0,why:'Las cookies guardan pequeños datos de cada web, por ejemplo, que has iniciado sesión.'},
+    {q:'Al instalar WordPress, el asistente pide nombre de base de datos, usuario, contraseña y servidor. ¿Qué se suele poner como servidor si está en el mismo equipo?',o:['localhost','www.google.com','192.168.1.1'],a:0,why:'localhost significa «este mismo equipo».'},
+    {q:'¿Dónde mira el técnico para saber quién ha pedido qué y con qué código?',o:['En el registro (log) del servidor web','En la papelera','En el historial del navegador del cliente'],a:0,why:'El servidor web apunta cada petición en sus registros.'}]})}]);
+})();
+
+</script>
+
+</body></html>
