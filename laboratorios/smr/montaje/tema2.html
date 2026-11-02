@@ -1,0 +1,797 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratorio de Montaje · Tema 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --ink:#0E1B32; --muted:#55697C; --line:#C9D5DF;
+  --accent:#00B8CF; --accent-ink:#17627C; --chip:#DFF5F9; --warn:#C9741F; --warn-bg:#FCE6CC;
+  --bad:#C2412D; --bad-bg:#FBE1DC; --good:#1F8A5B; --good-bg:#DDF2E7;
+  --lamp:#FFC93C; --lamp-glow:rgba(255,201,60,.55); --lamp-off:#DCE3EA;
+  --l-app:#FBE3C4; --l-tcp:#CFEAF7; --l-ip:#D9EBD0; --l-eth:#E6DCF4;
+  --f-head:'Poppins',system-ui,sans-serif; --f-body:'Open Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.5 var(--f-body)}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-top:6px solid var(--accent);padding-top:18px}
+.eyebrow{font:600 13px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font:700 clamp(28px,4vw,40px)/1.1 var(--f-head);margin:6px 0 0;text-wrap:balance}
+.speed{display:flex;align-items:center;gap:10px;font:600 15px var(--f-body);color:var(--muted)}
+nav.tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:20px 0 22px}
+.tab{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:12px 14px;background:var(--surface);border:2px solid var(--line);border-radius:10px;min-width:0}
+.tab b{font:600 17px/1.25 var(--f-head)}
+.tab span{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em}
+.tab[aria-selected="true"]{border-color:var(--accent);background:var(--chip)}
+.tab:focus-visible,.btn:focus-visible,.seg button:focus-visible,.bulb:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px clamp(16px,3vw,30px) 26px}
+.panel h2{font:700 clamp(24px,3vw,30px)/1.2 var(--f-head);margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:6px 0 18px;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{all:unset;cursor:pointer;font:600 17px var(--f-head);padding:12px 20px;border-radius:10px;background:var(--ink);color:var(--surface);text-align:center}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn[disabled]{opacity:.4;cursor:default}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:10px 18px;font:600 16px var(--f-head)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+input[type=number],select{font:600 20px var(--f-mono);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:7.5em}
+select{width:auto}
+label.lbl{font:600 15px var(--f-body);color:var(--muted)}
+.note{background:var(--chip);border-radius:10px;padding:14px 18px;margin-top:18px;max-width:80ch}
+.note b{font-family:var(--f-head)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.svgbox{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.svgbox svg{display:block;width:100%;min-width:560px;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+.mono{font-family:var(--f-mono)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.log li{padding:10px 12px;border-left:4px solid var(--accent);background:var(--bg);border-radius:6px;font-size:16px}
+.log li.bad{border-color:var(--bad);background:var(--bad-bg)}
+.log li.good{border-color:var(--good);background:var(--good-bg)}
+.log li.warn{border-color:var(--warn);background:var(--warn-bg)}
+.side h3{font:600 15px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--accent-ink);margin:0 0 10px}
+
+/* ===== Kit de actividades (clasificar, ordenar, test) ===== */
+.k-acts{margin:0 0 18px}
+.k-stage{min-height:120px}
+.k-msg{border-radius:12px;padding:12px 16px;background:var(--bg);border:2px solid var(--line);font-size:17px;margin:12px 0;min-height:52px}
+.k-msg.good{background:var(--good-bg);border-color:var(--good)}
+.k-msg.bad{background:var(--bad-bg);border-color:var(--bad)}
+.k-msg.warn{background:var(--warn-bg);border-color:var(--warn)}
+.k-msg b{font-family:var(--f-head)}
+.k-score{font:600 15px var(--f-mono);color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.k-score b{color:var(--ink)}
+.k-pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:2px dashed var(--line);border-radius:12px;min-height:64px;background:var(--bg);margin:10px 0 14px}
+.k-pool:empty::after{content:'¡Todas colocadas!';font:600 16px var(--f-head);color:var(--good);padding:8px}
+.k-chip{all:unset;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;padding:9px 13px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font:600 16px/1.3 var(--f-body);max-width:100%;overflow-wrap:anywhere}
+.k-chip.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-chip.ok{background:var(--good-bg);border-color:var(--good);cursor:default}
+.k-chip.shake{animation:kshake .35s}
+.k-chip:focus-visible,.k-bucket:focus-visible,.k-opt:focus-visible,.k-oi:focus-visible,.k-tok:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.k-ghost{position:fixed;z-index:50;pointer-events:none;opacity:.92;transform:translate(-50%,-50%) scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.k-buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.k-bucket{border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);min-height:120px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0}
+.k-bucket.over{border-color:var(--accent);background:var(--chip)}
+.k-bucket.armed{border-style:dashed;border-color:var(--accent)}
+.k-bucket h4{margin:0 0 4px;font:700 17px/1.2 var(--f-head)}
+.k-bucket h4 small{display:block;font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em;margin-top:2px}
+.k-bucket .k-chip{font-size:14px;padding:6px 9px}
+@keyframes kshake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.k-olist{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:860px}
+.k-oi{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.k-oi .n{font:700 18px var(--f-mono);color:var(--muted);min-width:1.6em;text-align:center}
+.k-oi .t{font:600 17px/1.35 var(--f-body)}
+.k-oi .t small{display:block;font-weight:400;color:var(--muted);font-size:14px}
+.k-oi .mv{display:flex;gap:4px}
+.k-oi .mv button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:8px;border:2px solid var(--line);text-align:center;font:700 18px/34px var(--f-mono);background:var(--bg)}
+.k-oi.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-oi.ok{border-color:var(--good);background:var(--good-bg)}
+.k-oi.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-olabel{font:600 13px var(--f-mono);color:var(--accent-ink);text-transform:uppercase;letter-spacing:.06em}
+.k-q{max-width:900px}
+.k-q .qn{font:600 14px var(--f-mono);color:var(--muted)}
+.k-q .qt{font:700 clamp(20px,2.4vw,24px)/1.3 var(--f-head);margin:6px 0 14px;text-wrap:pretty}
+.k-q .qfig{margin:0 0 14px}
+.k-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.k-opt{all:unset;cursor:pointer;padding:14px 16px;border:2px solid var(--line);border-radius:10px;background:var(--surface);font:600 17px/1.35 var(--f-body)}
+.k-opt:hover{border-color:var(--accent)}
+.k-opt.ok{border-color:var(--good);background:var(--good-bg)}
+.k-opt.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-opt[disabled]{cursor:default}
+.k-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:6px 0 12px;max-width:900px}
+.k-bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.k-end{font:700 24px var(--f-head);margin:8px 0}
+.k-two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+.k-two.wide{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr)}
+@media (max-width:900px){.k-two,.k-two.wide{grid-template-columns:minmax(0,1fr)}}
+.k-two>*{min-width:0}
+.k-tok{all:unset;cursor:pointer;font:700 clamp(18px,2.4vw,26px) var(--f-mono);padding:8px 12px;border-radius:8px;border:2px solid var(--line);background:var(--surface)}
+.k-tok.seen{background:var(--chip);border-color:var(--accent)}
+.k-tok.sel{box-shadow:0 0 0 3px var(--accent)}
+.k-toks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.k-tbl{border-collapse:collapse;font-size:16px;width:100%}
+.k-tbl th,.k-tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+.k-tbl th{background:var(--bg);font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.k-tbl tr.hl td{background:var(--warn-bg)}
+.k-tbl tr.new td{background:var(--good-bg);animation:pop .4s}
+.k-tbl td.fk,.k-tbl td.pk{font-family:var(--f-mono);font-weight:700}
+.k-tbl td.fk button{all:unset;cursor:pointer;color:var(--accent-ink);text-decoration:underline;text-underline-offset:3px}
+.k-tbl td.chg{background:var(--good-bg);font-weight:700}
+.k-tblwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.k-cap{font:700 16px var(--f-head);margin:14px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.k-cap small{font:600 12px var(--f-mono);color:var(--muted)}
+.k-mission{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.k-mission li{padding:10px 12px;border-radius:8px;background:var(--bg);border-left:4px solid var(--line);font-size:16px}
+.k-mission li.cur{border-color:var(--accent);background:var(--chip)}
+.k-mission li.done{border-color:var(--good);background:var(--good-bg)}
+.k-mission li.done::before{content:'✓ ';font-weight:700;color:var(--good)}
+.k-term{background:#0C1220;color:#D8E1EA;border-radius:12px;padding:14px 16px;font:500 15px/1.5 var(--f-mono);min-height:340px;max-height:460px;overflow:auto;border:2px solid var(--line)}
+.k-term .pr{color:#7FE3A0}
+.k-term .ps{color:#7CC4FF}
+.k-term .er{color:#FF9C8C}
+.k-term .wn{color:#FFD27A}
+.k-term pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+.k-term .in{display:flex;gap:8px;align-items:center}
+.k-term input{all:unset;flex:1;min-width:0;color:#fff;caret-color:#7FE3A0}
+.k-chips2{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.k-chips2 button{all:unset;cursor:pointer;font:600 14px var(--f-mono);padding:6px 10px;border-radius:8px;border:2px solid var(--line);background:var(--bg)}
+.k-chips2 button:focus-visible{outline:3px solid var(--accent)}
+.k-dm{border:2px solid var(--line);border-radius:10px;background:var(--surface);font:400 15px var(--f-body);overflow:hidden}
+.k-dm .tb{background:var(--bg);padding:6px 10px;border-bottom:1px solid var(--line);font:600 14px var(--f-body)}
+.k-dm ul{list-style:none;margin:0;padding:4px 0 8px}
+.k-dm li{margin:0}
+.k-dm .cat,.k-dm .dev{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;padding:5px 10px;width:100%;box-sizing:border-box}
+.k-dm .dev{padding-left:34px}
+.k-dm .cat:hover,.k-dm .dev:hover{background:var(--chip)}
+.k-dm .dev.sel{background:var(--chip);outline:2px solid var(--accent);outline-offset:-2px}
+.k-dm .ic{width:18px;height:18px;flex:none}
+.k-dm .car{width:14px;font:700 13px var(--f-mono);color:var(--muted)}
+.k-props{border:2px solid var(--line);border-radius:10px;background:var(--surface)}
+.k-props .ptabs{display:flex;border-bottom:2px solid var(--line)}
+.k-props .ptabs button{all:unset;cursor:pointer;padding:8px 14px;font:600 15px var(--f-body)}
+.k-props .ptabs button[aria-pressed="true"]{background:var(--chip);box-shadow:inset 0 -3px 0 var(--accent)}
+.k-props .pbody{padding:14px 16px;font-size:16px;min-height:170px}
+.k-props .pbody .mono{background:var(--bg);padding:8px 10px;border-radius:6px;display:block;overflow-wrap:anywhere;margin-top:6px}
+.k-svgfig{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.k-svgfig svg{display:block;width:100%;height:auto}
+.seg.k-acts,.k-stage .seg{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%}
+.k-q .qt b{color:var(--accent-ink)}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:20px 0;max-width:900px}
+.ro{background:var(--bg);border-radius:10px;padding:10px 14px;min-width:0}
+.ro small{display:block;font:600 13px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ro div{font:700 26px var(--f-mono);overflow-wrap:anywhere}
+.ro.big div{font-size:44px;line-height:1.1}
+.sum{font:600 20px var(--f-mono);margin:4px 0 0;color:var(--accent-ink);overflow-wrap:anywhere}
+.target{font:700 20px var(--f-head);padding:8px 14px;border-radius:8px;background:var(--warn-bg)}
+.target.ok{background:var(--good-bg);color:var(--good)}
+svg g[role=button]:focus{outline:none}svg g[role=button]:focus-visible .slot{stroke:var(--accent);stroke-width:5}
+.lbl{font:600 15px var(--f-body);color:var(--muted)}
+select{font:600 17px var(--f-body);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+
+.hdr-note{font:600 14px var(--f-body);color:var(--muted)}
+</style></head><body>
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Tema 2 · Montaje y mantenimiento de equipos · SMR</div>
+    <h1>Laboratorio de Montaje · Tema 2</h1>
+  </div>
+  <label class="speed" for="slow"><input type="checkbox" id="slow"> Ritmo lento en las animaciones</label>
+</header>
+<nav class="tabs" role="tablist" aria-label="Sesiones">
+  <button class="tab" role="tab" data-t="chasis"><b>El chasis</b><span>Sesión 1 · Tipos, fijación y flujo de aire</span></button>
+  <button class="tab" role="tab" data-t="almac"><b>Memoria y almacenamiento</b><span>Sesión 2 · RAM, discos, ópticas y memoria auxiliar</span></button>
+  <button class="tab" role="tab" data-t="adapt"><b>Gráfica, monitor y red</b><span>Sesión 3 · Adaptadores, monitor, LAN, Wi‑Fi y WAN</span></button>
+  <button class="tab" role="tab" data-t="inv"><b>OEM, garantía e inventario</b><span>Sesión 4 · Documentación, garantías e inventario</span></button>
+</nav>
+<section class="panel" id="p-chasis" role="tabpanel" hidden>
+  <h2>El chasis</h2>
+  <div id="r-chasis"></div>
+</section>
+<section class="panel" id="p-almac" role="tabpanel" hidden>
+  <h2>Memoria y almacenamiento</h2>
+  <div id="r-almac"></div>
+</section>
+<section class="panel" id="p-adapt" role="tabpanel" hidden>
+  <h2>Gráfica, monitor y red</h2>
+  <div id="r-adapt"></div>
+</section>
+<section class="panel" id="p-inv" role="tabpanel" hidden>
+  <h2>OEM, garantía e inventario</h2>
+  <div id="r-inv"></div>
+</section>
+</div>
+<script>
+
+/* ===== Kit de actividades ===== */
+const K=(function(){
+  const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){if(k==='class')e.className=attrs[k];else if(k==='html')e.innerHTML=attrs[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k])}kids.flat().forEach(c=>{if(c==null)return;e.append(c.nodeType?c:document.createTextNode(c))});return e};
+  const md=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<span class="mono">$1</span>');
+  const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  function msg(el,cls,html){el.className='k-msg'+(cls?' '+cls:'');el.innerHTML=html}
+
+  // Selector de actividades dentro de una pestaña
+  function acts(root,list){
+    const seg=h('div',{class:'seg k-acts',role:'group','aria-label':'Actividad'});
+    const stage=h('div',{class:'k-stage'});
+    root.append(seg,stage);
+    const views=list.map(()=>null);
+    const btns=list.map((a,i)=>{const b=h('button',{'aria-pressed':i===0?'true':'false',onclick:()=>go(i)},a.label);seg.append(b);return b});
+    function go(i){btns.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));views.forEach(v=>v&&(v.hidden=true));
+      if(!views[i]){views[i]=h('div');stage.append(views[i]);list[i].render(views[i])}views[i].hidden=false}
+    go(0);
+  }
+
+  // Clasificar: tocar ficha + tocar caja, o arrastrar
+  function sort(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const score=h('div',{class:'k-score'});
+    const pool=h('div',{class:'k-pool','aria-label':'Fichas sin colocar'});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    const grid=h('div',{class:'k-buckets'});
+    const bk={};
+    cfg.buckets.forEach(b=>{const el=h('div',{class:'k-bucket',tabindex:0,role:'button','aria-label':'Caja '+b.name,'data-b':b.id},h('h4',{html:md(b.name)+(b.sub?'<small>'+md(b.sub)+'</small>':'')}));
+      el.addEventListener('click',()=>{if(sel)drop(sel,b.id)});
+      el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel){e.preventDefault();drop(sel,b.id)}});
+      bk[b.id]=el;grid.append(el)});
+    const row=h('div',{class:'row',style:'margin-top:14px'},
+      h('button',{class:'btn alt',onclick:reset},'Empezar de nuevo'),
+      h('button',{class:'btn alt',onclick:solve},'Ver solución'));
+    root.append(score,pool,m,grid,row);
+    let sel=null,ok=0,ko=0,chips=[];
+    const bname=id=>cfg.buckets.find(b=>b.id===id).name.replace(/\*\*/g,'');
+    function upd(){score.innerHTML=`<span>Colocadas: <b>${ok}/${cfg.items.length}</b></span><span>Fallos: <b>${ko}</b></span>`;
+      Object.values(bk).forEach(b=>b.classList.toggle('armed',!!sel))}
+    function pick(c){if(c.classList.contains('ok'))return;if(sel===c){c.classList.remove('sel');sel=null}else{sel&&sel.classList.remove('sel');sel=c;c.classList.add('sel');
+      msg(m,'','<b>'+md(c._it.t)+'</b>. Ahora toca la caja donde va (o arrástrala).')}upd()}
+    function drop(c,b){const it=c._it;c.classList.remove('sel');sel=null;
+      if(it.b===b||(Array.isArray(it.b)&&it.b.includes(b))){c.classList.add('ok');c.setAttribute('tabindex','-1');bk[b].append(c);ok++;
+        msg(m,'good','✓ <b>'+md(it.t)+'</b> → '+md(bname(b))+(it.why?'. '+md(it.why):''));
+        if(ok===cfg.items.length)msg(m,'good','<b>¡Completado!</b> '+ok+' fichas con '+ko+' fallo'+(ko===1?'':'s')+'. '+(it.why?md(it.why):''))}
+      else{ko++;c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);
+        msg(m,'bad','✗ <b>'+md(it.t)+'</b> no va en «'+md(bname(b))+'». '+(it.hint?md(it.hint):'Piénsalo otra vez.'))}
+      upd()}
+    function build(){pool.innerHTML='';Object.values(bk).forEach(b=>[...b.querySelectorAll('.k-chip')].forEach(c=>c.remove()));
+      chips=shuffle(cfg.items).map(it=>{const c=h('button',{class:'k-chip',type:'button',html:md(it.t)});c._it=it;
+        c.addEventListener('pointerdown',e=>startDrag(e,c));
+        c.addEventListener('click',e=>{if(c._dragged){c._dragged=false;return}pick(c)});
+        pool.append(c);return c});
+      ok=0;ko=0;sel=null;msg(m,'',cfg.start||'Toca una ficha y después la caja donde va. También puedes arrastrarla.');upd()}
+    function reset(){build()}
+    function solve(){chips.forEach(c=>{if(!c.classList.contains('ok')){const b=Array.isArray(c._it.b)?c._it.b[0]:c._it.b;c.classList.add('ok');c.classList.remove('sel');bk[b].append(c)}});sel=null;msg(m,'warn','Solución a la vista. Pulsa «Empezar de nuevo» para intentarlo sin ayuda.');upd()}
+    let dr=null;
+    function startDrag(e,c){if(c.classList.contains('ok')||e.button>0)return;dr={c,x:e.clientX,y:e.clientY,g:null,id:e.pointerId}}
+    window.addEventListener('pointermove',e=>{if(!dr||e.pointerId!==dr.id)return;
+      if(!dr.g){if(Math.hypot(e.clientX-dr.x,e.clientY-dr.y)<8)return;dr.g=dr.c.cloneNode(true);dr.g.classList.add('k-ghost');document.body.append(dr.g);dr.c.style.opacity=.35}
+      e.preventDefault();dr.g.style.left=e.clientX+'px';dr.g.style.top=e.clientY+'px';
+      Object.values(bk).forEach(b=>b.classList.remove('over'));const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))b.classList.add('over')},{passive:false});
+    window.addEventListener('pointerup',e=>{if(!dr||e.pointerId!==dr.id)return;const d=dr;dr=null;if(!d.g)return;
+      d.g.remove();d.c.style.opacity='';d.c._dragged=true;setTimeout(()=>d.c._dragged=false,0);Object.values(bk).forEach(b=>b.classList.remove('over'));
+      const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))drop(d.c,b.dataset.b)});
+    window.addEventListener('pointercancel',()=>{if(dr&&dr.g){dr.g.remove();dr.c.style.opacity=''}dr=null});
+    build();
+  }
+
+  // Ordenar
+  function order(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    if(cfg.top)root.append(h('div',{class:'k-olabel'},'▲ '+cfg.top));
+    const ol=h('ol',{class:'k-olist'});root.append(ol);
+    if(cfg.bottom)root.append(h('div',{class:'k-olabel'},'▼ '+cfg.bottom));
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    root.append(m,h('div',{class:'row'},h('button',{class:'btn',onclick:check},'Comprobar'),h('button',{class:'btn alt',onclick:()=>{cur=shuffleNotSorted();sel=-1;draw();msg(m,'','Ordena de nuevo.')}},'Mezclar'),h('button',{class:'btn alt',onclick:()=>{cur=cfg.items.map((_,i)=>i);sel=-1;draw(true);msg(m,'warn','Este es el orden correcto. Fíjate en las explicaciones en gris.')}},'Ver solución')));
+    let sel=-1,cur=shuffleNotSorted(),tries=0;
+    function shuffleNotSorted(){let a;do{a=shuffle(cfg.items.map((_,i)=>i))}while(a.every((v,i)=>v===i)&&a.length>1);return a}
+    function swap(i,j){if(j<0||j>=cur.length)return;[cur[i],cur[j]]=[cur[j],cur[i]];draw()}
+    function draw(showD){ol.innerHTML='';cur.forEach((v,i)=>{const it=cfg.items[v];
+      const li=h('li',{class:'k-oi'+(sel===i?' sel':''),tabindex:0},h('span',{class:'n'},String(i+1)),h('span',{class:'t',html:md(it.t)+(showD&&it.d?'<small>'+md(it.d)+'</small>':'')}),
+        h('span',{class:'mv'},h('button',{'aria-label':'Subir',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i-1)}},'↑'),h('button',{'aria-label':'Bajar',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i+1)}},'↓')));
+      li.addEventListener('click',()=>{if(sel<0){sel=i;draw()}else if(sel===i){sel=-1;draw()}else{const s=sel;sel=-1;swap(s,i)}});
+      ol.append(li)})}
+    function check(){tries++;let n=0;[...ol.children].forEach((li,i)=>{const good=cur[i]===i;if(good)n++;li.classList.add(good?'ok':'ko')});
+      if(n===cur.length){draw(true);[...ol.children].forEach(li=>li.classList.add('ok'));msg(m,'good','<b>¡Perfecto!</b> Todo en orden'+(tries>1?' (en '+tries+' intentos)':'')+'. '+(cfg.done?md(cfg.done):''))}
+      else msg(m,'bad',`<b>${n} de ${cur.length}</b> en su sitio (en verde). Mueve los rojos: toca uno y luego otro para intercambiarlos, o usa las flechas.`)}
+    draw();msg(m,'',cfg.start||'Toca un elemento y después otro para intercambiarlos, o usa las flechas ↑ ↓. Cuando acabes, pulsa «Comprobar».');
+  }
+
+  // Test de una pregunta cada vez
+  function quiz(root,cfg){
+    if(cfg.intro)root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const box=h('div',{class:'k-q'});root.append(box);
+    let qs,i,ok,answered;
+    function start(){qs=(cfg.noShuffle?cfg.questions:shuffle(cfg.questions)).map(q=>{const o=q.o.map((t,j)=>({t,c:j===q.a}));return Object.assign({},q,{opts:cfg.fixed||q.fixed?o:shuffle(o)})});i=0;ok=0;draw()}
+    function draw(){box.innerHTML='';
+      if(i>=qs.length){box.append(h('div',{class:'k-end'},`Resultado: ${ok} de ${qs.length}`),h('p',{},ok===qs.length?'¡Todas bien!':ok>=qs.length*.7?'Muy bien. Repasa las que fallaste.':'Vuelve a intentarlo: lee bien la explicación de cada pregunta.'),h('button',{class:'btn',onclick:start},'Otra vez (en otro orden)'));return}
+      const q=qs[i];answered=false;
+      const bar=h('div',{class:'k-bar'},h('i',{style:`width:${i/qs.length*100}%`}));
+      const opts=h('div',{class:'k-opts'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Elige una respuesta.');
+      const next=h('button',{class:'btn',onclick:()=>{i++;draw()},hidden:''},i===qs.length-1?'Ver resultado':'Siguiente pregunta');
+      q.opts.forEach(o=>{const b=h('button',{class:'k-opt',html:md(o.t)});b.onclick=()=>{if(answered)return;answered=true;
+        if(o.c){ok++;b.classList.add('ok');msg(m,'good','✓ <b>Correcto.</b> '+md(q.why||''))}
+        else{b.classList.add('ko');[...opts.children].forEach((x,k)=>{if(q.opts[k].c)x.classList.add('ok')});msg(m,'bad','✗ <b>No.</b> '+md(q.why||''))}
+        [...opts.children].forEach(x=>x.setAttribute('disabled',''));next.hidden=false;next.focus()};opts.append(b)});
+      box.append(h('div',{class:'qn'},`Pregunta ${i+1} de ${qs.length} · aciertos: ${ok}`),bar,h('div',{class:'qt',html:md(q.q)}));
+      if(q.fig){const f=h('div',{class:'qfig'});q.fig(f);box.append(f)}
+      box.append(opts,m,next)}
+    start();
+  }
+  return {h,md,shuffle,msg,acts,sort,order,quiz};
+})();
+
+</script>
+<script>
+(function(){const tabs=[...document.querySelectorAll('.tab')];
+function show(id){if(!document.getElementById('p-'+id))id=tabs[0].dataset.t;tabs.forEach(t=>t.setAttribute('aria-selected',t.dataset.t===id));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='p-'+id);try{history.replaceState(null,'','#'+id)}catch(e){}}
+tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.t)));show((location.hash||'').slice(1));})();
+</script>
+<script>
+/* ================= S1 · EL CHASIS ================= */
+(function(){
+const {h,md,acts,sort,quiz,msg}=K;
+const NS='http://www.w3.org/2000/svg';
+function S(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function T(p,x,y,s,a={}){const e=S('text',Object.assign({x,y},a),p);e.textContent=s;return e}
+
+// ---------- ¿Cabe en la caja? ----------
+const CASES={
+  aire:{n:'Aire M3',tipo:'Semitorre',placas:['ATX','MicroATX','Mini-ITX'],gpu:330,cpu:160,psu:['ATX'],psuL:180,b35:2,b25:2,rad:[120,240,280]},
+  ofi:{n:'Oficina M2',tipo:'Minitorre',placas:['MicroATX','Mini-ITX'],gpu:280,cpu:150,psu:['ATX'],psuL:160,b35:2,b25:1,rad:[]},
+  cubo:{n:'Cubo S1',tipo:'Compacta (SFF)',placas:['Mini-ITX'],gpu:250,cpu:70,psu:['SFX'],psuL:100,b35:0,b25:2,rad:[120]},
+  titan:{n:'Titán XL',tipo:'Torre completa',placas:['E-ATX','ATX','MicroATX','Mini-ITX'],gpu:420,cpu:185,psu:['ATX'],psuL:220,b35:6,b25:4,rad:[120,240,280,360,420]}
+};
+const BUILDS={
+  ofi:{n:'Equipo de oficina',placa:'MicroATX',gpu:0,cpu:55,rad:0,psu:'ATX',psuL:140,b35:0,b25:1},
+  game:{n:'Equipo gaming',placa:'ATX',gpu:305,cpu:158,rad:0,psu:'ATX',psuL:160,b35:1,b25:0},
+  dis:{n:'Diseño con refrigeración líquida',placa:'ATX',gpu:336,cpu:0,rad:360,psu:'ATX',psuL:200,b35:2,b25:2},
+  salon:{n:'PC del salón (HTPC)',placa:'Mini-ITX',gpu:230,cpu:47,rad:0,psu:'SFX',psuL:100,b35:0,b25:1}
+};
+function rows(c,b){const r=[];
+  r.push({k:'Placa base',need:b.placa,has:c.placas.join(', '),ok:c.placas.includes(b.placa),why:c.placas.includes(b.placa)?'La caja admite ese formato.':'La caja no admite el formato '+b.placa+': la placa no cabe.'});
+  if(b.gpu)r.push({k:'Tarjeta gráfica',need:b.gpu+' mm',has:'hasta '+c.gpu+' mm',ok:b.gpu<=c.gpu,why:b.gpu<=c.gpu?`${b.gpu} ≤ ${c.gpu}: cabe (${c.gpu-b.gpu} mm de margen).`:`${b.gpu} > ${c.gpu}: le faltan ${b.gpu-c.gpu} mm.`});
+  if(b.cpu)r.push({k:'Altura del disipador',need:b.cpu+' mm',has:'hasta '+c.cpu+' mm',ok:b.cpu<=c.cpu,why:b.cpu<=c.cpu?`${b.cpu} ≤ ${c.cpu}: cabe${c.cpu-b.cpu<=3?', pero muy justo':''}.`:`${b.cpu} > ${c.cpu}: chocaría con el panel lateral.`});
+  if(b.rad){const ok=c.rad.includes(b.rad);r.push({k:'Radiador',need:b.rad+' mm',has:c.rad.length?c.rad.join(', ')+' mm':'no admite radiadores',ok,why:ok?'La caja tiene soporte para ese radiador.':'La caja no tiene hueco para un radiador de '+b.rad+' mm.'})}
+  {const okT=c.psu.includes(b.psu),okL=b.psuL<=c.psuL;r.push({k:'Fuente',need:b.psu+', '+b.psuL+' mm',has:c.psu.join(', ')+', hasta '+c.psuL+' mm',ok:okT&&okL,why:!okT?`La caja usa fuentes ${c.psu.join('/')}, no ${b.psu}${b.psu==='SFX'?' (haría falta un adaptador)':''}.`:okL?'Tipo y longitud correctos.':`La fuente mide ${b.psuL} mm y la caja admite ${c.psuL}.`})}
+  if(b.b35)r.push({k:'Discos de 3,5″',need:String(b.b35),has:String(c.b35),ok:b.b35<=c.b35,why:b.b35<=c.b35?'Hay bahías suficientes.':`Necesita ${b.b35} y la caja tiene ${c.b35}.`});
+  if(b.b25)r.push({k:'SSD de 2,5″',need:String(b.b25),has:String(c.b25),ok:b.b25<=c.b25,why:b.b25<=c.b25?'Hay bahías suficientes.':`Necesita ${b.b25} y la caja tiene ${c.b25}.`});
+  return r}
+function fitGame(root){
+  root.append(h('p',{class:'lead',html:'Elige un <b>equipo</b> y una <b>caja</b> (modelos ficticios). Compara cada dato y decide si <b>cabe</b> o <b>no cabe</b>. Al final verás si la caja sirve para ese equipo.'}));
+  const sb=h('select',{'aria-label':'Equipo'}),sc=h('select',{'aria-label':'Caja'});
+  Object.entries(BUILDS).forEach(([k,v])=>sb.append(h('option',{value:k},v.n)));Object.entries(CASES).forEach(([k,v])=>sc.append(h('option',{value:k},v.n+' · '+v.tipo)));
+  const rnd=h('button',{class:'btn alt'},'Combinación al azar');
+  root.append(h('div',{class:'row',style:'margin-bottom:14px'},h('label',{class:'lbl'},'Equipo '),sb,h('label',{class:'lbl'},'Caja '),sc,rnd));
+  const tw=h('div',{class:'k-tblwrap'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});root.append(tw,m);
+  let R=[],ans=[];
+  function draw(){const c=CASES[sc.value],b=BUILDS[sb.value];R=rows(c,b);ans=R.map(()=>null);render()}
+  function render(){tw.innerHTML='';const t=h('table',{class:'k-tbl'},h('thead',{},h('tr',{},...['Dato','El equipo necesita','La caja admite','¿Cabe?'].map(x=>h('th',{},x)))));const tb=h('tbody');t.append(tb);
+    R.forEach((r,i)=>{const td=h('td');
+      if(ans[i]===null){td.append(h('div',{class:'row',style:'gap:6px'},h('button',{class:'btn alt',style:'padding:6px 12px',onclick:()=>{ans[i]=true;render()}},'Cabe'),h('button',{class:'btn alt',style:'padding:6px 12px',onclick:()=>{ans[i]=false;render()}},'No cabe')))}
+      else{const good=ans[i]===r.ok;td.innerHTML=`<b style="color:var(--${good?'good':'bad'})">${good?'✓':'✗'} ${r.ok?'Cabe':'No cabe'}</b><br><small>${r.why}</small>`}
+      tb.append(h('tr',{},h('td',{},h('b',{},r.k)),h('td',{class:'pk'},r.need),h('td',{class:'pk'},r.has),td))});
+    tw.append(t);
+    const done=ans.every(a=>a!==null),hits=ans.filter((a,i)=>a===R[i].ok).length;
+    if(!done)msg(m,'',`Decide cada fila. Llevas ${ans.filter(a=>a!==null).length} de ${R.length}.`);
+    else{const ok=R.every(r=>r.ok);msg(m,ok?'good':'bad',`<b>${hits} de ${R.length} aciertos.</b> ${ok?'La caja es <b>compatible</b> con este equipo.':'La caja <b>no sirve</b> para este equipo: '+R.filter(r=>!r.ok).map(r=>r.k.toLowerCase()).join(', ')+'.'} Prueba otra combinación.`)}}
+  sb.onchange=draw;sc.onchange=draw;rnd.onclick=()=>{const kb=Object.keys(BUILDS),kc=Object.keys(CASES);sb.value=kb[Math.floor(Math.random()*kb.length)];sc.value=kc[Math.floor(Math.random()*kc.length)];draw()};
+  sb.value='game';sc.value='aire';draw();
+}
+
+// ---------- Flujo de aire ----------
+function airflow(root){
+  root.append(h('p',{class:'lead',html:'Vista lateral de una semitorre: el <b>frontal</b> está a la derecha. Toca un hueco para poner un ventilador; vuelve a tocarlo para cambiarlo de <b>entrada</b> (azul) a <b>salida</b> (naranja) o quitarlo.'}));
+  const wrap=h('div',{class:'k-two wide'});root.append(wrap);
+  const fig=h('div',{class:'k-svgfig'});const side=h('div');wrap.append(fig,side);
+  const svg=S('svg',{viewBox:'0 0 760 470',role:'img','aria-label':'Caja vista de lado con huecos para ventiladores'});fig.append(svg);
+  const st=document.createElementNS(NS,'style');st.textContent='.af{stroke-dasharray:10 12;animation:afm 1.1s linear infinite}@keyframes afm{to{stroke-dashoffset:-44}}@media (prefers-reduced-motion:reduce){.af{animation:none}}';svg.append(st);
+  const X0=110,Y0=60,W=540,H=360;
+  S('rect',{x:X0,y:Y0,width:W,height:H,rx:14,fill:'var(--bg)',stroke:'var(--ink)','stroke-width':4},svg);
+  T(svg,X0+W+52,Y0+H/2,'FRONTAL',{'font-size':15,'font-weight':700,transform:`rotate(90 ${X0+W+52} ${Y0+H/2})`,'text-anchor':'middle',style:'font-family:var(--f-mono);fill:var(--accent-ink)'});
+  T(svg,X0-52,Y0+H/2,'TRASERA',{'font-size':15,'font-weight':700,transform:`rotate(-90 ${X0-52} ${Y0+H/2})`,'text-anchor':'middle',style:'font-family:var(--f-mono);fill:var(--muted)'});
+  // componentes
+  const comp=(x,y,w,hh,t)=>{S('rect',{x,y,width:w,height:hh,rx:8,fill:'var(--surface)',stroke:'var(--line)','stroke-width':2},svg);T(svg,x+w/2,y+hh/2+6,t,{'text-anchor':'middle','font-size':16,'font-weight':700})};
+  comp(X0+130,Y0+60,150,120,'CPU + disipador');comp(X0+60,Y0+215,330,46,'Tarjeta gráfica');
+  S('rect',{x:X0,y:Y0+H-80,width:W,height:80,fill:'var(--l-eth)',opacity:.6},svg);T(svg,X0+W/2,Y0+H-34,'Compartimento de la fuente',{'text-anchor':'middle','font-size':15,style:'fill:var(--muted)'});
+  const gF=S('g',{},svg),gS=S('g',{},svg);
+  const SL={rear:{x:X0,y:Y0+110,o:'v',n:'Trasero'},top1:{x:X0+230,y:Y0,o:'h',n:'Superior 1'},top2:{x:X0+390,y:Y0,o:'h',n:'Superior 2'},
+    f1:{x:X0+W,y:Y0+90,o:'v',n:'Frontal 1'},f2:{x:X0+W,y:Y0+220,o:'v',n:'Frontal 2'},bot:{x:X0+430,y:Y0+H-80,o:'h',n:'Inferior'}};
+  // vector «hacia dentro» de cada hueco
+  const IN={rear:[1,0],top1:[0,1],top2:[0,1],f1:[-1,0],f2:[-1,0],bot:[0,-1]};
+  let state={};const els={};
+  Object.entries(SL).forEach(([k,s])=>{const g=S('g',{tabindex:0,role:'button','aria-label':'Hueco '+s.n,style:'cursor:pointer'},gS);
+    const w=s.o==='v'?26:96,hh=s.o==='v'?96:26;S('rect',{x:s.x-w/2,y:s.y-hh/2,width:w,height:hh,rx:6,fill:'var(--surface)',stroke:'var(--line)','stroke-width':3,'stroke-dasharray':'6 4',class:'slot'},g);
+    const c=S('circle',{cx:s.x,cy:s.y,r:34,fill:'transparent',stroke:'transparent','stroke-width':4},g);
+    const ar=S('path',{d:'',fill:'none','stroke-width':6,'stroke-linecap':'round','stroke-linejoin':'round'},g);
+    const lab=T(g,s.x+(s.o==='v'?(k==='rear'?66:-72):0),s.y+(s.o==='h'?(k==='bot'?60:-48):5),'',{'text-anchor':'middle','font-size':14,'font-weight':700,style:'font-family:var(--f-mono)'});
+    const act=()=>{state[k]=state[k]==='in'?'out':state[k]==='out'?null:'in';upd()};
+    g.addEventListener('click',act);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act()}});
+    els[k]={c,ar,lab}});
+  const info=h('div',{class:'readouts',style:'margin:0 0 10px'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+  const retos=h('ol',{class:'k-mission'});
+  const R=[['Consigue presión positiva con 3 ventiladores y sin errores.',s=>s.nIn+s.nOut===3&&s.nIn>s.nOut&&!s.warn.length],
+    ['Con solo 2 ventiladores, monta la configuración básica correcta.',s=>s.nIn===1&&s.nOut===1&&!s.warn.length],
+    ['Arregla la caja del compañero (pulsa el botón) sin añadir ni quitar ventiladores.',s=>s.fixedPreset]];
+  let done=new Set(),preset=false;
+  const bP=h('button',{class:'btn alt'},'Caja del compañero'),bC=h('button',{class:'btn alt'},'Vaciar');
+  side.append(h('h3',{},'Estado de la caja'),info,m,h('h3',{style:'margin-top:16px'},'Retos'),retos,h('div',{class:'row',style:'margin-top:12px'},bP,bC));
+  bP.onclick=()=>{state={rear:'in',f1:'out',top1:'in'};preset=true;upd()};bC.onclick=()=>{state={};preset=false;upd()};
+  function upd(){gF.innerHTML='';const ins=[],outs=[];
+    Object.entries(SL).forEach(([k,s])=>{const v=state[k],e=els[k],d=IN[k];
+      e.c.setAttribute('fill',v?'var(--surface)':'transparent');e.c.setAttribute('stroke',v==='in'?'var(--accent)':v==='out'?'var(--warn)':'transparent');
+      const dir=v==='in'?d:v==='out'?[-d[0],-d[1]]:null;
+      if(dir){const x1=s.x-dir[0]*22,y1=s.y-dir[1]*22,x2=s.x+dir[0]*22,y2=s.y+dir[1]*22;const px=-dir[1]*12,py=dir[0]*12;
+        e.ar.setAttribute('d',`M${x1} ${y1} L${x2} ${y2} M${x2-dir[0]*14+px} ${y2-dir[1]*14+py} L${x2} ${y2} L${x2-dir[0]*14-px} ${y2-dir[1]*14-py}`);e.ar.setAttribute('stroke',v==='in'?'var(--accent)':'var(--warn)')}else e.ar.setAttribute('d','');
+      e.lab.textContent=v==='in'?'ENTRADA':v==='out'?'SALIDA':'';e.lab.setAttribute('style','font-family:var(--f-mono);fill:var(--'+(v==='in'?'accent-ink':'warn')+')');
+      if(v==='in')ins.push(k);if(v==='out')outs.push(k)});
+    ins.forEach(a=>outs.forEach(b=>{const A=SL[a],B=SL[b],ia=IN[a];const ax=A.x+ia[0]*40,ay=A.y+ia[1]*40,bx=B.x+IN[b][0]*40,by=B.y+IN[b][1]*40;
+      S('path',{d:`M${ax} ${ay} Q${(ax+bx)/2} ${(ay+by)/2-30} ${bx} ${by}`,fill:'none',stroke:'var(--accent)','stroke-width':3,opacity:.55,class:'af'},gF)}));
+    const nIn=ins.length,nOut=outs.length,warn=[];
+    if(!nIn&&!nOut)warn.push('Sin ventiladores, el calor se acumula dentro de la caja.');
+    if(state.rear==='in'&&(state.f1==='in'||state.f2==='in'))warn.push('El trasero mete aire contra el que entra por el frontal: aire enfrentado.');
+    if(state.top1==='in'||state.top2==='in')warn.push('Arriba debería salir el aire caliente, que sube: estás metiendo aire por donde tiene que salir.');
+    if(state.f1==='out'||state.f2==='out')warn.push('El frontal coge aire fresco de la habitación: como salida desperdicias esa entrada.');
+    if(nIn&&!nOut)warn.push('Nadie saca el aire caliente: solo escapa por las rendijas.');
+    if(nOut&&!nIn)warn.push('No hay ventiladores de entrada: la caja aspira aire (y polvo) por cualquier rendija.');
+    if(state.bot==='out')warn.push('El inferior suele meter aire fresco para la gráfica.');
+    const pres=!nIn&&!nOut?'—':nIn>nOut?'Positiva':nOut>nIn?'Negativa':'Neutra';
+    const temp=!nIn||!nOut?'Mala':warn.length?'Mejorable':'Buena';
+    info.innerHTML='';[['Entrada',nIn],['Salida',nOut],['Presión',pres],['Temperatura',temp]].forEach(([a,b])=>info.append(h('div',{class:'ro'},h('small',{},a),h('div',{style:'font-size:22px'},String(b)))));
+    if(warn.length)msg(m,'bad',warn.map(w=>'✗ '+w).join('<br>'));
+    else if(nIn||nOut)msg(m,'good','✓ Sin errores. '+(pres==='Positiva'?'Presión positiva: entra menos polvo.':pres==='Neutra'?'Presión neutra: correcto, aunque entrará algo de polvo por las rendijas.':'Presión negativa: funciona, pero entrará más polvo.'));
+    else msg(m,'','Toca un hueco para poner el primer ventilador.');
+    const s={nIn,nOut,warn,fixedPreset:preset&&nIn+nOut===3&&!warn.length};if(s.fixedPreset)preset=false;
+    R.forEach(([t,f],i)=>{if(f(s))done.add(i)});retos.innerHTML='';let first=true;R.forEach(([t],i)=>{const d=done.has(i);retos.append(h('li',{class:d?'done':first?'cur':''},t));if(!d)first=false});
+  }
+  upd();
+}
+
+acts(document.getElementById('r-chasis'),[
+  {label:'Tipos de chasis',render:el=>sort(el,{intro:'¿Qué **tipo de chasis** elegirías para cada caso? Coloca cada ficha en su caja.',
+    buckets:[{id:'full',name:'Torre completa'},{id:'mid',name:'Semitorre'},{id:'mini',name:'Minitorre'},{id:'sff',name:'Compacta (SFF)'},{id:'rack',name:'Rack'}],
+    items:[{t:'Estación de trabajo con placa E-ATX y dos gráficas',b:'full',why:'solo las torres completas suelen admitir E-ATX.'},{t:'Equipo con radiador de 420 mm y ocho discos',b:'full'},
+      {t:'PC gaming con placa ATX y una gráfica grande',b:'mid',why:'la semitorre es el equilibrio habitual.'},{t:'Equipo de diseño con placa ATX y dos discos duros',b:'mid'},
+      {t:'PC de oficina con placa MicroATX y gráfica integrada',b:['mini','mid'],why:'también cabría en una semitorre, pero ocuparía más de lo necesario.'},{t:'Puesto de un aula con placa MicroATX',b:['mini','mid']},
+      {t:'PC para el salón conectado a la tele (HTPC)',b:'sff'},{t:'Mostrador de una tienda con muy poco espacio',b:'sff'},
+      {t:'Servidor en el armario de comunicaciones',b:'rack'},{t:'Equipo que ocupa 2 U en un armario de 19″',b:'rack',why:'1 U = 44,45 mm; 2 U son 88,9 mm de alto.'}]})},
+  {label:'¿Cabe en la caja?',render:fitGame},
+  {label:'Flujo de aire',render:airflow},
+  {label:'Test: apertura y fijación',render:el=>quiz(el,{questions:[
+    {q:'¿Cabe una placa **Mini-ITX** en una semitorre **ATX**?',o:['Sí: las cajas admiten su formato y los más pequeños','No: tiene que ser una caja Mini-ITX','Solo con un adaptador'],a:0,why:'Lo pequeño cabe en lo grande; al revés, no.'},
+    {q:'¿Para qué sirven los **separadores** (standoffs)?',o:['Mantener la placa elevada sobre la chapa de la caja','Separar los cables de la fuente','Sujetar el disipador'],a:0,why:'La placa se atornilla sobre ellos, sin tocar la chapa.'},
+    {q:'¿Qué pasa si pones un separador donde la placa **no tiene agujero**?',o:['Puede tocar la parte de atrás de la placa y provocar un cortocircuito','Nada, sujeta mejor','La placa queda torcida pero funciona'],a:0,why:'Por eso solo se ponen donde hay agujero.'},
+    {q:'¿Cómo dejas un panel de **vidrio templado** mientras trabajas?',o:['Tumbado sobre una superficie blanda y fuera del paso','De pie contra la pared','Encima de la caja'],a:0,why:'Un golpe en el canto lo hace estallar.'},
+    {q:'¿Por qué cara **sale** el aire de un ventilador?',o:['Por la de los soportes del motor (la de la pegatina)','Por la de las aspas','Por las dos'],a:0,why:'Las flechas del marco lo confirman.'},
+    {q:'**Presión positiva** significa que…',o:['entra más aire del que sale','sale más aire del que entra','los ventiladores giran más rápido'],a:0,why:'Todo el aire entra por los filtros: menos polvo.'},
+    {q:'El ventilador **trasero** normalmente es de…',o:['Salida','Entrada'],a:0,fixed:1,why:'Saca el aire caliente del disipador de la CPU, que está a su altura.'},
+    {q:'En un armario rack, **1 U** mide…',o:['44,45 mm de alto','1 pulgada','19 cm'],a:0,why:'19″ es el ancho del armario, no la altura de una U.'},
+    {q:'Un tornillo **no entra con facilidad** en su agujero. ¿Qué haces?',o:['No forzarlo: probablemente es otra rosca. Mirar el manual','Apretar más fuerte con el destornillador','Poner pegamento'],a:0,why:'#6-32 y M3 se parecen, pero no son iguales: forzarlo estropea la rosca.'},
+    {q:'El **USB-C** del frontal de la caja no funciona. ¿Causa más probable?',o:['La placa no tiene el conector interno para USB-C frontal','El USB-C solo sirve para cargar','Falta un controlador de Windows'],a:0,why:'Hay que comprobarlo antes de comprar la caja.'},
+    {q:'La gráfica mide **340 mm** y la caja admite hasta **330 mm**…',o:['No cabe','Cabe justa','Cabe si quitas el panel lateral'],a:0,why:'Le faltan 10 mm: hay que buscar otra caja u otra gráfica.'},
+    {q:'¿Qué haces **antes de abrir** la caja?',o:['Apagar, desenchufar, pulsar el botón de encendido unos segundos y ponerte la pulsera antiestática','Apagar desde Windows y abrir','Solo ponerte la pulsera'],a:0,why:'Así descargas la energía residual y evitas descargas electrostáticas.'}]})}
+]);
+})();
+
+/* ================= S2 · MEMORIA Y ALMACENAMIENTO ================= */
+(function(){
+const {h,md,acts,sort,quiz,msg}=K;
+const NS='http://www.w3.org/2000/svg';
+function S(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function T(p,x,y,s,a={}){const e=S('text',Object.assign({x,y},a),p);e.textContent=s;return e}
+
+// ---------- Instala la memoria ----------
+function ramLab(root){
+  root.append(h('p',{class:'lead',html:'La placa es <b>DDR4</b> y tiene 4 ranuras. Hay que instalar <b>dos módulos de 8 GB en doble canal</b>. El manual dice: <i>«con dos módulos, usa A2 y B2»</i>. Sigue el procedimiento seguro; si te saltas un paso, la placa te avisará.'}));
+  const wrap=h('div',{class:'k-two wide'});root.append(wrap);const fig=h('div',{class:'k-svgfig'}),side=h('div');wrap.append(fig,side);
+  const svg=S('svg',{viewBox:'0 0 820 460',role:'img','aria-label':'Placa base vista desde arriba con el zócalo del procesador y cuatro ranuras de memoria'});fig.append(svg);
+  S('rect',{x:20,y:20,width:780,height:420,rx:14,fill:'var(--l-ip)',stroke:'var(--line)','stroke-width':3},svg);
+  S('rect',{x:70,y:130,width:200,height:200,rx:10,fill:'var(--surface)',stroke:'var(--ink)','stroke-width':3},svg);T(svg,170,236,'Procesador',{'text-anchor':'middle','font-size':18,'font-weight':700});
+  T(svg,170,360,'(zócalo)',{'text-anchor':'middle','font-size':14,style:'fill:var(--muted)'});
+  const SL=['A1','A2','B1','B2'],X=[360,440,520,600],Y0=60,LEN=340,KEY=0.42;// muesca DDR4 (posición relativa)
+  const slots={};
+  SL.forEach((n,i)=>{const x=X[i],g=S('g',{tabindex:0,role:'button','aria-label':'Ranura '+n,style:'cursor:pointer'},svg);
+    S('rect',{x:x-16,y:Y0,width:32,height:LEN,rx:4,fill:i%2?'var(--ink)':'var(--muted)',class:'slotb'},g);
+    S('rect',{x:x-4,y:Y0+LEN*KEY-5,width:8,height:10,fill:'var(--warn)'},g);
+    const tt=S('rect',{x:x-18,y:Y0-22,width:36,height:20,rx:4,fill:'var(--surface)',stroke:'var(--ink)','stroke-width':2,class:'rtab'},g),tb=S('rect',{x:x-18,y:Y0+LEN+2,width:36,height:20,rx:4,fill:'var(--surface)',stroke:'var(--ink)','stroke-width':2,class:'rtab'},g);
+    T(g,x,Y0+LEN+48,n,{'text-anchor':'middle','font-size':16,'font-weight':700,style:'font-family:var(--f-mono)'});
+    const mod=S('g',{opacity:0},g);S('rect',{x:x-13,y:Y0+4,width:26,height:LEN-8,rx:3,fill:'#2E7D4F',stroke:'#1B5E3A','stroke-width':2},mod);
+    for(let k=0;k<6;k++)S('rect',{x:x-9,y:Y0+20+k*52,width:18,height:34,fill:'#111'},mod);
+    slots[n]={g,tt,tb,mod,open:false,mod8:false,seated:false};
+    g.addEventListener('click',e=>clickSlot(n));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();clickSlot(n)}})});
+  T(svg,640,250,'Muesca DDR4 (naranja)',{'font-size':12,style:'fill:var(--muted)'});
+  // panel
+  const chk1=h('input',{type:'checkbox',id:'rlU'}),chk2=h('input',{type:'checkbox',id:'rlP'});
+  const mods=[{id:'d4',t:'Módulo DDR4 8 GB',key:KEY},{id:'d5',t:'Módulo DDR5 8 GB',key:0.5}];let sel=null,rev=Math.random()<.5,left=2;
+  const mb=h('div',{class:'row',style:'gap:8px'});const mBtns=mods.map(m=>{const b=h('button',{class:'btn alt',style:'padding:8px 12px'},m.t);b.onclick=()=>{sel=m;mBtns.forEach(x=>x.style.outline='');b.style.outline='3px solid var(--accent)';say('','<b>'+m.t+'</b> en la mano (cogido por los bordes). Ahora toca la ranura donde va.')};mb.append(b);return b});
+  const rot=h('button',{class:'btn alt',style:'padding:8px 12px'},'↻ Girar el módulo 180°');rot.onclick=()=>{rev=!rev;say('','Has girado el módulo. La muesca está ahora en el otro lado.')};
+  const press=h('button',{class:'btn'},'Presionar con los dos pulgares');const reset=h('button',{class:'btn alt'},'Empezar de nuevo');
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});const mis=h('ol',{class:'k-mission'});const info=h('div',{class:'k-cap'});
+  side.append(h('h3',{},'1. Antes de tocar nada'),h('label',{class:'speed'},chk1,' Equipo apagado, desenchufado y botón pulsado unos segundos'),h('label',{class:'speed',style:'margin-top:6px'},chk2,' Pulsera antiestática conectada a tierra'),
+    h('h3',{style:'margin-top:14px'},'2. Coge un módulo'),mb,h('div',{style:'margin-top:8px'},rot),h('h3',{style:'margin-top:14px'},'3. Instálalo'),h('p',{class:'lead',style:'margin:0 0 8px;font-size:15px'},'Toca las pestañas de una ranura para abrirla; después toca la ranura para meter el módulo.'),h('div',{class:'row'},press,reset),m,info,mis);
+  let errors=0,pending=null;
+  function say(c,t){msg(m,c,t)}
+  function safe(){if(!chk1.checked||!chk2.checked){errors++;say('bad','✗ Primero: equipo <b>desenchufado</b> (y botón pulsado) y <b>pulsera antiestática</b>. Sin eso no se toca la placa.');return false}return true}
+  function clickSlot(n){if(!safe())return;const s=slots[n];
+    if(s.mod8){say('','Esa ranura ya tiene un módulo.');return}
+    if(!s.open){s.open=true;draw();say('','Pestañas de <b>'+n+'</b> abiertas. Ahora coloca el módulo en la ranura.');return}
+    if(!sel){say('bad','✗ Primero coge un módulo.');errors++;return}
+    if(pending){say('bad','✗ Antes de meter otro, presiona el que acabas de colocar.');errors++;return}
+    const want=left===2?'A2':'B2';
+    if(n!==want){errors++;say('bad',`✗ El manual dice <b>${want}</b> ${left===2?'para el primer módulo':'para el segundo'}: con dos módulos, A2 y B2 dan doble canal.`);return}
+    if(sel.id==='d5'){errors++;say('bad','✗ La muesca del módulo no coincide con la de la ranura: es <b>DDR5</b> y la placa es <b>DDR4</b>. No son intercambiables. <b>No se fuerza.</b>');return}
+    if(rev){errors++;say('bad','✗ La muesca no coincide con el saliente de la ranura: el módulo está al revés. Gíralo 180°. <b>No lo fuerces.</b>');return}
+    s.mod8=true;pending=n;draw();say('','Módulo apoyado en <b>'+n+'</b>, recto y con la muesca alineada. Ahora presiónalo.')}
+  press.onclick=()=>{if(!safe())return;if(!pending){say('bad','✗ No hay ningún módulo apoyado para presionar.');errors++;return}
+    const s=slots[pending];s.seated=true;s.open=false;left--;pending=null;rev=Math.random()<.5;draw();
+    if(left>0)say('good','✓ <b>¡Clic!</b> Las pestañas se han cerrado solas. Coge el segundo módulo.');
+    else say('good',`✓ <b>¡Clic!</b> Instalación terminada${errors?' con '+errors+' aviso'+(errors>1?'s':''):' sin ningún error'}. Al encender, el Administrador de tareas mostraría <b>16 GB</b>, <b>ranuras usadas: 2 de 4</b>, en doble canal.`)};
+  reset.onclick=()=>{SL.forEach(n=>Object.assign(slots[n],{open:false,mod8:false,seated:false}));chk1.checked=chk2.checked=false;sel=null;mBtns.forEach(x=>x.style.outline='');left=2;errors=0;pending=null;rev=Math.random()<.5;draw();say('','Empieza por la seguridad.')};
+  [chk1,chk2].forEach(c=>c.onchange=draw);
+  function draw(){SL.forEach(n=>{const s=slots[n];[s.tt,s.tb].forEach(t=>{t.setAttribute('fill',s.open?'var(--accent)':'var(--surface)');t.setAttribute('transform',s.open?(t===s.tt?'translate(0 -10)':'translate(0 10)'):'')});
+      s.mod.setAttribute('opacity',s.mod8?1:0);s.mod.setAttribute('transform',s.mod8&&!s.seated?'translate(0 -14)':'')});
+    const st=[[chk1.checked&&chk2.checked,'Equipo desenchufado y pulsera puesta'],[slots.A2.seated,'Primer módulo en A2, con clic'],[slots.B2.seated,'Segundo módulo en B2, con clic']];
+    mis.innerHTML='';let first=true;st.forEach(([d,t])=>{mis.append(h('li',{class:d?'done':first?'cur':''},t));if(!d)first=false});
+    info.textContent=`Avisos: ${errors}`}
+  draw();say('','Empieza por la seguridad.');
+}
+
+// ---------- ¿A qué velocidad irá? ----------
+const DEV={hdd:{n:'Disco duro (HDD) 7200 rpm',v:200,ports:['sata','usb2','usb5','usb10','usb4']},
+  ssata:{n:'SSD SATA 2,5″',v:550,ports:['sata','usb2','usb5','usb10','usb4']},
+  nv3:{n:'SSD NVMe PCIe 3.0',v:3500,ports:['m3','m4','m5','usb2','usb5','usb10','usb4']},
+  nv4:{n:'SSD NVMe PCIe 4.0',v:7000,ports:['m3','m4','m5','usb2','usb5','usb10','usb4']},
+  nv5:{n:'SSD NVMe PCIe 5.0',v:12000,ports:['m3','m4','m5','usb2','usb5','usb10','usb4']},
+  pen:{n:'Memoria USB normal',v:120,ports:['usb2','usb5','usb10','usb4']}};
+const PORT={sata:{n:'Puerto SATA III (cable SATA)',v:550},m3:{n:'Ranura M.2 PCIe 3.0 ×4',v:3500},m4:{n:'Ranura M.2 PCIe 4.0 ×4',v:7000},m5:{n:'Ranura M.2 PCIe 5.0 ×4',v:14000},
+  usb2:{n:'USB 2.0 (480 Mb/s)',v:40},usb5:{n:'USB 3.2 Gen 1 (5 Gb/s)',v:450},usb10:{n:'USB 3.2 Gen 2 (10 Gb/s)',v:1000},usb4:{n:'USB4 (40 Gb/s)',v:3500}};
+function speedLab(root){
+  root.append(h('p',{class:'lead',html:'Elige una <b>unidad</b> y <b>dónde la conectas</b>. La velocidad real la marca el <b>eslabón más lento</b>. Las cifras son aproximadas, de lectura secuencial.'}));
+  const sd=h('select',{'aria-label':'Unidad'}),sp=h('select',{'aria-label':'Conexión'}),gb=h('input',{type:'number',min:1,value:50,'aria-label':'GB que se copian'});
+  Object.entries(DEV).forEach(([k,v])=>sd.append(h('option',{value:k},v.n)));
+  root.append(h('div',{class:'mk-in',style:'display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:6px 0 14px'},h('label',{class:'lbl',style:'display:flex;flex-direction:column;gap:4px'},'Unidad',sd),h('label',{class:'lbl',style:'display:flex;flex-direction:column;gap:4px'},'Conexión',sp),h('label',{class:'lbl',style:'display:flex;flex-direction:column;gap:4px'},'GB que copias',gb)));
+  const bars=h('div',{class:'k-svgfig',style:'padding:14px'});const ro=h('div',{class:'readouts'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});root.append(bars,ro,m);
+  function fillPorts(){const d=DEV[sd.value],cur=sp.value;sp.innerHTML='';d.ports.forEach(p=>sp.append(h('option',{value:p},PORT[p].n+(p.startsWith('usb')&&sd.value!=='pen'?' · en carcasa externa':''))));if(d.ports.includes(cur))sp.value=cur}
+  function calc(){const d=DEV[sd.value],p=PORT[sp.value],real=Math.min(d.v,p.v),g=Math.max(1,+gb.value||1);const sec=g*1000/real;
+    const mx=Math.max(d.v,p.v);bars.innerHTML='';
+    [['La unidad puede',d.v,'var(--accent)'],['La conexión permite',p.v,'var(--warn)'],['Velocidad real',real,'var(--good)']].forEach(([t,v,c])=>{
+      bars.append(h('div',{style:'margin:6px 0'},h('div',{style:'font:600 14px var(--f-body);color:var(--muted)'},`${t}: ${v.toLocaleString('es-ES')} MB/s`),h('div',{style:`height:22px;border-radius:6px;background:${c};width:${Math.max(2,v/mx*100)}%`})))});
+    const t=sec<60?sec.toFixed(1).replace('.',',')+' s':sec<3600?(sec/60).toFixed(1).replace('.',',')+' min':(sec/3600).toFixed(1).replace('.',',')+' h';
+    ro.innerHTML='';[['Velocidad real',real.toLocaleString('es-ES')+' MB/s'],[`Copiar ${g} GB`,'≈ '+t]].forEach(([a,b])=>ro.append(h('div',{class:'ro'},h('small',{},a),h('div',{style:'font-size:24px'},b))));
+    if(d.v>p.v)msg(m,'bad',`✗ <b>Cuello de botella: la conexión.</b> La unidad podría ir a ${d.v.toLocaleString('es-ES')} MB/s, pero ${p.n} solo deja unos ${p.v.toLocaleString('es-ES')} MB/s.`);
+    else if(p.v>d.v)msg(m,'good',`✓ La conexión va sobrada: aquí manda la propia unidad (${d.v.toLocaleString('es-ES')} MB/s).`);
+    else msg(m,'good','✓ Unidad y conexión van a la par.')}
+  sd.onchange=()=>{fillPorts();calc()};sp.onchange=calc;gb.oninput=calc;
+  sd.value='nv4';fillPorts();sp.value='m3';calc();
+}
+
+acts(document.getElementById('r-almac'),[
+  {label:'Instala la memoria',render:ramLab},
+  {label:'¿A qué velocidad irá?',render:speedLab},
+  {label:'Clasifica',render:el=>sort(el,{intro:'¿Qué es cada cosa? Coloca cada ficha en su caja.',
+    buckets:[{id:'ram',name:'Memoria RAM'},{id:'int',name:'Almacenamiento interno'},{id:'opt',name:'Unidad óptica'},{id:'aux',name:'Memoria auxiliar'},{id:'ctl',name:'Controladora'}],
+    items:[{t:'Módulo DIMM DDR5',b:'ram'},{t:'Módulo SO-DIMM de portátil',b:'ram'},{t:'Disco duro de 3,5″',b:'int'},{t:'SSD M.2 NVMe 2280',b:'int'},{t:'SSD SATA de 2,5″',b:'int'},
+      {t:'Grabadora de DVD',b:'opt'},{t:'Lector de Blu-ray externo',b:'opt',why:'aunque sea externa, es una unidad óptica.'},{t:'Tarjeta microSD',b:'aux'},{t:'Memoria USB',b:'aux'},{t:'Disco SSD externo USB-C',b:'aux'},
+      {t:'Controlador SATA del chipset (modo AHCI)',b:'ctl'},{t:'Tarjeta PCIe con 4 puertos SATA',b:'ctl'}]})},
+  {label:'Test',render:el=>quiz(el,{questions:[
+    {q:'Una placa **DDR4** y un módulo **DDR5**. ¿Qué pasa?',o:['No entra: la muesca está en otro sitio. No se fuerza','Entra y funciona más lento','Entra con un adaptador'],a:0,why:'Las generaciones no son intercambiables.'},
+    {q:'Para tener **doble canal** con 16 GB, ¿qué es mejor?',o:['2 módulos de 8 GB en las ranuras que dice el manual','1 módulo de 16 GB','4 módulos de 4 GB en cualquier ranura'],a:0,why:'Un módulo en cada canal; con dos, normalmente A2 y B2.'},
+    {q:'¿Dónde compruebas que un módulo concreto es compatible con la placa?',o:['En la lista de memorias probadas (QVL) del fabricante de la placa','En la caja del módulo','En el Administrador de dispositivos'],a:0},
+    {q:'Un **SSD SATA** de 2,5″ va como mucho a unos…',o:['550 MB/s','3500 MB/s','100 MB/s'],a:0,why:'Es el límite de SATA III (6 Gb/s).'},
+    {q:'Un SSD **NVMe PCIe 4.0** en una ranura M.2 **PCIe 3.0**…',o:['Funciona, pero a la velocidad de la 3.0','No funciona','Va más rápido'],a:0},
+    {q:'¿Qué indica el dato **TBW** de un SSD?',o:['Los terabytes que se garantiza que se pueden escribir en él','Su capacidad total','Su temperatura máxima'],a:0},
+    {q:'Instalas un SSD M.2 y desaparece un disco SATA. ¿Causa más probable?',o:['La ranura M.2 comparte carriles con ese puerto SATA','El SSD ha borrado el disco','Falta un controlador'],a:0,why:'El manual de la placa lo indica.'},
+    {q:'¿Qué es **RAID 1**?',o:['Dos discos en espejo: si falla uno, los datos siguen en el otro','Dos discos sumados para ir más rápido, sin protección','Un tipo de SSD'],a:0,why:'RAID 0 es el que reparte los datos para ganar velocidad.'},
+    {q:'Un **DVD** de una capa guarda unos…',o:['4,7 GB','700 MB','25 GB'],a:0,why:'700 MB es un CD; 25 GB, un Blu-ray de una capa.'},
+    {q:'Para grabar vídeo en una cámara, la tarjeta SD debe ser al menos…',o:['U3 o V30 (30 MB/s mínimos)','Class 4','SDHC de 4 GB'],a:0},
+    {q:'¿Qué haces antes de desconectar una memoria USB?',o:['Expulsarla desde el sistema','Nada, se puede quitar cuando quieras','Apagar el equipo siempre'],a:0,why:'Si se quita mientras se escribe, el archivo o el soporte pueden dañarse.'},
+    {q:'¿Qué **no** debes hacer nunca con un disco duro (HDD)?',o:['Moverlo o golpearlo mientras funciona','Conectarlo por SATA','Guardarlo en su bolsa antiestática'],a:0}]})}
+]);
+})();
+
+/* ================= S3 · GRÁFICA, MONITOR Y RED ================= */
+(function(){
+const {h,md,acts,sort,quiz,msg}=K;
+
+// ---------- Alimenta la gráfica ----------
+const GPUS={
+  g1:{n:'Gráfica «Ligera 50» (ficticia)',w:70,psu:300,sock:[]},
+  g2:{n:'Gráfica «Media 60» (ficticia)',w:165,psu:550,sock:['8']},
+  g3:{n:'Gráfica «Alta 70» (ficticia)',w:285,psu:750,sock:['8','8']},
+  g4:{n:'Gráfica «Tope 90» (ficticia)',w:450,psu:850,sock:['16']}};
+const PSUS={
+  p1:{n:'Fuente 450 W',w:450,cab:{'6':1}},
+  p2:{n:'Fuente 650 W',w:650,cab:{'8':2}},
+  p3:{n:'Fuente 850 W',w:850,cab:{'8':3,'16':1}}};
+const CW={'6':75,'8':150,'16':600};const CN={'6':'PCIe 6 pines','8':'PCIe 8 pines (6+2)','16':'12V-2x6 (16 pines)'};
+function powerLab(root){
+  root.append(h('p',{class:'lead',html:'Elige una gráfica y una fuente. Conecta a cada conector de la gráfica un cable de la fuente y pulsa <b>Encender</b>. Recuerda: la ranura PCIe da <b>75 W</b>; cada cable añade lo suyo.'}));
+  const sg=h('select',{'aria-label':'Gráfica'}),sp=h('select',{'aria-label':'Fuente'});
+  Object.entries(GPUS).forEach(([k,v])=>sg.append(h('option',{value:k},v.n)));Object.entries(PSUS).forEach(([k,v])=>sp.append(h('option',{value:k},v.n)));
+  root.append(h('div',{class:'row',style:'margin-bottom:12px'},h('label',{class:'lbl'},'Gráfica '),sg,h('label',{class:'lbl'},'Fuente '),sp));
+  const card=h('div',{class:'k-two'});const L=h('div'),R=h('div');card.append(L,R);root.append(card);
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});root.append(m);
+  let plug=[];
+  function draw(){const g=GPUS[sg.value],p=PSUS[sp.value];L.innerHTML='';R.innerHTML='';
+    L.append(h('h3',{},'La gráfica'),h('div',{class:'readouts',style:'margin:0 0 10px'},...[['Consumo',g.w+' W'],['Fuente recomendada',g.psu+' W'],['Conectores',g.sock.length?g.sock.map(s=>CN[s]).join(' + '):'ninguno (solo la ranura)']].map(([a,b])=>h('div',{class:'ro'},h('small',{},a),h('div',{style:'font-size:17px'},b)))));
+    const sl=h('div',{style:'display:flex;flex-direction:column;gap:8px'});
+    g.sock.forEach((s,i)=>{const sel=h('select',{'aria-label':'Cable para el conector '+(i+1)},h('option',{value:''},'— sin conectar —'),...Object.keys(p.cab).map(c=>h('option',{value:c},CN[c])));sel.value=plug[i]||'';sel.onchange=()=>{plug[i]=sel.value;msg(m,'','Cuando termines, pulsa Encender.')};sl.append(h('label',{class:'lbl'},`Conector ${i+1} de la gráfica (${CN[s]}): `,sel))});
+    if(!g.sock.length)sl.append(h('p',{class:'lead',style:'margin:0'},'Esta gráfica no lleva conector: se alimenta solo por la ranura.'));
+    L.append(sl);
+    R.append(h('h3',{},'La fuente'),h('div',{class:'readouts',style:'margin:0 0 10px'},h('div',{class:'ro'},h('small',{},'Potencia'),h('div',{style:'font-size:17px'},p.w+' W')),h('div',{class:'ro'},h('small',{},'Cables para gráfica'),h('div',{style:'font-size:17px'},Object.entries(p.cab).map(([c,n])=>n+' × '+CN[c]).join(' · ')))),
+      h('button',{class:'btn',onclick:check},'Encender'))}
+  function check(){const g=GPUS[sg.value],p=PSUS[sp.value];const err=[];const used={};
+    g.sock.forEach((s,i)=>{const c=plug[i];if(!c)err.push(`El conector ${i+1} está sin conectar: la gráfica no arranca o el equipo no da imagen.`);else{used[c]=(used[c]||0)+1;if(c!==s)err.push(`En el conector ${i+1} (${CN[s]}) has puesto un cable ${CN[c]}: ${c==='6'&&s==='8'?'le faltan dos pines; no basta':'no encaja'}.`)}});
+    Object.entries(used).forEach(([c,n])=>{if(n>(p.cab[c]||0))err.push(`La fuente solo tiene ${p.cab[c]||0} cable${(p.cab[c]||0)===1?'':'s'} ${CN[c]} y has usado ${n}.`)});
+    if(!g.sock.length&&g.w>75)err.push('Consume más de 75 W: necesitaría cables.');
+    const supply=75+g.sock.reduce((a,s)=>a+CW[s],0);
+    if(p.w<g.psu)err.push(`La fuente es de ${p.w} W y el fabricante recomienda al menos ${g.psu} W para el equipo completo con esta gráfica.`);
+    if(err.length)msg(m,'bad','✗ <b>No funcionaría bien:</b><br>'+err.map(e=>'· '+e).join('<br>'));
+    else msg(m,'good',`✓ <b>Funciona.</b> Puede recibir hasta ${supply} W (75 W de la ranura${g.sock.length?' + '+g.sock.map(s=>CW[s]+' W').join(' + '):''}) y consume ${g.w} W. La fuente de ${p.w} W cumple la recomendación de ${g.psu} W.`)}
+  sg.onchange=()=>{plug=[];draw();msg(m,'','Conecta los cables y pulsa Encender.')};sp.onchange=()=>{plug=[];draw();msg(m,'','Conecta los cables y pulsa Encender.')};
+  sg.value='g3';sp.value='p2';draw();msg(m,'','Conecta los cables y pulsa Encender.');
+}
+
+// ---------- El eslabón más débil (red) ----------
+function netLab(root){
+  root.append(h('p',{class:'lead',html:'La red va a la velocidad de su <b>eslabón más débil</b>. Elige cada pieza y mira qué velocidad o qué norma se consigue de verdad.'}));
+  const wrap=h('div',{class:'k-two'});root.append(wrap);const A=h('div'),B=h('div');wrap.append(A,B);
+  const mkSel=(lab,opts,val)=>{const s=h('select',{'aria-label':lab},...opts.map(([v,t])=>h('option',{value:v},t)));s.value=val;return [h('label',{class:'lbl',style:'display:flex;flex-direction:column;gap:4px;margin:6px 0'},lab,s),s]};
+  const [l1,nic]=mkSel('Tarjeta de red del PC',[['1000','1 Gb/s'],['2500','2,5 Gb/s'],['10000','10 Gb/s']],'2500');
+  const [l2,cab]=mkSel('Cable',[['1000','Cat 5e (hasta 1 Gb/s)'],['10000','Cat 6A (hasta 10 Gb/s)']],'10000');
+  const [l3,sw]=mkSel('Puerto del switch',[['1000','1 Gb/s'],['2500','2,5 Gb/s'],['10000','10 Gb/s']],'1000');
+  const r1=h('div',{class:'k-msg'});A.append(h('h3',{},'Por cable'),l1,l2,l3,r1);
+  const [l4,ad]=mkSel('Adaptador Wi‑Fi del PC',[['5','Wi‑Fi 5 (802.11ac)'],['6','Wi‑Fi 6 (802.11ax)'],['6.5','Wi‑Fi 6E (802.11ax, 6 GHz)'],['7','Wi‑Fi 7 (802.11be)']],'7');
+  const [l5,ro]=mkSel('Router',[['5','Wi‑Fi 5'],['6','Wi‑Fi 6'],['6.5','Wi‑Fi 6E'],['7','Wi‑Fi 7']],'6');
+  const r2=h('div',{class:'k-msg'});B.append(h('h3',{},'Por Wi‑Fi'),l4,l5,r2);
+  const NM={'5':'Wi‑Fi 5','6':'Wi‑Fi 6','6.5':'Wi‑Fi 6E','7':'Wi‑Fi 7'};
+  const fmt=v=>v>=1000?(v/1000).toLocaleString('es-ES')+' Gb/s':v+' Mb/s';
+  function upd(){const v=[+nic.value,+cab.value,+sw.value],mn=Math.min(...v);const who=['la tarjeta','el cable','el switch'].filter((_,i)=>v[i]===mn);
+    msg(r1,mn===Math.max(...v)?'good':'bad',`Velocidad del enlace: <b>${fmt(mn)}</b>. ${mn===Math.max(...v)?'Todas las piezas van a la par.':'Lo limita '+who.join(' y ')+'.'}`);
+    const a=+ad.value,r=+ro.value,w=Math.min(a,r);
+    msg(r2,a===r?'good':'bad',`Funcionará como <b>${NM[String(w)]}</b>. ${a===r?'Adaptador y router admiten la misma norma.':'Lo limita '+(a<r?'el adaptador':'el router')+': para aprovechar '+NM[String(Math.max(a,r))]+' tienen que admitirla los dos.'}`)}
+  [nic,cab,sw,ad,ro].forEach(s=>s.onchange=upd);upd();
+}
+
+acts(document.getElementById('r-adapt'),[
+  {label:'Alimenta la gráfica',render:powerLab},
+  {label:'El eslabón más débil',render:netLab},
+  {label:'¿Qué adaptador?',render:el=>sort(el,{intro:'¿Qué **adaptador o equipo** resuelve cada necesidad?',
+    buckets:[{id:'gpu',name:'Gráfica dedicada'},{id:'eth',name:'Red cableada',sub:'tarjeta PCIe o USB a RJ45'},{id:'wifi',name:'Wi‑Fi',sub:'tarjeta PCIe, M.2 o USB'},{id:'wan',name:'Salida a Internet',sub:'router, módem, ONT'},{id:'otra',name:'Otra tarjeta de expansión'}],
+    items:[{t:'Editar vídeo 4K y renderizar en 3D',b:'gpu'},{t:'Conectar tres monitores a un equipo cuyo procesador no tiene gráfica integrada',b:'gpu'},
+      {t:'Portátil fino sin puerto RJ45 que necesita cable',b:'eth'},{t:'Servidor que necesita un enlace de 10 Gb/s',b:'eth'},
+      {t:'Sobremesa en una habitación sin toma de red',b:'wifi'},{t:'Conectar unos auriculares Bluetooth a un PC sin Bluetooth',b:'wifi',why:'muchas tarjetas Wi‑Fi incluyen Bluetooth.'},
+      {t:'Casa con fibra óptica que llega a la pared',b:'wan',why:'la ONT (a menudo dentro del router) convierte la luz en señal eléctrica.'},{t:'Casa rural sin fibra ni ADSL',b:'wan',why:'router 4G/5G con tarjeta SIM.'},
+      {t:'Retransmitir la partida de una consola',b:'otra',why:'capturadora de vídeo.'},{t:'Controlar una báscula antigua con puerto serie',b:'otra',why:'tarjeta de puertos serie (RS-232).'},{t:'Instalar otro SSD NVMe en una placa sin ranuras M.2 libres',b:'otra',why:'adaptador PCIe a M.2.'}]})},
+  {label:'Test',render:el=>quiz(el,{questions:[
+    {q:'¿Qué hace el **adaptador gráfico**?',o:['Calcula la imagen y la envía al monitor','Solo muestra la imagen','Guarda los archivos de imagen'],a:0,why:'El monitor solo muestra lo que le llega.'},
+    {q:'Instalas una gráfica dedicada y conectas el monitor al **panel trasero de la placa**. ¿Qué pasará probablemente?',o:['No habrá imagen o usará la integrada: el cable va a la tarjeta','Irá más rápido','Funcionará igual'],a:0},
+    {q:'¿Cuántos vatios da como máximo la **ranura PCIe x16**?',o:['75 W','150 W','600 W'],a:0},
+    {q:'Una gráfica con **dos conectores de 8 pines** puede recibir como máximo…',o:['375 W (75 + 150 + 150)','300 W','150 W'],a:0},
+    {q:'¿Qué es la **VRAM**?',o:['La memoria propia de la tarjeta gráfica','La memoria RAM del sistema','Un tipo de monitor'],a:0},
+    {q:'Un monitor de **144 Hz** se ve a 60 Hz. ¿Qué compruebas?',o:['El cable y la salida usados, y la frecuencia elegida en Pantalla avanzada','La capacidad del disco','El tipo de panel'],a:0},
+    {q:'¿Qué panel destaca por su **buen color**?',o:['IPS','TN','Ninguno'],a:0,why:'VA destaca por el contraste; TN, por rapidez y precio; OLED, por el negro perfecto.'},
+    {q:'Un monitor de **27″** tiene una diagonal de unos…',o:['68,6 cm','27 cm','54 cm'],a:0,why:'27 × 2,54 = 68,58 cm.'},
+    {q:'Tarjeta de red de **2,5 Gb/s**, cable Cat 6A y switch de **1 Gb/s**. Velocidad:',o:['1 Gb/s','2,5 Gb/s','3,5 Gb/s'],a:0,why:'Manda el eslabón más débil.'},
+    {q:'¿Qué norma es **Wi‑Fi 6**?',o:['802.11ax','802.11ac','802.11be'],a:0,why:'Wi‑Fi 5 es 802.11ac y Wi‑Fi 7, 802.11be.'},
+    {q:'¿Qué significa **módem**?',o:['Modulador-demodulador: traduce la señal del equipo a la de la línea y al revés','Monitor de red','Memoria del router'],a:0},
+    {q:'Antes de sacar una gráfica de su ranura…',o:['Desenchufar, quitar cables y tornillo y abrir la pestaña de la ranura','Tirar fuerte hacia arriba','Solo apagar desde Windows'],a:0,why:'Con la pestaña cerrada se puede arrancar la ranura.'}]})}
+]);
+})();
+
+/* ================= S4 · OEM, GARANTÍA E INVENTARIO ================= */
+(function(){
+const {h,md,acts,sort,quiz,msg,shuffle}=K;
+
+// ---------- Abre la caja ----------
+const BOXES=[
+  {n:'Placa base «B760M Ejemplo» (Retail)',list:['Placa base','Manual de usuario','2 × cable SATA','Tornillo para M.2','Antenas Wi‑Fi (2)','Pegatina'],got:['Placa base','Manual de usuario','1 × cable SATA','Tornillo para M.2','Antenas Wi‑Fi (2)','Pegatina'],bad:['2 × cable SATA'],fix:'Falta un cable SATA: se reclama a la tienda con una foto del contenido.'},
+  {n:'Fuente 650 W «Volt 650» (Retail)',list:['Fuente de alimentación','Cable de corriente','Bolsa de cables modulares','4 tornillos','Bridas','Manual'],got:['Fuente de alimentación','Bolsa de cables modulares','4 tornillos','Bridas','Manual'],bad:['Cable de corriente'],fix:'Falta el cable de corriente: no se monta con un cable cualquiera de otro aparato sin comprobar que es adecuado; se reclama.'},
+  {n:'Procesador «Ryzen Ejemplo 5» en caja',list:['Procesador','Disipador con pasta térmica aplicada','Pegatina','Hoja de garantía'],got:['Procesador','Disipador con pasta térmica aplicada','Pegatina','Hoja de garantía'],bad:[],fix:'Todo correcto. Se anota el número de serie y se guarda la factura.'}];
+function boxLab(root){
+  root.append(h('p',{class:'lead',html:'Acaba de llegar un componente. A la izquierda, la lista <b>Contenido del paquete</b> del manual; a la derecha, lo que hay de verdad en la caja. Marca cada línea de la lista como <b>Está</b> o <b>Falta</b>.'}));
+  const sel=h('select',{'aria-label':'Paquete'});BOXES.forEach((b,i)=>sel.append(h('option',{value:i},b.n)));
+  root.append(h('div',{class:'row',style:'margin-bottom:12px'},h('label',{class:'lbl'},'Paquete '),sel));
+  const wrap=h('div',{class:'k-two'});const A=h('div'),B=h('div');wrap.append(A,B);root.append(wrap);const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});root.append(m);
+  let ans={};
+  function draw(){const b=BOXES[+sel.value];A.innerHTML='';B.innerHTML='';
+    A.append(h('h3',{},'Lista del manual'));const ol=h('ol',{class:'k-mission'});
+    b.list.forEach(it=>{const st=ans[it];const li=h('li',{class:st===undefined?'':((st==='falta')===b.bad.includes(it)?'done':'cur')},h('div',{},it),
+      st===undefined?h('div',{class:'row',style:'gap:6px;margin-top:6px'},h('button',{class:'btn alt',style:'padding:6px 12px',onclick:()=>{ans[it]='esta';draw()}},'Está'),h('button',{class:'btn alt',style:'padding:6px 12px',onclick:()=>{ans[it]='falta';draw()}},'Falta')):h('small',{},st==='esta'?'Marcado: está':'Marcado: falta'));
+      ol.append(li)});A.append(ol);
+    B.append(h('h3',{},'Lo que hay en la caja'),h('div',{class:'k-pool',style:'margin:0'},...shuffle(b.got).map(g=>h('span',{class:'k-chip',style:'cursor:default'},g))));
+    const done=b.list.every(it=>ans[it]!==undefined);
+    if(!done)msg(m,'',`Compara con cuidado: cantidades incluidas. Llevas ${Object.keys(ans).length} de ${b.list.length}.`);
+    else{const wrong=b.list.filter(it=>(ans[it]==='falta')!==b.bad.includes(it));msg(m,wrong.length?'bad':'good',(wrong.length?`✗ Revisa: ${wrong.join(', ')}. `:'✓ <b>Bien comprobado.</b> ')+b.fix)}}
+  sel.onchange=()=>{ans={};draw()};draw();
+}
+
+// ---------- Ficha de inventario ----------
+const OUT=`PS C:\\Users\\alumno> Get-CimInstance Win32_ComputerSystem | Select-Object Manufacturer, Model, TotalPhysicalMemory
+
+Manufacturer Model    TotalPhysicalMemory
+------------ -----    -------------------
+Ejemplo SL   AIO-24          16893394944
+
+PS C:\\Users\\alumno> Get-CimInstance Win32_BIOS | Select-Object SerialNumber, SMBIOSBIOSVersion
+
+SerialNumber SMBIOSBIOSVersion
+------------ -----------------
+EJ24A7731    1.18.0
+
+PS C:\\Users\\alumno> Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores
+
+Name                                       NumberOfCores
+----                                       -------------
+Intel(R) Core(TM) i5-12400 (ejemplo)                   6
+
+PS C:\\Users\\alumno> Get-CimInstance Win32_DiskDrive | Select-Object Model, Size
+
+Model                     Size
+-----                     ----
+EJEMPLO NVMe 512GB        512105932800
+
+PS C:\\Users\\alumno> getmac /v
+
+Nombre de conexión Adaptador de red    Dirección física    Nombre de transporte
+================== =================== =================== ====================
+Wi-Fi              Wi-Fi 6 Ejemplo     3C-52-82-1A-2B-17   \\Device\\Tcpip_{…}`;
+const FIELDS=[
+  {k:'Fabricante',ok:v=>/ejemplo/i.test(v),sol:'Ejemplo SL'},
+  {k:'Modelo',ok:v=>/aio-?24/i.test(v),sol:'AIO-24'},
+  {k:'Número de serie',ok:v=>v.trim().toUpperCase()==='EJ24A7731',sol:'EJ24A7731'},
+  {k:'Versión de BIOS/UEFI',ok:v=>v.trim()==='1.18.0',sol:'1.18.0'},
+  {k:'Procesador y núcleos',ok:v=>/12400/.test(v)&&/\b6\b/.test(v),sol:'Intel Core i5-12400, 6 núcleos'},
+  {k:'Memoria RAM (GB)',ok:v=>/^\s*16(\s*gb)?\s*$/i.test(v),sol:'16 GB (16 893 394 944 bytes ≈ 15,7 GiB: algo menos de 16 porque el sistema reserva una parte)'},
+  {k:'Disco (modelo y capacidad)',ok:v=>/nvme/i.test(v)&&/512/.test(v),sol:'EJEMPLO NVMe, 512 GB (512 105 932 800 bytes)'},
+  {k:'MAC del adaptador Wi‑Fi',ok:v=>v.replace(/[:\-\s]/g,'').toUpperCase()==='3C52821A2B17',sol:'3C-52-82-1A-2B-17'}];
+function invLab(root){
+  root.append(h('p',{class:'lead',html:'Con la salida de PowerShell de este equipo (datos ficticios), rellena su <b>ficha de inventario</b>. Ojo: algunos datos salen en <b>bytes</b> y hay que pasarlos a GB.'}));
+  const wrap=h('div',{class:'k-two'});const A=h('div'),B=h('div');wrap.append(A,B);root.append(wrap);
+  A.append(h('div',{class:'k-cap'},'Terminal',h('small',{},'Windows 11 · sin permisos de administrador')),h('div',{class:'k-term',style:'max-height:560px'},h('pre',{},OUT)));
+  const inputs=FIELDS.map(f=>{const i=h('input',{type:'text','aria-label':f.k,autocomplete:'off',spellcheck:'false',style:'font:600 16px var(--f-mono);padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%'});return i});
+  const tb=h('tbody');FIELDS.forEach((f,i)=>tb.append(h('tr',{},h('td',{},h('b',{},f.k)),h('td',{},inputs[i]))));
+  const fix=[['Nº de inventario','AULA2-PC07 (lo pone la organización)'],['Ubicación','Aula 2, puesto 7']];
+  const tb2=h('tbody');fix.forEach(([a,b])=>tb2.append(h('tr',{},h('td',{},h('b',{},a)),h('td',{class:'pk'},b))));
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+  B.append(h('div',{class:'k-cap'},'Ficha de inventario'),h('div',{class:'k-tblwrap'},h('table',{class:'k-tbl'},tb2,tb)),
+    h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:check},'Comprobar'),h('button',{class:'btn alt',onclick:sol},'Ver solución')),m);
+  function check(){let ok=0;FIELDS.forEach((f,i)=>{const g=f.ok(inputs[i].value);inputs[i].style.borderColor=g?'var(--good)':'var(--bad)';inputs[i].style.background=g?'var(--good-bg)':'var(--bad-bg)';if(g)ok++});
+    msg(m,ok===FIELDS.length?'good':'bad',ok===FIELDS.length?'✓ <b>Ficha completa y correcta.</b> Ahora faltaría añadir la compra, la garantía y el historial.':`<b>${ok} de ${FIELDS.length}</b> correctos. Revisa los marcados en rojo${!FIELDS[5].ok(inputs[5].value)?'. Pista para la memoria: divide los bytes entre 1024 tres veces':''}.`)}
+  function sol(){FIELDS.forEach((f,i)=>{inputs[i].value=f.sol;inputs[i].style.borderColor='var(--warn)';inputs[i].style.background='var(--warn-bg)'});msg(m,'warn','Solución a la vista. La memoria: 16 893 394 944 ÷ 1024 ÷ 1024 ÷ 1024 ≈ 15,7, que corresponde a 16 GB instalados.')}
+  msg(m,'','Rellena los campos y pulsa Comprobar.');
+}
+
+acts(document.getElementById('r-inv'),[
+  {label:'Abre la caja',render:boxLab},
+  {label:'¿OEM o Retail?',render:el=>sort(el,{intro:'¿Es una característica de la versión **Retail** o de la **OEM**?',
+    buckets:[{id:'r',name:'Retail (en caja)'},{id:'o',name:'OEM (bulk, tray)'}],
+    items:[{t:'Viene en su caja con manual y accesorios',b:'r'},{t:'Procesador en una bandeja de plástico, sin disipador',b:'o'},{t:'Garantía del fabricante, normalmente de 3 años en procesadores',b:'r'},{t:'Pensado para fabricantes que montan equipos en serie',b:'o'},
+      {t:'Licencia de Windows que se puede pasar a otro equipo',b:'r'},{t:'Licencia de Windows preinstalada, unida al primer equipo',b:'o'},{t:'Algo más barato',b:'o'},{t:'Recomendable para quien monta un solo equipo',b:'r'}]})},
+  {label:'Garantía',render:el=>quiz(el,{intro:'Compras como **consumidor** en España salvo que se diga lo contrario.',questions:[
+    {q:'Un SSD nuevo comprado hace **2 años y medio** deja de funcionar sin golpes ni mal uso. ¿Tiene garantía?',o:['Sí: la garantía legal de un producto nuevo es de 3 años; se reclama al vendedor','No: la garantía son 2 años','Solo si el fabricante quiere'],a:0},
+    {q:'Una fuente con **10 años de garantía del fabricante** falla a los 5 años. ¿A quién se reclama?',o:['Al fabricante, por su garantía comercial','Al vendedor, por la garantía legal','A nadie'],a:0,why:'La garantía legal (3 años) ya pasó, pero la comercial sigue vigente.'},
+    {q:'Compras un portátil de **segunda mano** y pactáis por escrito la garantía mínima. ¿De cuánto es como poco?',o:['1 año','3 años','6 meses'],a:0},
+    {q:'¿Quién responde de la **garantía legal**?',o:['El vendedor','El fabricante','El transportista'],a:0},
+    {q:'Para reclamar una avería, lo imprescindible es…',o:['La factura o el ticket y el número de serie','Solo la caja original','El manual'],a:0},
+    {q:'El fabricante te da un número de **RMA**. ¿Qué es?',o:['La autorización para enviarle la pieza a reparar o cambiar','El número de serie','El código de la factura'],a:0},
+    {q:'¿Qué **anula** con más seguridad la garantía de una fuente de alimentación?',o:['Abrirla','Usarla muchas horas','Cambiar los cables modulares por los suyos'],a:0,why:'Además, abrir una fuente es peligroso: sus condensadores guardan carga.'},
+    {q:'Una **empresa** compra 20 equipos. ¿Qué conviene anotar en el inventario?',o:['La fecha de fin de garantía de cada equipo','Solo el precio','Nada: la garantía es automática'],a:0,why:'En compras de empresa manda el contrato y la garantía del fabricante.'}]})},
+  {label:'Ficha de inventario',render:invLab}
+]);
+})();
+
+</script>
+</body></html>

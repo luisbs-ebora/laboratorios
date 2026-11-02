@@ -1,0 +1,505 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratorio de Sistemas Operativos · Tema 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --ink:#0E1B32; --muted:#55697C; --line:#C9D5DF;
+  --accent:#00B8CF; --accent-ink:#17627C; --chip:#DFF5F9; --warn:#C9741F; --warn-bg:#FCE6CC;
+  --bad:#C2412D; --bad-bg:#FBE1DC; --good:#1F8A5B; --good-bg:#DDF2E7;
+  --lamp:#FFC93C; --lamp-glow:rgba(255,201,60,.55); --lamp-off:#DCE3EA;
+  --l-app:#FBE3C4; --l-tcp:#CFEAF7; --l-ip:#D9EBD0; --l-eth:#E6DCF4;
+  --f-head:'Poppins',system-ui,sans-serif; --f-body:'Open Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.5 var(--f-body)}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-top:6px solid var(--accent);padding-top:18px}
+.eyebrow{font:600 13px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font:700 clamp(28px,4vw,40px)/1.1 var(--f-head);margin:6px 0 0;text-wrap:balance}
+.speed{display:flex;align-items:center;gap:10px;font:600 15px var(--f-body);color:var(--muted)}
+nav.tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:20px 0 22px}
+.tab{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:12px 14px;background:var(--surface);border:2px solid var(--line);border-radius:10px;min-width:0}
+.tab b{font:600 17px/1.25 var(--f-head)}
+.tab span{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em}
+.tab[aria-selected="true"]{border-color:var(--accent);background:var(--chip)}
+.tab:focus-visible,.btn:focus-visible,.seg button:focus-visible,.bulb:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px clamp(16px,3vw,30px) 26px}
+.panel h2{font:700 clamp(24px,3vw,30px)/1.2 var(--f-head);margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:6px 0 18px;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{all:unset;cursor:pointer;font:600 17px var(--f-head);padding:12px 20px;border-radius:10px;background:var(--ink);color:var(--surface);text-align:center}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn[disabled]{opacity:.4;cursor:default}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:10px 18px;font:600 16px var(--f-head)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+input[type=number],select{font:600 20px var(--f-mono);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:7.5em}
+select{width:auto}
+label.lbl{font:600 15px var(--f-body);color:var(--muted)}
+.note{background:var(--chip);border-radius:10px;padding:14px 18px;margin-top:18px;max-width:80ch}
+.note b{font-family:var(--f-head)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.svgbox{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.svgbox svg{display:block;width:100%;min-width:560px;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+.mono{font-family:var(--f-mono)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.log li{padding:10px 12px;border-left:4px solid var(--accent);background:var(--bg);border-radius:6px;font-size:16px}
+.log li.bad{border-color:var(--bad);background:var(--bad-bg)}
+.log li.good{border-color:var(--good);background:var(--good-bg)}
+.log li.warn{border-color:var(--warn);background:var(--warn-bg)}
+.side h3{font:600 15px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--accent-ink);margin:0 0 10px}
+
+/* ===== Kit de actividades (clasificar, ordenar, test) ===== */
+.k-acts{margin:0 0 18px}
+.k-stage{min-height:120px}
+.k-msg{border-radius:12px;padding:12px 16px;background:var(--bg);border:2px solid var(--line);font-size:17px;margin:12px 0;min-height:52px}
+.k-msg.good{background:var(--good-bg);border-color:var(--good)}
+.k-msg.bad{background:var(--bad-bg);border-color:var(--bad)}
+.k-msg.warn{background:var(--warn-bg);border-color:var(--warn)}
+.k-msg b{font-family:var(--f-head)}
+.k-score{font:600 15px var(--f-mono);color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.k-score b{color:var(--ink)}
+.k-pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:2px dashed var(--line);border-radius:12px;min-height:64px;background:var(--bg);margin:10px 0 14px}
+.k-pool:empty::after{content:'¡Todas colocadas!';font:600 16px var(--f-head);color:var(--good);padding:8px}
+.k-chip{all:unset;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;padding:9px 13px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font:600 16px/1.3 var(--f-body);max-width:100%;overflow-wrap:anywhere}
+.k-chip.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-chip.ok{background:var(--good-bg);border-color:var(--good);cursor:default}
+.k-chip.shake{animation:kshake .35s}
+.k-chip:focus-visible,.k-bucket:focus-visible,.k-opt:focus-visible,.k-oi:focus-visible,.k-tok:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.k-ghost{position:fixed;z-index:50;pointer-events:none;opacity:.92;transform:translate(-50%,-50%) scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.k-buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.k-bucket{border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);min-height:120px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0}
+.k-bucket.over{border-color:var(--accent);background:var(--chip)}
+.k-bucket.armed{border-style:dashed;border-color:var(--accent)}
+.k-bucket h4{margin:0 0 4px;font:700 17px/1.2 var(--f-head)}
+.k-bucket h4 small{display:block;font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em;margin-top:2px}
+.k-bucket .k-chip{font-size:14px;padding:6px 9px}
+@keyframes kshake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.k-olist{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:860px}
+.k-oi{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.k-oi .n{font:700 18px var(--f-mono);color:var(--muted);min-width:1.6em;text-align:center}
+.k-oi .t{font:600 17px/1.35 var(--f-body)}
+.k-oi .t small{display:block;font-weight:400;color:var(--muted);font-size:14px}
+.k-oi .mv{display:flex;gap:4px}
+.k-oi .mv button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:8px;border:2px solid var(--line);text-align:center;font:700 18px/34px var(--f-mono);background:var(--bg)}
+.k-oi.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-oi.ok{border-color:var(--good);background:var(--good-bg)}
+.k-oi.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-olabel{font:600 13px var(--f-mono);color:var(--accent-ink);text-transform:uppercase;letter-spacing:.06em}
+.k-q{max-width:900px}
+.k-q .qn{font:600 14px var(--f-mono);color:var(--muted)}
+.k-q .qt{font:700 clamp(20px,2.4vw,24px)/1.3 var(--f-head);margin:6px 0 14px;text-wrap:pretty}
+.k-q .qfig{margin:0 0 14px}
+.k-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.k-opt{all:unset;cursor:pointer;padding:14px 16px;border:2px solid var(--line);border-radius:10px;background:var(--surface);font:600 17px/1.35 var(--f-body)}
+.k-opt:hover{border-color:var(--accent)}
+.k-opt.ok{border-color:var(--good);background:var(--good-bg)}
+.k-opt.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-opt[disabled]{cursor:default}
+.k-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:6px 0 12px;max-width:900px}
+.k-bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.k-end{font:700 24px var(--f-head);margin:8px 0}
+.k-two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+.k-two.wide{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr)}
+@media (max-width:900px){.k-two,.k-two.wide{grid-template-columns:minmax(0,1fr)}}
+.k-two>*{min-width:0}
+.k-tok{all:unset;cursor:pointer;font:700 clamp(18px,2.4vw,26px) var(--f-mono);padding:8px 12px;border-radius:8px;border:2px solid var(--line);background:var(--surface)}
+.k-tok.seen{background:var(--chip);border-color:var(--accent)}
+.k-tok.sel{box-shadow:0 0 0 3px var(--accent)}
+.k-toks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.k-tbl{border-collapse:collapse;font-size:16px;width:100%}
+.k-tbl th,.k-tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+.k-tbl th{background:var(--bg);font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.k-tbl tr.hl td{background:var(--warn-bg)}
+.k-tbl tr.new td{background:var(--good-bg);animation:pop .4s}
+.k-tbl td.fk,.k-tbl td.pk{font-family:var(--f-mono);font-weight:700}
+.k-tbl td.fk button{all:unset;cursor:pointer;color:var(--accent-ink);text-decoration:underline;text-underline-offset:3px}
+.k-tbl td.chg{background:var(--good-bg);font-weight:700}
+.k-tblwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.k-cap{font:700 16px var(--f-head);margin:14px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.k-cap small{font:600 12px var(--f-mono);color:var(--muted)}
+.k-mission{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.k-mission li{padding:10px 12px;border-radius:8px;background:var(--bg);border-left:4px solid var(--line);font-size:16px}
+.k-mission li.cur{border-color:var(--accent);background:var(--chip)}
+.k-mission li.done{border-color:var(--good);background:var(--good-bg)}
+.k-mission li.done::before{content:'✓ ';font-weight:700;color:var(--good)}
+.k-term{background:#0C1220;color:#D8E1EA;border-radius:12px;padding:14px 16px;font:500 15px/1.5 var(--f-mono);min-height:340px;max-height:460px;overflow:auto;border:2px solid var(--line)}
+.k-term .pr{color:#7FE3A0}
+.k-term .ps{color:#7CC4FF}
+.k-term .er{color:#FF9C8C}
+.k-term .wn{color:#FFD27A}
+.k-term pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+.k-term .in{display:flex;gap:8px;align-items:center}
+.k-term input{all:unset;flex:1;min-width:0;color:#fff;caret-color:#7FE3A0}
+.k-chips2{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.k-chips2 button{all:unset;cursor:pointer;font:600 14px var(--f-mono);padding:6px 10px;border-radius:8px;border:2px solid var(--line);background:var(--bg)}
+.k-chips2 button:focus-visible{outline:3px solid var(--accent)}
+.k-dm{border:2px solid var(--line);border-radius:10px;background:var(--surface);font:400 15px var(--f-body);overflow:hidden}
+.k-dm .tb{background:var(--bg);padding:6px 10px;border-bottom:1px solid var(--line);font:600 14px var(--f-body)}
+.k-dm ul{list-style:none;margin:0;padding:4px 0 8px}
+.k-dm li{margin:0}
+.k-dm .cat,.k-dm .dev{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;padding:5px 10px;width:100%;box-sizing:border-box}
+.k-dm .dev{padding-left:34px}
+.k-dm .cat:hover,.k-dm .dev:hover{background:var(--chip)}
+.k-dm .dev.sel{background:var(--chip);outline:2px solid var(--accent);outline-offset:-2px}
+.k-dm .ic{width:18px;height:18px;flex:none}
+.k-dm .car{width:14px;font:700 13px var(--f-mono);color:var(--muted)}
+.k-props{border:2px solid var(--line);border-radius:10px;background:var(--surface)}
+.k-props .ptabs{display:flex;border-bottom:2px solid var(--line)}
+.k-props .ptabs button{all:unset;cursor:pointer;padding:8px 14px;font:600 15px var(--f-body)}
+.k-props .ptabs button[aria-pressed="true"]{background:var(--chip);box-shadow:inset 0 -3px 0 var(--accent)}
+.k-props .pbody{padding:14px 16px;font-size:16px;min-height:170px}
+.k-props .pbody .mono{background:var(--bg);padding:8px 10px;border-radius:6px;display:block;overflow-wrap:anywhere;margin-top:6px}
+.k-svgfig{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.k-svgfig svg{display:block;width:100%;height:auto}
+.seg.k-acts,.k-stage .seg{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%}
+.k-q .qt b{color:var(--accent-ink)}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:20px 0;max-width:900px}
+.ro{background:var(--bg);border-radius:10px;padding:10px 14px;min-width:0}
+.ro small{display:block;font:600 13px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ro div{font:700 26px var(--f-mono);overflow-wrap:anywhere}
+.ro.big div{font-size:44px;line-height:1.1}
+.sum{font:600 20px var(--f-mono);margin:4px 0 0;color:var(--accent-ink);overflow-wrap:anywhere}
+.target{font:700 20px var(--f-head);padding:8px 14px;border-radius:8px;background:var(--warn-bg)}
+.target.ok{background:var(--good-bg);color:var(--good)}
+svg g[role=button]:focus{outline:none}svg g[role=button]:focus-visible .slot{stroke:var(--accent);stroke-width:5}
+.lbl{font:600 15px var(--f-body);color:var(--muted)}
+select{font:600 17px var(--f-body);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+
+.hdr-note{font:600 14px var(--f-body);color:var(--muted)}
+</style></head><body>
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Tema 2 · Sistemas operativos monopuesto · SMR</div>
+    <h1>Laboratorio de Sistemas Operativos · Tema 2</h1>
+  </div>
+  <label class="speed" for="slow"><input type="checkbox" id="slow"> Ritmo lento en las animaciones</label>
+</header>
+<nav class="tabs" role="tablist" aria-label="Sesiones">
+  <button class="tab" role="tab" data-t="procesos"><b>Procesos y estados</b><span>Sesión 1 · Proceso, estados, hilos y multitarea</span></button>
+  <button class="tab" role="tab" data-t="cpu"><b>Gestión del procesador</b><span>Sesión 2 · Planificación, prioridades y multiprogramación</span></button>
+  <button class="tab" role="tab" data-t="memoria"><b>Gestión de memoria</b><span>Sesión 3 · RAM, memoria virtual, caché, paginación</span></button>
+</nav>
+<section class="panel" id="p-procesos" role="tabpanel" hidden>
+  <h2>Procesos y estados</h2>
+  <div id="r-procesos"></div>
+</section>
+<section class="panel" id="p-cpu" role="tabpanel" hidden>
+  <h2>Gestión del procesador</h2>
+  <div id="r-cpu"></div>
+</section>
+<section class="panel" id="p-memoria" role="tabpanel" hidden>
+  <h2>Gestión de memoria</h2>
+  <div id="r-memoria"></div>
+</section>
+</div>
+<script>
+
+/* ===== Kit de actividades ===== */
+const K=(function(){
+  const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){if(k==='class')e.className=attrs[k];else if(k==='html')e.innerHTML=attrs[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k])}kids.flat().forEach(c=>{if(c==null)return;e.append(c.nodeType?c:document.createTextNode(c))});return e};
+  const md=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<span class="mono">$1</span>');
+  const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  function msg(el,cls,html){el.className='k-msg'+(cls?' '+cls:'');el.innerHTML=html}
+
+  // Selector de actividades dentro de una pestaña
+  function acts(root,list){
+    const seg=h('div',{class:'seg k-acts',role:'group','aria-label':'Actividad'});
+    const stage=h('div',{class:'k-stage'});
+    root.append(seg,stage);
+    const views=list.map(()=>null);
+    const btns=list.map((a,i)=>{const b=h('button',{'aria-pressed':i===0?'true':'false',onclick:()=>go(i)},a.label);seg.append(b);return b});
+    function go(i){btns.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));views.forEach(v=>v&&(v.hidden=true));
+      if(!views[i]){views[i]=h('div');stage.append(views[i]);list[i].render(views[i])}views[i].hidden=false}
+    go(0);
+  }
+
+  // Clasificar: tocar ficha + tocar caja, o arrastrar
+  function sort(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const score=h('div',{class:'k-score'});
+    const pool=h('div',{class:'k-pool','aria-label':'Fichas sin colocar'});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    const grid=h('div',{class:'k-buckets'});
+    const bk={};
+    cfg.buckets.forEach(b=>{const el=h('div',{class:'k-bucket',tabindex:0,role:'button','aria-label':'Caja '+b.name,'data-b':b.id},h('h4',{html:md(b.name)+(b.sub?'<small>'+md(b.sub)+'</small>':'')}));
+      el.addEventListener('click',()=>{if(sel)drop(sel,b.id)});
+      el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel){e.preventDefault();drop(sel,b.id)}});
+      bk[b.id]=el;grid.append(el)});
+    const row=h('div',{class:'row',style:'margin-top:14px'},
+      h('button',{class:'btn alt',onclick:reset},'Empezar de nuevo'),
+      h('button',{class:'btn alt',onclick:solve},'Ver solución'));
+    root.append(score,pool,m,grid,row);
+    let sel=null,ok=0,ko=0,chips=[];
+    const bname=id=>cfg.buckets.find(b=>b.id===id).name.replace(/\*\*/g,'');
+    function upd(){score.innerHTML=`<span>Colocadas: <b>${ok}/${cfg.items.length}</b></span><span>Fallos: <b>${ko}</b></span>`;
+      Object.values(bk).forEach(b=>b.classList.toggle('armed',!!sel))}
+    function pick(c){if(c.classList.contains('ok'))return;if(sel===c){c.classList.remove('sel');sel=null}else{sel&&sel.classList.remove('sel');sel=c;c.classList.add('sel');
+      msg(m,'','<b>'+md(c._it.t)+'</b>. Ahora toca la caja donde va (o arrástrala).')}upd()}
+    function drop(c,b){const it=c._it;c.classList.remove('sel');sel=null;
+      if(it.b===b||(Array.isArray(it.b)&&it.b.includes(b))){c.classList.add('ok');c.setAttribute('tabindex','-1');bk[b].append(c);ok++;
+        msg(m,'good','✓ <b>'+md(it.t)+'</b> → '+md(bname(b))+(it.why?'. '+md(it.why):''));
+        if(ok===cfg.items.length)msg(m,'good','<b>¡Completado!</b> '+ok+' fichas con '+ko+' fallo'+(ko===1?'':'s')+'. '+(it.why?md(it.why):''))}
+      else{ko++;c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);
+        msg(m,'bad','✗ <b>'+md(it.t)+'</b> no va en «'+md(bname(b))+'». '+(it.hint?md(it.hint):'Piénsalo otra vez.'))}
+      upd()}
+    function build(){pool.innerHTML='';Object.values(bk).forEach(b=>[...b.querySelectorAll('.k-chip')].forEach(c=>c.remove()));
+      chips=shuffle(cfg.items).map(it=>{const c=h('button',{class:'k-chip',type:'button',html:md(it.t)});c._it=it;
+        c.addEventListener('pointerdown',e=>startDrag(e,c));
+        c.addEventListener('click',e=>{if(c._dragged){c._dragged=false;return}pick(c)});
+        pool.append(c);return c});
+      ok=0;ko=0;sel=null;msg(m,'',cfg.start||'Toca una ficha y después la caja donde va. También puedes arrastrarla.');upd()}
+    function reset(){build()}
+    function solve(){chips.forEach(c=>{if(!c.classList.contains('ok')){const b=Array.isArray(c._it.b)?c._it.b[0]:c._it.b;c.classList.add('ok');c.classList.remove('sel');bk[b].append(c)}});sel=null;msg(m,'warn','Solución a la vista. Pulsa «Empezar de nuevo» para intentarlo sin ayuda.');upd()}
+    let dr=null;
+    function startDrag(e,c){if(c.classList.contains('ok')||e.button>0)return;dr={c,x:e.clientX,y:e.clientY,g:null,id:e.pointerId}}
+    window.addEventListener('pointermove',e=>{if(!dr||e.pointerId!==dr.id)return;
+      if(!dr.g){if(Math.hypot(e.clientX-dr.x,e.clientY-dr.y)<8)return;dr.g=dr.c.cloneNode(true);dr.g.classList.add('k-ghost');document.body.append(dr.g);dr.c.style.opacity=.35}
+      e.preventDefault();dr.g.style.left=e.clientX+'px';dr.g.style.top=e.clientY+'px';
+      Object.values(bk).forEach(b=>b.classList.remove('over'));const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))b.classList.add('over')},{passive:false});
+    window.addEventListener('pointerup',e=>{if(!dr||e.pointerId!==dr.id)return;const d=dr;dr=null;if(!d.g)return;
+      d.g.remove();d.c.style.opacity='';d.c._dragged=true;setTimeout(()=>d.c._dragged=false,0);Object.values(bk).forEach(b=>b.classList.remove('over'));
+      const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))drop(d.c,b.dataset.b)});
+    window.addEventListener('pointercancel',()=>{if(dr&&dr.g){dr.g.remove();dr.c.style.opacity=''}dr=null});
+    build();
+  }
+
+  // Ordenar
+  function order(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    if(cfg.top)root.append(h('div',{class:'k-olabel'},'▲ '+cfg.top));
+    const ol=h('ol',{class:'k-olist'});root.append(ol);
+    if(cfg.bottom)root.append(h('div',{class:'k-olabel'},'▼ '+cfg.bottom));
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    root.append(m,h('div',{class:'row'},h('button',{class:'btn',onclick:check},'Comprobar'),h('button',{class:'btn alt',onclick:()=>{cur=shuffleNotSorted();sel=-1;draw();msg(m,'','Ordena de nuevo.')}},'Mezclar'),h('button',{class:'btn alt',onclick:()=>{cur=cfg.items.map((_,i)=>i);sel=-1;draw(true);msg(m,'warn','Este es el orden correcto. Fíjate en las explicaciones en gris.')}},'Ver solución')));
+    let sel=-1,cur=shuffleNotSorted(),tries=0;
+    function shuffleNotSorted(){let a;do{a=shuffle(cfg.items.map((_,i)=>i))}while(a.every((v,i)=>v===i)&&a.length>1);return a}
+    function swap(i,j){if(j<0||j>=cur.length)return;[cur[i],cur[j]]=[cur[j],cur[i]];draw()}
+    function draw(showD){ol.innerHTML='';cur.forEach((v,i)=>{const it=cfg.items[v];
+      const li=h('li',{class:'k-oi'+(sel===i?' sel':''),tabindex:0},h('span',{class:'n'},String(i+1)),h('span',{class:'t',html:md(it.t)+(showD&&it.d?'<small>'+md(it.d)+'</small>':'')}),
+        h('span',{class:'mv'},h('button',{'aria-label':'Subir',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i-1)}},'↑'),h('button',{'aria-label':'Bajar',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i+1)}},'↓')));
+      li.addEventListener('click',()=>{if(sel<0){sel=i;draw()}else if(sel===i){sel=-1;draw()}else{const s=sel;sel=-1;swap(s,i)}});
+      ol.append(li)})}
+    function check(){tries++;let n=0;[...ol.children].forEach((li,i)=>{const good=cur[i]===i;if(good)n++;li.classList.add(good?'ok':'ko')});
+      if(n===cur.length){draw(true);[...ol.children].forEach(li=>li.classList.add('ok'));msg(m,'good','<b>¡Perfecto!</b> Todo en orden'+(tries>1?' (en '+tries+' intentos)':'')+'. '+(cfg.done?md(cfg.done):''))}
+      else msg(m,'bad',`<b>${n} de ${cur.length}</b> en su sitio (en verde). Mueve los rojos: toca uno y luego otro para intercambiarlos, o usa las flechas.`)}
+    draw();msg(m,'',cfg.start||'Toca un elemento y después otro para intercambiarlos, o usa las flechas ↑ ↓. Cuando acabes, pulsa «Comprobar».');
+  }
+
+  // Test de una pregunta cada vez
+  function quiz(root,cfg){
+    if(cfg.intro)root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const box=h('div',{class:'k-q'});root.append(box);
+    let qs,i,ok,answered;
+    function start(){qs=(cfg.noShuffle?cfg.questions:shuffle(cfg.questions)).map(q=>{const o=q.o.map((t,j)=>({t,c:j===q.a}));return Object.assign({},q,{opts:cfg.fixed||q.fixed?o:shuffle(o)})});i=0;ok=0;draw()}
+    function draw(){box.innerHTML='';
+      if(i>=qs.length){box.append(h('div',{class:'k-end'},`Resultado: ${ok} de ${qs.length}`),h('p',{},ok===qs.length?'¡Todas bien!':ok>=qs.length*.7?'Muy bien. Repasa las que fallaste.':'Vuelve a intentarlo: lee bien la explicación de cada pregunta.'),h('button',{class:'btn',onclick:start},'Otra vez (en otro orden)'));return}
+      const q=qs[i];answered=false;
+      const bar=h('div',{class:'k-bar'},h('i',{style:`width:${i/qs.length*100}%`}));
+      const opts=h('div',{class:'k-opts'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Elige una respuesta.');
+      const next=h('button',{class:'btn',onclick:()=>{i++;draw()},hidden:''},i===qs.length-1?'Ver resultado':'Siguiente pregunta');
+      q.opts.forEach(o=>{const b=h('button',{class:'k-opt',html:md(o.t)});b.onclick=()=>{if(answered)return;answered=true;
+        if(o.c){ok++;b.classList.add('ok');msg(m,'good','✓ <b>Correcto.</b> '+md(q.why||''))}
+        else{b.classList.add('ko');[...opts.children].forEach((x,k)=>{if(q.opts[k].c)x.classList.add('ok')});msg(m,'bad','✗ <b>No.</b> '+md(q.why||''))}
+        [...opts.children].forEach(x=>x.setAttribute('disabled',''));next.hidden=false;next.focus()};opts.append(b)});
+      box.append(h('div',{class:'qn'},`Pregunta ${i+1} de ${qs.length} · aciertos: ${ok}`),bar,h('div',{class:'qt',html:md(q.q)}));
+      if(q.fig){const f=h('div',{class:'qfig'});q.fig(f);box.append(f)}
+      box.append(opts,m,next)}
+    start();
+  }
+  return {h,md,shuffle,msg,acts,sort,order,quiz};
+})();
+
+</script>
+<script>
+(function(){const tabs=[...document.querySelectorAll('.tab')];
+function show(id){if(!document.getElementById('p-'+id))id=tabs[0].dataset.t;tabs.forEach(t=>t.setAttribute('aria-selected',t.dataset.t===id));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='p-'+id);try{history.replaceState(null,'','#'+id)}catch(e){}}
+tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.t)));show((location.hash||'').slice(1));})();
+</script>
+<script>
+/* ================= S1 · PROCESOS Y ESTADOS ================= */
+(function(){
+const {h,md,acts,sort,quiz,msg}=K;
+const NS='http://www.w3.org/2000/svg';
+function S(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+const ST={nuevo:{n:'Nuevo',x:20,y:40,w:150,f:'var(--bg)'},listo:{n:'Listo',x:250,y:40,w:150,f:'var(--chip)'},ejec:{n:'En ejecución',x:480,y:40,w:190,f:'var(--good-bg)'},term:{n:'Terminado',x:750,y:40,w:170,f:'var(--bg)'},bloq:{n:'Bloqueado',x:380,y:230,w:180,f:'var(--warn-bg)'}};
+const EV={
+  nuevo:[['admitir','listo','El sistema termina de crear la ficha (PCB) y de reservar la memoria del proceso.']],
+  listo:[['asignar','ejec','El planificador elige a este proceso y le da el procesador.'],['asignar','ejec','Por fin le toca su turno de CPU.']],
+  ejec:[['expira','listo','Se le acaba su turno (el quantum) y el sistema le quita el procesador.'],['expira','listo','Llega un proceso más prioritario y el sistema le quita la CPU.'],
+        ['espera','bloq','Pide leer un fichero del disco duro.'],['espera','bloq','Se queda esperando a que el usuario pulse «Aceptar».'],['espera','bloq','Pide una página web y espera a que lleguen los datos por la red.']],
+  bloq:[['llega','listo','El disco termina de leer el fichero.'],['llega','listo','El usuario pulsa la tecla que el programa esperaba.'],['llega','listo','Llegan los datos de la red.']]};
+const NAMES=['Bloc de notas','Navegador','Reproductor de música','Antivirus','Juego'];
+function sim(root){
+  root.append(h('p',{class:'lead',html:'Sigue la vida de un proceso. Lee lo que pasa y <b>toca el estado</b> al que va el proceso. Si te equivocas, te explica por qué.'}));
+  const svg=S('svg',{viewBox:'0 0 940 320',role:'img','aria-label':'Diagrama de estados de un proceso',style:'width:100%;max-width:900px'});
+  const fig=h('div',{class:'k-svgfig'});fig.append(svg);root.append(fig);
+  const defs=S('defs',{},svg);const mk=S('marker',{id:'soarr',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto'},defs);S('path',{d:'M0,0L10,5L0,10z',fill:'var(--ink)'},mk);
+  [['M170,72 L246,72'],['M400,58 Q440,20 476,58'],['M480,90 Q440,125 404,90'],['M670,72 L746,72'],['M575,104 Q560,180 520,226'],['M380,240 Q320,190 320,108']].forEach(([d])=>S('path',{d,fill:'none',stroke:'var(--ink)','stroke-width':2.5,'marker-end':'url(#soarr)'},svg));
+  const nodes={};
+  Object.entries(ST).forEach(([k,s])=>{const g=S('g',{tabindex:0,role:'button','aria-label':s.n,style:'cursor:pointer'},svg);
+    nodes[k]=S('rect',{x:s.x,y:s.y,width:s.w,height:64,rx:32,fill:s.f,stroke:'var(--ink)','stroke-width':2.5},g);
+    const t=S('text',{x:s.x+s.w/2,y:s.y+39,'text-anchor':'middle','font-size':20,'font-weight':700,fill:'var(--ink)'},g);t.textContent=s.n;
+    g.addEventListener('click',()=>pick(k));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(k)}})});
+  const ev=h('div',{class:'k-q'}),m=h('div',{class:'k-msg',role:'status','aria-live':'polite'}),sc=h('div',{class:'k-score'}),log=h('ol',{style:'margin:8px 0 0;padding-left:22px;font:14px var(--f-body);color:var(--muted)'});
+  root.append(ev,sc,m,h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn alt',onclick:start},'Otro proceso')),h('h3',{},'Historial'),log);
+  let cur,step,next,ok,fail,name;
+  function mark(){Object.entries(nodes).forEach(([k,r])=>{r.setAttribute('stroke-width',k===cur?6:2.5);r.setAttribute('stroke',k===cur?'var(--accent)':'var(--ink)')})}
+  function gen(){step++;
+    if(cur==='ejec'&&step>9){next=['salir','term','El proceso termina su trabajo (o el usuario lo cierra).'];}
+    else{const L=EV[cur];next=L[Math.floor(Math.random()*L.length)];}
+    ev.innerHTML=`<div class="qn">${name} · paso ${step} · ahora está en <b>${ST[cur].n}</b></div><div class="qt">${next[2]}</div>`;}
+  function pick(k){if(!next)return;
+    if(k===next[1]){ok++;log.append(h('li',{},`${ST[cur].n} → ${ST[k].n}: ${next[2]}`));cur=k;mark();
+      if(k==='term'){next=null;ev.innerHTML=`<div class="qt">✓ ${name} ha terminado.</div>`;msg(m,'good',`✓ Fin del proceso: <b>${ok}</b> pasos y <b>${fail}</b> fallos. Pulsa «Otro proceso» para repetir.`)}
+      else{msg(m,'good','✓ Correcto.');gen()}}
+    else{fail++;let why;
+      if(cur==='bloq'&&k==='ejec')why='Un proceso bloqueado <b>nunca</b> pasa directo a ejecución: primero vuelve a la cola de <b>listos</b> y espera su turno.';
+      else if(cur!=='ejec'&&k==='bloq')why='Solo se bloquea un proceso que está <b>en ejecución</b>: tiene que estar ejecutando la instrucción que pide algo.';
+      else if(next[1]==='bloq')why='Espera algo que no es el procesador (disco, teclado, red): eso es <b>bloqueado</b>.';
+      else if(next[1]==='listo'&&cur==='ejec')why='Le quitan la CPU, pero tiene todo lo que necesita: vuelve a <b>listo</b> a esperar turno.';
+      else if(next[1]==='listo')why='Ya tiene lo que necesitaba; ahora solo le falta la CPU: <b>listo</b>.';
+      else why='Fíjate en las flechas del diagrama desde <b>'+ST[cur].n+'</b>.';
+      msg(m,'bad','✗ '+why)}
+    sc.innerHTML=`<span>Aciertos: <b>${ok}</b></span><span>Fallos: <b>${fail}</b></span>`}
+  function start(){cur='nuevo';step=0;ok=0;fail=0;log.innerHTML='';name=NAMES[Math.floor(Math.random()*NAMES.length)];mark();gen();msg(m,'','Toca el estado al que pasa.');sc.innerHTML=''}
+  start();
+}
+acts(document.getElementById('r-procesos'),[
+  {label:'Vida de un proceso',render:sim},
+  {label:'¿En qué estado?',render:el=>sort(el,{intro:'¿En qué **estado** está cada proceso?',
+    buckets:[{id:'l',name:'Listo'},{id:'e',name:'En ejecución'},{id:'b',name:'Bloqueado'},{id:'t',name:'Terminado'}],
+    items:[{t:'El antivirus lo tiene todo preparado, pero la CPU está con otro proceso',b:'l'},{t:'Un vídeo acaba de recibir sus datos y espera turno de CPU',b:'l'},
+      {t:'El juego está calculando ahora mismo la posición de los personajes',b:'e'},{t:'La CPU está ejecutando las instrucciones de la hoja de cálculo',b:'e'},
+      {t:'El navegador espera a que llegue la página de Internet',b:'b'},{t:'Un programa espera a que pulses «Aceptar»',b:'b'},{t:'El Word espera a que el disco termine de guardar',b:'b'},
+      {t:'Has cerrado el Paint y el sistema libera su memoria',b:'t'}]})},
+  {label:'¿Proceso o hilo?',render:el=>sort(el,{intro:'¿Esta frase describe un **proceso** o un **hilo**?',
+    buckets:[{id:'p',name:'Proceso'},{id:'h',name:'Hilo',sub:'subproceso en Windows'}],
+    items:[{t:'Tiene su propia memoria, que otro no puede tocar',b:'p'},{t:'Comparte la memoria con los demás de su mismo grupo',b:'h'},{t:'Es un programa en ejecución',b:'p'},{t:'Es una tarea dentro de un programa en ejecución',b:'h'},
+      {t:'Si falla, puede tumbar a todos sus compañeros',b:'h'},{t:'Cada pestaña de Chrome suele ser uno',b:'p'},{t:'El corrector ortográfico de Word',b:'h'},{t:'Tiene un PID en la pestaña Detalles',b:'p'}]})},
+  {label:'Test',render:el=>quiz(el,{questions:[
+    {q:'¿Qué es un **proceso**?',o:['Un programa en ejecución','Un fichero .exe en el disco','Una carpeta del sistema'],a:0},
+    {q:'Abres dos ventanas de CMD. ¿Cuántos procesos **cmd.exe** hay?',o:['Dos','Uno','Ninguno'],a:0,why:'Un programa, dos procesos.'},
+    {q:'¿Qué es el **PID**?',o:['El número que identifica a un proceso','La prioridad del proceso','La memoria del proceso'],a:0},
+    {q:'¿Qué diferencia hay entre **listo** y **bloqueado**?',o:['Listo espera la CPU; bloqueado espera otra cosa (disco, teclado, red)','Ninguna','Bloqueado espera la CPU; listo espera el disco'],a:0},
+    {q:'Un proceso bloqueado recibe lo que esperaba. ¿Adónde va?',o:['A listo','A en ejecución','A terminado'],a:0,why:'Nunca va directo a ejecución.'},
+    {q:'¿Desde qué estado se puede pasar a **bloqueado**?',o:['Solo desde en ejecución','Desde listo','Desde nuevo'],a:0},
+    {q:'¿Qué comparten los **hilos** de un mismo proceso?',o:['La memoria y los recursos del proceso','Nada','El PID de otros procesos'],a:0},
+    {q:'¿Qué es la **multitarea apropiativa**?',o:['El sistema le quita la CPU al proceso cuando se acaba su turno','Cada proceso cede la CPU cuando quiere','Solo se ejecuta un programa'],a:0},
+    {q:'¿Cómo se abre el Administrador de tareas?',o:['Ctrl + Mayús + Esc','Ctrl + C','Windows + D'],a:0},
+    {q:'¿Qué orden de CMD lista los procesos?',o:['tasklist','ipconfig','dir'],a:0},
+    {q:'¿Cómo se llama guardar los datos del proceso que sale y cargar los del que entra?',o:['Cambio de contexto','Formateo','Paginación'],a:0}]})}
+]);
+})();
+
+/* ================= S2 · GESTIÓN DEL PROCESADOR ================= */
+(function(){
+const {h,acts,sort,quiz,msg}=K;
+const COL={A:'var(--l-app)',B:'var(--l-ip)',C:'var(--l-tcp)',D:'var(--l-eth)'};
+function plan(alg,P){const seq=[];if(alg==='fcfs')P.forEach(p=>{for(let i=0;i<p.r;i++)seq.push(p.n)});
+  else if(alg==='sjf')[...P].sort((a,b)=>a.r-b.r||P.indexOf(a)-P.indexOf(b)).forEach(p=>{for(let i=0;i<p.r;i++)seq.push(p.n)});
+  else{const q=P.map(p=>({n:p.n,r:p.r}));while(q.length){const p=q.shift();const k=Math.min(2,p.r);for(let i=0;i<k;i++)seq.push(p.n);p.r-=k;if(p.r>0)q.push(p)}}
+  const w={};P.forEach(p=>{const end=seq.lastIndexOf(p.n)+1;w[p.n]=end-p.r});return {seq,w}}
+function gantt(root){
+  root.append(h('p',{class:'lead',html:'Los procesos llegan todos en el instante 0, en el orden de la tabla. Elige el algoritmo, calcula el <b>tiempo de espera</b> de cada proceso (espera = cuándo termina − su ráfaga) y pulsa <b>Comprobar</b>.'}));
+  const tb=h('div'),algS=h('select',{'aria-label':'Algoritmo'},h('option',{value:'fcfs'},'FCFS'),h('option',{value:'sjf'},'SJF'),h('option',{value:'rr'},'Round Robin (quantum = 2)'));
+  const ins=h('div',{class:'row',style:'gap:14px;align-items:end'}),g=h('div',{style:'margin-top:12px'}),m=h('div',{class:'k-msg',role:'status','aria-live':'polite'}),sc=h('div',{class:'k-score'});
+  root.append(tb,h('label',{class:'lbl',style:'display:flex;gap:10px;align-items:center;margin:10px 0'},'Algoritmo',algS),ins,
+    h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:()=>{draw(true);msg(m,'warn','Fíjate en el diagrama: la espera de cada proceso es el tiempo que pasa sin ejecutarse.')}},'Ver Gantt'),h('button',{class:'btn alt',onclick:nuevo},'Otros procesos')),sc,m,g);
+  let P,inputs,ok=0,tot=0;algS.onchange=()=>{g.innerHTML='';inputs.forEach(i=>{i.value='';i.style.borderColor=''});msg(m,'','Calcula las esperas con '+algS.selectedOptions[0].text+'.')};
+  function nuevo(){const n=3+(Math.random()<.4?1:0);P=['A','B','C','D'].slice(0,n).map(x=>({n:x,r:1+Math.floor(Math.random()*7)}));
+    tb.innerHTML='<table style="border-collapse:collapse;font:600 16px var(--f-mono)"><tr>'+['Proceso',...P.map(p=>p.n)].map(x=>`<th style="border:1px solid var(--line);padding:6px 14px;background:var(--chip)">${x}</th>`).join('')+'</tr><tr>'+['Ráfaga (ms)',...P.map(p=>p.r)].map(x=>`<td style="border:1px solid var(--line);padding:6px 14px;text-align:center">${x}</td>`).join('')+'</tr></table>';
+    ins.innerHTML='';inputs=P.map(p=>{const i=h('input',{type:'number',min:0,'aria-label':'Espera de '+p.n,style:'font:600 18px var(--f-mono);width:5em;padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)'});ins.append(h('label',{class:'lbl',style:'display:flex;flex-direction:column;gap:4px'},'Espera de '+p.n,i));return i});
+    ins.append(h('span',{class:'lbl',id:'so-media'},''));g.innerHTML='';msg(m,'','Calcula las esperas.')}
+  function draw(){const {seq}=plan(algS.value,P);g.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:0">'+seq.map((p,i)=>`<div style="width:38px;text-align:center"><div style="height:36px;line-height:36px;background:${COL[p]};border:1px solid var(--ink);font:700 15px var(--f-mono);color:#0e1b32">${p}</div><div style="font:11px var(--f-mono);color:var(--muted);text-align:left">${i}</div></div>`).join('')+`<div style="font:11px var(--f-mono);color:var(--muted);align-self:flex-end">${seq.length}</div></div>`}
+  function chk(){const {w}=plan(algS.value,P);tot++;let all=true;inputs.forEach((i,k)=>{const g2=+i.value===w[P[k].n]&&i.value!=='';i.style.borderColor=g2?'var(--good)':'var(--bad)';if(!g2)all=false});if(all)ok++;
+    const media=(Object.values(w).reduce((a,b)=>a+b,0)/P.length).toFixed(2).replace('.',',');sc.innerHTML=`<span>Aciertos: <b>${ok}/${tot}</b></span>`;
+    msg(m,all?'good':'bad',all?`✓ Correcto. Espera media = <b>${media} ms</b>. Prueba ahora con otro algoritmo y compara.`:'✗ Revisa los marcados en rojo. Pulsa «Ver Gantt» si te atascas.');if(all)draw()}
+  nuevo();
+}
+acts(document.getElementById('r-cpu'),[
+  {label:'Planifica (Gantt)',render:gantt},
+  {label:'¿Qué algoritmo?',render:el=>sort(el,{intro:'¿A qué **algoritmo** corresponde cada frase?',
+    buckets:[{id:'f',name:'FCFS'},{id:'s',name:'SJF'},{id:'r',name:'Round Robin'},{id:'p',name:'Prioridades'}],
+    items:[{t:'Como la cola del supermercado',b:'f'},{t:'Un proceso largo al principio hace esperar a todos (efecto convoy)',b:'f'},{t:'Consigue la menor espera media',b:'s'},{t:'Tiene que adivinar cuánto durará cada proceso',b:'s'},
+      {t:'Cada proceso tiene un quantum',b:'r'},{t:'Si no termina en su turno, vuelve al final de la cola',b:'r'},{t:'Se evita la inanición con envejecimiento',b:'p'},{t:'Como urgencias de un hospital',b:'p'}]})},
+  {label:'Test',render:el=>quiz(el,{questions:[
+    {q:'¿Qué es la **multiprogramación**?',o:['Tener varios programas en memoria para que la CPU no se quede parada','Tener varios núcleos','Programar en varios lenguajes'],a:0},
+    {q:'¿Qué es el **multiprocesamiento**?',o:['Tener varios procesadores o núcleos','Tener varios programas en memoria','Abrir muchas ventanas'],a:0},
+    {q:'¿Qué hace el **planificador**?',o:['Elige qué proceso listo pasa a ejecución','Borra procesos','Reparte el disco'],a:0},
+    {q:'¿Qué es el **quantum**?',o:['El turno de CPU de cada proceso en Round Robin','La memoria de un proceso','La prioridad máxima'],a:0},
+    {q:'¿Qué algoritmo da la **menor espera media**?',o:['SJF','FCFS','Round Robin'],a:0},
+    {q:'¿Qué es la **inanición**?',o:['Que un proceso no llegue a ejecutarse nunca','Que la CPU se apague','Que falte memoria'],a:0},
+    {q:'¿Cómo se evita la inanición en la planificación por prioridades?',o:['Con envejecimiento','Apagando el equipo','Con más RAM'],a:0},
+    {q:'¿Qué pasa si el quantum es **muy pequeño**?',o:['Se pierde mucho tiempo en cambios de contexto','Se parece a FCFS','Nada'],a:0},
+    {q:'En Windows, ¿dónde se cambia la prioridad de un proceso?',o:['Administrador de tareas → Detalles → Establecer prioridad','Panel de control → Sonido','Explorador de archivos'],a:0},
+    {q:'¿Qué hace **start /low notepad**?',o:['Abre el Bloc de notas con prioridad Baja','Cierra el Bloc de notas','Abre el Bloc de notas en pantalla pequeña'],a:0},
+    {q:'¿Por qué es peligroso poner un proceso en **Tiempo real**?',o:['Puede quitarle la CPU a todo lo demás, incluido el ratón','Borra el disco','No es peligroso'],a:0}]})}
+]);
+})();
+
+/* ================= S3 · GESTIÓN DE MEMORIA ================= */
+(function(){
+const {h,acts,sort,order,quiz,msg}=K;
+function trad(root){
+  root.append(h('p',{class:'lead',html:'Las páginas son de <b>100 bytes</b> (en la realidad, 4096; con 100 es más fácil de calcular). Traduce la dirección del proceso a la dirección real en la RAM. Si la página está en el disco, marca <b>Fallo de página</b>.'}));
+  const tb=h('div'),q=h('div',{class:'k-q'});root.append(h('div',{class:'k-two'},tb,q));
+  const fl=h('input',{type:'checkbox',id:'so-fallo'});
+  const mk=lab=>h('input',{type:'number',min:0,'aria-label':lab,style:'font:600 18px var(--f-mono);width:6em;padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)'});
+  const ip=mk('Página'),id=mk('Desplazamiento'),ir=mk('Dirección real');
+  root.append(h('div',{class:'row',style:'gap:14px;align-items:end'},...[['Página',ip],['Desplazamiento',id],['Dirección real',ir]].map(([l,i])=>h('label',{class:'lbl',style:'display:flex;flex-direction:column;gap:4px'},l,i)),h('label',{class:'lbl',style:'display:flex;gap:6px;align-items:center'},fl,'Fallo de página')));
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'}),sc=h('div',{class:'k-score'});
+  root.append(h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:sol},'Ver solución'),h('button',{class:'btn alt',onclick:nuevo},'Otra dirección')),sc,m);
+  let T,A,ok=0,tot=0;
+  function nuevo(){const fr=[0,1,2,3,4,5,6,7,8,9].sort(()=>Math.random()-.5);T=[0,1,2,3].map(i=>fr[i]);T[Math.floor(Math.random()*4)]=null;A=Math.floor(Math.random()*400);
+    tb.innerHTML='<table style="border-collapse:collapse;font:600 16px var(--f-mono)"><tr><th style="border:1px solid var(--line);padding:6px 14px;background:var(--chip)">Página</th><th style="border:1px solid var(--line);padding:6px 14px;background:var(--chip)">Marco</th></tr>'+T.map((f,i)=>`<tr><td style="border:1px solid var(--line);padding:6px 14px;text-align:center">${i}</td><td style="border:1px solid var(--line);padding:6px 14px;text-align:center">${f===null?'En disco':f}</td></tr>`).join('')+'</table>';
+    q.innerHTML=`<div class="qn">El proceso pide la dirección</div><div class="qt" style="font-family:var(--f-mono);font-size:34px">${A}</div>`;[ip,id,ir].forEach(i=>{i.value='';i.style.borderColor=''});fl.checked=false;msg(m,'','Página = dirección ÷ 100 (cociente); desplazamiento = el resto.')}
+  function chk(){const p=Math.floor(A/100),d=A%100,f=T[p];tot++;let good=+ip.value===p&&ip.value!==''&&+id.value===d&&id.value!=='';ip.style.borderColor=+ip.value===p?'var(--good)':'var(--bad)';id.style.borderColor=+id.value===d?'var(--good)':'var(--bad)';
+    if(f===null){good=good&&fl.checked;msg(m,good?'good':'bad',good?'✓ Correcto: la página '+p+' está en el disco. <b>Fallo de página</b>: el proceso queda bloqueado hasta que el sistema la trae a un marco libre.':'✗ Mira bien la tabla: ¿dónde está la página '+p+'?')}
+    else{const r=f*100+d,gr=+ir.value===r&&!fl.checked;ir.style.borderColor=gr?'var(--good)':'var(--bad)';good=good&&gr;msg(m,good?'good':'bad',good?`✓ Correcto: ${f} × 100 + ${d} = <b>${r}</b>.`:'✗ Revisa los marcados en rojo. Real = marco × 100 + desplazamiento.')}
+    if(good)ok++;sc.innerHTML=`<span>Aciertos: <b>${ok}/${tot}</b></span>`}
+  function sol(){const p=Math.floor(A/100),d=A%100,f=T[p];msg(m,'warn',`Página = ${A} ÷ 100 = ${p}; desplazamiento = ${d}. `+(f===null?'La página '+p+' está en el disco → fallo de página.':`Página ${p} → marco ${f}. Real = ${f} × 100 + ${d} = ${f*100+d}.`))}
+  nuevo();
+}
+acts(document.getElementById('r-memoria'),[
+  {label:'Traduce direcciones',render:trad},
+  {label:'Jerarquía',render:el=>order(el,{intro:'Ordena las memorias de la **más rápida** a la **más lenta**.',top:'Más rápida, cara y pequeña',bottom:'Más lenta, barata y grande',
+    items:[{t:'Registros',d:'Dentro del procesador: en la mano'},{t:'Caché L1',d:'Dentro de cada núcleo'},{t:'Caché L3',d:'Compartida entre núcleos: encima de la mesa'},{t:'RAM',d:'Memoria principal: la estantería'},{t:'SSD',d:'Almacenamiento: el trastero'},{t:'Disco duro (HDD)',d:'Mecánico: el trastero del sótano'}],done:'Cuanto más cerca del procesador, más rápida.'})},
+  {label:'¿Paginación o segmentación?',render:el=>sort(el,{intro:'¿Esta frase es de **paginación** o de **segmentación**?',
+    buckets:[{id:'p',name:'Paginación'},{id:'s',name:'Segmentación'}],
+    items:[{t:'Trozos de tamaño fijo',b:'p'},{t:'Trozos de tamaño variable',b:'s'},{t:'Se divide en código, datos y pila',b:'s'},{t:'Usa marcos de 4 KB',b:'p'},{t:'Produce fragmentación interna',b:'p'},{t:'Produce fragmentación externa',b:'s'},{t:'Es la que usan Windows y Linux',b:'p'}]})},
+  {label:'Test',render:el=>quiz(el,{questions:[
+    {q:'¿Qué memoria es la más rápida?',o:['Los registros','La RAM','El SSD'],a:0},
+    {q:'¿Qué significa que la RAM es **volátil**?',o:['Se borra al apagar','Es muy rápida','Se puede quitar'],a:0},
+    {q:'¿Qué es un **acierto** de caché?',o:['El dato que busca la CPU está en la caché','El dato está en el disco','La caché está llena'],a:0},
+    {q:'¿Qué es la **memoria virtual**?',o:['Usar parte del disco como si fuera RAM','La memoria de la tarjeta gráfica','Memoria en la nube'],a:0},
+    {q:'¿Cómo se llama el archivo de memoria virtual de Windows?',o:['pagefile.sys','swap','boot.ini'],a:0},
+    {q:'¿Qué es la **hiperpaginación**?',o:['El sistema pasa casi todo el tiempo moviendo datos entre RAM y disco','Muchas pestañas en el navegador','Un tipo de caché'],a:0},
+    {q:'En paginación, la RAM se divide en…',o:['Marcos','Páginas','Segmentos'],a:0},
+    {q:'¿Qué guarda la **tabla de páginas**?',o:['Qué marco ocupa cada página','Los procesos abiertos','Las contraseñas'],a:0},
+    {q:'Páginas de 100 bytes, página 1 en el marco 4. ¿Dirección real de la 130?',o:['430','130','34'],a:0},
+    {q:'¿En qué estado queda un proceso durante un **fallo de página**?',o:['Bloqueado','Listo','Terminado'],a:0},
+    {q:'¿Qué protege el sistema operativo?',o:['Que un proceso no toque la memoria de otro','Que no se apague la pantalla','Que no se llene el disco'],a:0}]})}
+]);
+})();
+
+</script>
+</body></html>
