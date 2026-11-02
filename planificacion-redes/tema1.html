@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Laboratorio de Planificación de Redes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -343,6 +343,7 @@ svg text{font-family:var(--f-body);fill:var(--ink)}
   <button class="tab" role="tab" data-t="encapsulamiento"><b>Encapsulamiento</b><span>SECCIÓN 5</span></button>
   <button class="tab" role="tab" data-t="viaje"><b>Viaje por la red: ARP y saltos</b><span>SECCIÓN 5</span></button>
   <button class="tab" role="tab" data-t="csma"><b>CSMA/CD: hub o switch</b><span>SECCIÓN 6</span></button>
+  <button class="tab" role="tab" data-t="trama"><b>La trama Ethernet</b><span>SECCIÓN 6 · HOJA 6</span></button>
 </nav>
 
 <!-- 5. TOPOLOGÍAS -->
@@ -448,6 +449,10 @@ svg text{font-family:var(--f-body);fill:var(--ink)}
     </div>
   </div>
   <div class="note"><b>Qué observar:</b> el hub repite la señal por todos sus puertos, así que solo puede hablar uno a la vez (1 dominio de colisión). Tras una colisión, cada equipo espera un número aleatorio de ranuras; si eligen el mismo, vuelven a chocar y el margen de espera se duplica. El switch, en dúplex completo, no tiene colisiones y no usa CSMA/CD.</div>
+</section>
+<section class="panel" id="p-trama" role="tabpanel" hidden>
+  <h2>La trama Ethernet</h2>
+  <div id="r-trama"></div>
 </section>
 <section class="panel" id="p-redes" role="tabpanel" hidden>
   <h2>Redes de datos: elementos y tipos</h2>
@@ -1576,6 +1581,96 @@ document.getElementById('wscapas').onchange=()=>drawTree();
 load('c1');
 })();
 
+</script>
+
+<script>
+/* ================= S6 · LA TRAMA ETHERNET II ================= */
+(function(){
+const {h,md,acts,order,quiz,msg}=K;
+const F=[['Preámbulo','7 B','Sincroniza el reloj del receptor (10101010…).'],['SFD','1 B','Delimitador de inicio: «aquí empieza la trama» (10101011).'],
+  ['MAC de destino','6 B','A quién va la trama. Va primero para que el receptor decida cuanto antes si es para él.'],['MAC de origen','6 B','Quién la envía. Siempre es una dirección individual.'],
+  ['Tipo (EtherType)','2 B','Qué lleva dentro: 0x0800 IPv4 · 0x0806 ARP · 0x86DD IPv6.'],['Datos (+ relleno)','46-1500 B','El paquete de la capa superior. Si no llega a 46 B, se rellena.'],['FCS','4 B','CRC-32 para detectar errores. Si no coincide, la trama se descarta.']];
+const COL=['#C2D7E0','#C2D7E0','var(--l-eth)','var(--l-eth)','var(--warn-bg)','var(--surface)','var(--chip)'];
+const inp=lab=>h('input',{type:'number',min:0,'aria-label':lab,style:'font:600 18px var(--f-mono);width:6em;padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)'});
+const lbl=(t,i)=>h('label',{class:'lbl',style:'display:flex;flex-direction:column;gap:4px;max-width:12em'},t,i);
+
+function mapa(root){
+  root.append(h('p',{class:'lead',html:'La trama Ethernet II de izquierda a derecha, tal como sale por el cable. Toca un campo para ver qué es.'}));
+  const bar=h('div',{style:'display:flex;flex-wrap:wrap;border:2px solid var(--ink);border-radius:8px;overflow:hidden;margin:6px 0'});
+  const W=[9,6,12,12,9,30,8],info=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+  F.forEach(([n,b,d],i)=>{const c=h('button',{style:`flex:${W[i]} 1 ${W[i]*6}px;min-height:84px;border:0;border-right:1px solid var(--ink);background:${COL[i]};color:#0e1b32;font:700 14px var(--f-body);cursor:pointer;padding:6px`,'aria-label':n},h('div',{},n),h('div',{style:'font:600 12px var(--f-mono);margin-top:4px'},b));
+    c.onclick=()=>{msg(info,'',`<b>${n}</b> · ${b} · ${d}`+(i<2?'<br><i>Wireshark no lo muestra: la tarjeta lo quita al recibir.</i>':i===6?'<br><i>Wireshark normalmente no la muestra: la tarjeta la comprueba y la quita.</i>':''))};bar.append(c)});
+  root.append(bar,
+    h('div',{class:'row',style:'justify-content:space-between;font:600 13px var(--f-mono);color:var(--muted)'},h('span',{},'◀ preámbulo + SFD: 8 B'),h('span',{},'trama: de 64 a 1518 B (de MAC de destino a FCS) ▶')),
+    info,
+    h('div',{class:'note',html:'<b>Cuentas clave:</b> cabecera = 6 + 6 + 2 = <b>14 B</b> · mínimo = 14 + 46 + 4 = <b>64 B</b> · máximo = 14 + 1500 + 4 = <b>1518 B</b> · en el cable se suman además 8 B de preámbulo y SFD.'}));
+  msg(info,'','Toca cualquier campo.');
+}
+
+function calc(root){
+  root.append(h('p',{class:'lead',html:'Calcula la trama que monta la tarjeta. Cabeceras: IPv4 <b>20 B</b>, TCP <b>20 B</b>, UDP <b>8 B</b>, ICMP <b>8 B</b>, mensaje ARP <b>28 B</b> (sin IP). Ethernet: <b>14 B</b> de cabecera y <b>4 B</b> de FCS; datos mínimos <b>46 B</b>.'}));
+  const q=h('div',{class:'k-q'});root.append(q);
+  const ins=['Datos de la trama (sin relleno)','Relleno','Lo que ve Wireshark','Trama completa con FCS','Bytes en el cable (con preámbulo y SFD)'].map(t=>[t,inp(t)]);
+  root.append(h('div',{class:'row',style:'gap:14px;align-items:end'},...ins.map(([t,i])=>lbl(t,i))));
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'}),sc=h('div',{class:'k-score'});
+  root.append(h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:sol},'Ver solución'),h('button',{class:'btn alt',onclick:nuevo},'Otro caso')),sc,m);
+  const CASES=[
+    ()=>({t:'Una solicitud <b>ARP</b> que pregunta por la MAC de la puerta de enlace.',d:28,why:'ARP: 28'}),
+    ()=>({t:'Un <b>ping de Windows</b> (ICMP con 32 B de datos) sobre IPv4.',d:20+8+32,why:'IPv4 20 + ICMP 8 + datos 32'}),
+    ()=>({t:'Un <b>ping de Linux</b> (ICMP con 56 B de datos) sobre IPv4.',d:20+8+56,why:'IPv4 20 + ICMP 8 + datos 56'}),
+    ()=>{const n=[0,0,0][0];return {t:'Un <b>ACK de TCP</b> sin datos (solo confirma) sobre IPv4.',d:40,why:'IPv4 20 + TCP 20 + 0 de datos'}},
+    ()=>{const n=[12,20,30][Math.floor(Math.random()*3)];return {t:`Una <b>consulta DNS</b> de ${n} B sobre UDP e IPv4.`,d:20+8+n,why:`IPv4 20 + UDP 8 + ${n}`}},
+    ()=>{const n=[300,512,1000,1460][Math.floor(Math.random()*4)];return {t:`<b>${n} B</b> de datos HTTP sobre TCP e IPv4.`,d:40+n,why:`IPv4 20 + TCP 20 + ${n}`}}];
+  let C,R,ok=0,tot=0;
+  function nuevo(){C=CASES[Math.floor(Math.random()*CASES.length)]();const pad=Math.max(0,46-C.d),dat=C.d+pad;R=[C.d,pad,14+C.d,14+dat+4,14+dat+4+8];
+    q.innerHTML=`<div class="qn">Caso</div><div class="qt">${C.t}</div>`;ins.forEach(([,i])=>{i.value='';i.style.borderColor=''});msg(m,'','Rellena las cinco casillas. Pista: Wireshark captura en el emisor antes del relleno y sin FCS.')}
+  function chk(){tot++;let all=true;ins.forEach(([,i],k)=>{const g=i.value!==''&&+i.value===R[k];i.style.borderColor=g?'var(--good)':'var(--bad)';if(!g)all=false});if(all)ok++;
+    sc.innerHTML=`<span>Aciertos: <b>${ok}/${tot}</b></span>`;msg(m,all?'good':'bad',all?'✓ Correcto.'+(R[1]?` La tarjeta añade <b>${R[1]} B</b> de relleno para llegar a la trama mínima de 64 B.`:''):'✗ Revisa las casillas en rojo.')}
+  function sol(){msg(m,'warn',`Datos: ${C.why} = <b>${R[0]}</b> · Relleno: ${R[0]<46?'46 − '+R[0]+' = ':''}<b>${R[1]}</b> · Wireshark: 14 + ${R[0]} = <b>${R[2]}</b> · Trama: 14 + ${R[0]+R[1]} + 4 = <b>${R[3]}</b> · Cable: ${R[3]} + 7 + 1 = <b>${R[4]}</b>`)}
+  nuevo();
+}
+
+function hex(root){
+  root.append(h('p',{class:'lead',html:'Estos son los <b>14 primeros bytes</b> de una trama tal como los muestra Wireshark en el panel inferior. Descúbrelos: MAC de destino, MAC de origen y tipo.'}));
+  const hx=h('div',{style:'font:600 22px var(--f-mono);letter-spacing:.06em;padding:14px 16px;background:#0f1e34;color:#e6eef5;border-radius:10px;overflow-x:auto;white-space:nowrap'});root.append(hx);
+  const mk=(n,o)=>{const s=h('select',{'aria-label':n},h('option',{value:''},'— elige —'),...o.map(x=>h('option',{value:x},x)));return s};
+  const sD=h('input',{type:'text','aria-label':'MAC de destino',placeholder:'aa:bb:cc:dd:ee:ff',style:'font:600 16px var(--f-mono);width:13em;padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)'});
+  const sS=h('input',{type:'text','aria-label':'MAC de origen',placeholder:'aa:bb:cc:dd:ee:ff',style:sD.getAttribute('style')});
+  const sT=mk('Protocolo',['IPv4','ARP','IPv6']),sB=mk('¿Difusión?',['Sí, va a todos','No, va a un equipo']);
+  root.append(h('div',{class:'row',style:'gap:14px;align-items:end;margin-top:12px'},lbl('MAC de destino',sD),lbl('MAC de origen',sS),lbl('El campo de datos lleva…',sT),lbl('¿Es una difusión?',sB)));
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'}),sc=h('div',{class:'k-score'});
+  root.append(h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:nuevo},'Otra trama')),sc,m);
+  const PC='3c:52:82:1a:2b:17',GW='50:d4:f7:6e:08:01',BC='ff:ff:ff:ff:ff:ff',PC2='a4:83:e7:5d:91:0c';
+  const T=[{d:GW,s:PC,t:'0800',p:'IPv4'},{d:BC,s:PC,t:'0806',p:'ARP'},{d:PC,s:GW,t:'0806',p:'ARP'},{d:PC,s:GW,t:'0800',p:'IPv4'},{d:PC2,s:PC,t:'86dd',p:'IPv6'},{d:'33:33:00:00:00:01',s:GW,t:'86dd',p:'IPv6',mc:1}];
+  let R,ok=0,tot=0;const norm=s=>s.trim().toLowerCase().replace(/-/g,':');
+  function nuevo(){R=T[Math.floor(Math.random()*T.length)];const by=[...R.d.split(':'),...R.s.split(':'),R.t.slice(0,2),R.t.slice(2)];
+    hx.innerHTML=by.map((b,i)=>`<span style="color:${i<6?'#7fd6ff':i<12?'#9ff0b8':'#ffd08a'}">${b}</span>`).join(' ');
+    [sD,sS,sT,sB].forEach(x=>{x.value='';x.style.borderColor=''});msg(m,'','Los colores separan los campos: azul, destino; verde, origen; naranja, tipo (los dos últimos bytes juntos).')}
+  function chk(){tot++;const bc=R.d===BC;const g=[norm(sD.value)===R.d,norm(sS.value)===R.s,sT.value===R.p,sB.value===(bc?'Sí, va a todos':'No, va a un equipo')];
+    [sD,sS,sT,sB].forEach((x,i)=>x.style.borderColor=g[i]?'var(--good)':'var(--bad)');const all=g.every(Boolean);if(all)ok++;sc.innerHTML=`<span>Aciertos: <b>${ok}/${tot}</b></span>`;
+    msg(m,all?'good':'bad',all?`✓ Correcto. Tipo 0x${R.t} = ${R.p}.`+(bc?' Destino ff:ff:ff:ff:ff:ff: una difusión, típica de una solicitud ARP.':'')+(R.mc?' Ojo: 33:33:… es una dirección de multidifusión de IPv6 (a un grupo, no a todos).':''):'✗ Revisa los marcados en rojo. Los 6 primeros bytes son el destino, los 6 siguientes el origen y los 2 últimos el tipo (0x0800 IPv4 · 0x0806 ARP · 0x86DD IPv6).')}
+  nuevo();
+}
+
+acts(document.getElementById('r-trama'),[
+  {label:'La trama por dentro',render:mapa},
+  {label:'Ordena los campos',render:el=>order(el,{intro:'Ordena los campos de la trama Ethernet II **en el orden en que salen por el cable**.',top:'Sale primero',bottom:'Sale el último',
+    items:F.map(([n,b,d])=>({t:`${n} · ${b}`,d})),done:'La MAC de destino va antes que la de origen: así el receptor sabe enseguida si la trama es para él.'})},
+  {label:'Calcula la trama',render:calc},
+  {label:'Lee la cabecera',render:hex},
+  {label:'Test',render:el=>quiz(el,{questions:[
+    {q:'¿Cuánto mide la cabecera de Ethernet II (sin preámbulo ni FCS)?',o:['14 bytes','18 bytes','64 bytes'],a:0,why:'6 + 6 + 2.'},
+    {q:'¿Qué indica **0x0806** en el campo Tipo?',o:['ARP','IPv4','IPv6'],a:0},
+    {q:'¿Cuál es el tamaño **mínimo** de una trama, de la MAC de destino a la FCS?',o:['64 bytes','46 bytes','1518 bytes'],a:0},
+    {q:'¿Qué hace la tarjeta si los datos no llegan a 46 bytes?',o:['Añade relleno','Descarta la trama','Junta dos tramas'],a:0},
+    {q:'¿Para qué sirve la **FCS**?',o:['Detectar si la trama llegó dañada','Cifrar la trama','Indicar el protocolo'],a:0},
+    {q:'¿Por qué Wireshark no muestra el preámbulo?',o:['La tarjeta lo quita al recibir: solo sirve para sincronizar','Porque está cifrado','Porque no existe en Ethernet II'],a:0},
+    {q:'¿Qué MAC de destino lleva una solicitud ARP?',o:['ff:ff:ff:ff:ff:ff','La del router siempre','00:00:00:00:00:00'],a:0},
+    {q:'Un PC hace ping a 8.8.8.8. ¿Qué MAC de destino lleva la trama?',o:['La de la puerta de enlace','La de 8.8.8.8','ff:ff:ff:ff:ff:ff'],a:0,why:'8.8.8.8 está en otra red: la trama va al router.'},
+    {q:'¿Cuál es el **máximo** de datos en una trama Ethernet (la MTU)?',o:['1500 bytes','1518 bytes','65535 bytes'],a:0},
+    {q:'En Ethernet II, ¿qué campo va justo después de las dos MAC?',o:['Tipo','Longitud siempre','FCS'],a:0,why:'En IEEE 802.3 con LLC ese campo es la longitud (valor ≤ 1500).'}]})}
+]);
+})();
 </script>
 
 </body></html>
