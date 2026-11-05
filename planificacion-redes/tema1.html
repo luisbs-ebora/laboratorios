@@ -342,7 +342,9 @@ svg text{font-family:var(--f-body);fill:var(--ink)}
   <button class="tab" role="tab" data-t="tcpip"><b>OSI ↔ TCP/IP</b><span>SECCIÓN 5</span></button>
   <button class="tab" role="tab" data-t="encapsulamiento"><b>Encapsulamiento</b><span>SECCIÓN 5</span></button>
   <button class="tab" role="tab" data-t="viaje"><b>Viaje por la red: ARP y saltos</b><span>SECCIÓN 5</span></button>
-  <button class="tab" role="tab" data-t="csma"><b>CSMA/CD: hub o switch</b><span>SECCIÓN 6</span></button>
+  <button class="tab" role="tab" data-t="variantes"><b>Variantes de Ethernet</b><span>SECCIÓN 6 · HOJA 6</span></button>
+  <button class="tab" role="tab" data-t="csma"><b>CSMA/CD: hub o switch</b><span>SECCIÓN 6 · HOJA 6</span></button>
+  <button class="tab" role="tab" data-t="dominios"><b>Cuenta los dominios</b><span>SECCIÓN 6 · HOJA 6</span></button>
   <button class="tab" role="tab" data-t="trama"><b>La trama Ethernet</b><span>SECCIÓN 6 · HOJA 6</span></button>
 </nav>
 
@@ -434,9 +436,9 @@ svg text{font-family:var(--f-body);fill:var(--ink)}
 <!-- 7. CSMA/CD -->
 <section class="panel" id="p-csma" role="tabpanel" hidden>
   <h2>CSMA/CD: hub o switch</h2>
-  <p class="lead">Cuatro equipos conectados al mismo dispositivo. Con un <b>hub</b> todos comparten el medio y pueden chocar; con un <b>switch</b> cada puerto es un camino propio. Prueba lo mismo con los dos.</p>
+  <p class="lead">Cuatro equipos conectados al mismo dispositivo. Con un <b>hub</b> todos comparten el medio y pueden chocar; con un <b>switch</b> cada puerto es un camino propio. Prueba lo mismo con los dos. En <b>Desajuste de dúplex</b>, el switch está bien, pero el PC A está mal configurado.</p>
   <div class="row" style="margin-bottom:12px">
-    <div class="seg" role="group" aria-label="Dispositivo"><button id="cHub" aria-pressed="true">Hub</button><button id="cSw" aria-pressed="false">Switch</button></div>
+    <div class="seg" role="group" aria-label="Dispositivo"><button id="cHub" aria-pressed="true">Hub</button><button id="cSw" aria-pressed="false">Switch</button><button id="cMis" aria-pressed="false">Desajuste de dúplex</button></div>
     <button class="btn alt" id="cAC">A envía a C</button>
     <button class="btn alt" id="cBD">B envía a D</button>
     <button class="btn" id="cBoth">A y B a la vez</button>
@@ -448,7 +450,17 @@ svg text{font-family:var(--f-body);fill:var(--ink)}
       <ol class="log" id="clog"><li>Elige una acción.</li></ol>
     </div>
   </div>
-  <div class="note"><b>Qué observar:</b> el hub repite la señal por todos sus puertos, así que solo puede hablar uno a la vez (1 dominio de colisión). Tras una colisión, cada equipo espera un número aleatorio de ranuras; si eligen el mismo, vuelven a chocar y el margen de espera se duplica. El switch, en dúplex completo, no tiene colisiones y no usa CSMA/CD.</div>
+  <div class="note"><b>Qué observar:</b> el hub repite la señal por todos sus puertos, así que solo puede hablar uno a la vez (1 dominio de colisión). Tras una colisión, cada equipo espera un número aleatorio de ranuras; si eligen el mismo, vuelven a chocar y el margen de espera se duplica. El switch, en dúplex completo, no tiene colisiones y no usa CSMA/CD. Con un <b>desajuste de dúplex</b> vuelven las colisiones aunque haya switch: un extremo cree que puede hablar y escuchar a la vez y el otro no.</div>
+  <h3 style="margin-top:26px">Ordena el algoritmo CSMA/CD</h3>
+  <div id="r-csma-orden"></div>
+</section>
+<section class="panel" id="p-variantes" role="tabpanel" hidden>
+  <h2>Variantes de Ethernet</h2>
+  <div id="r-variantes"></div>
+</section>
+<section class="panel" id="p-dominios" role="tabpanel" hidden>
+  <h2>Cuenta los dominios de colisión y de difusión</h2>
+  <div id="r-dominios"></div>
 </section>
 <section class="panel" id="p-trama" role="tabpanel" hidden>
   <h2>La trama Ethernet</h2>
@@ -698,13 +710,16 @@ show((location.hash||'').slice(1));
   Object.entries(P).forEach(([k,p])=>{S('rect',{x:p.x-42,y:p.y-30,width:84,height:60,rx:10,fill:'var(--l-tcp)',stroke:'var(--line)','stroke-width':2},svg);
     txt(svg,p.x,p.y+10,'PC '+k,{'text-anchor':'middle','font-size':22,'font-weight':700});
     labels[k]=txt(svg,p.x,p.y+(p.y<200?-42:56),'',{'text-anchor':'middle','font-size':16,'font-weight':700})});
+  const misG=S('g',{opacity:0},svg);
+  txt(misG,P.A.x,P.A.y+52,'fijado: 100 dúplex completo',{'text-anchor':'middle','font-size':14,'font-weight':700,fill:'var(--bad)'});
+  txt(misG,C.x,C.y+52,'puerto de A: auto → semidúplex',{'text-anchor':'middle','font-size':14,'font-weight':700,fill:'var(--bad)'});
   const L=$('#clog');
   function add(s,cls){const li=document.createElement('li');if(cls)li.className=cls;li.textContent=s;L.appendChild(li);L.scrollTop=L.scrollHeight}
   function flash(k,s,col){labels[k].textContent=s;labels[k].setAttribute('fill',col);setTimeout(()=>{if(labels[k].textContent===s)labels[k].textContent=''},T(1800))}
   function lit(keys,col){Object.keys(lines).forEach(k=>lines[k].setAttribute('stroke',keys.includes(k)?col:'var(--line)'))}
   const go=(a,b,o)=>token(svg,a.x,a.y,b.x,b.y,o);
-  async function burst(){const c=S('circle',{cx:C.x,cy:C.y,r:20,fill:'none',stroke:'var(--bad)','stroke-width':8},svg);
-    const t=txt(svg,C.x,C.y-50,'¡COLISIÓN!',{'text-anchor':'middle','font-size':26,'font-weight':700,fill:'var(--bad)'});
+  async function burst(pt=C){const c=S('circle',{cx:pt.x,cy:pt.y,r:20,fill:'none',stroke:'var(--bad)','stroke-width':8},svg);
+    const t=txt(svg,pt.x,pt.y-50,'¡COLISIÓN!',{'text-anchor':'middle','font-size':26,'font-weight':700,fill:'var(--bad)'});
     const d=T(800),t0=performance.now();await new Promise(r=>{(function f(n){const k=Math.min(1,(n-t0)/d);c.setAttribute('r',20+90*k);c.setAttribute('opacity',1-k);k<1?requestAnimationFrame(f):r()})(t0)});
     c.remove();setTimeout(()=>t.remove(),T(600))}
   async function sendHub(from,to,col){
@@ -714,19 +729,39 @@ show((location.hash||'').slice(1));
     others.forEach(k=>k===to?flash(k,'✓ es para mí','var(--good)'):flash(k,'no es para mí: la descarta','var(--muted)'));lit([],'');
   }
   async function sendSw(from,to,col){lit([from,to],col);await go(P[from],C,{label:from+'→'+to,color:col});await go(C,P[to],{color:col});flash(to,'✓ recibida','var(--good)');lit([],'')}
-  function setMode(m){if(busy)return;mode=m;$('#cHub').setAttribute('aria-pressed',m==='hub');$('#cSw').setAttribute('aria-pressed',m==='sw');
-    devT.textContent=m==='hub'?'HUB':'SWITCH';
-    $('#cdom').textContent=m==='hub'?'Hub · 1 dominio de colisión · semidúplex':'Switch · 4 dominios de colisión (uno por puerto) · dúplex completo';
+  function setMode(m){if(busy)return;mode=m;$('#cHub').setAttribute('aria-pressed',m==='hub');$('#cSw').setAttribute('aria-pressed',m==='sw');$('#cMis').setAttribute('aria-pressed',m==='mis');
+    devT.textContent=m==='hub'?'HUB':'SWITCH';misG.setAttribute('opacity',m==='mis'?1:0);
+    $('#cBoth').textContent=m==='mis'?'C descarga un archivo de A':'A y B a la vez';
+    $('#cdom').textContent=m==='hub'?'Hub · 1 dominio de colisión · semidúplex':m==='sw'?'Switch · 4 dominios de colisión (uno por puerto) · dúplex completo':'Switch · el PC A, fijado a mano en dúplex completo; su puerto, en autonegociación';
     L.innerHTML='<li>Elige una acción.</li>'}
-  async function run(fn){if(busy)return;busy=true;['#cAC','#cBD','#cBoth','#cHub','#cSw'].forEach(s=>$(s).disabled=true);L.innerHTML='';
-    try{await fn()}finally{busy=false;['#cAC','#cBD','#cBoth','#cHub','#cSw'].forEach(s=>$(s).disabled=false)}}
+  async function run(fn){if(busy)return;busy=true;['#cAC','#cBD','#cBoth','#cHub','#cSw','#cMis'].forEach(s=>$(s).disabled=true);L.innerHTML='';
+    try{await fn()}finally{busy=false;['#cAC','#cBD','#cBoth','#cHub','#cSw','#cMis'].forEach(s=>$(s).disabled=false)}}
   async function single(f,t,col){
     if(mode==='hub'){add(`${f} escucha el medio: está libre. Empieza a transmitir.`);await sendHub(f,t,col);add(`El hub repite la señal por todos los puertos. Solo ${t} se la queda; los demás la descartan.`,'good')}
-    else{add(`${f} envía la trama al switch.`);await sendSw(f,t,col);add(`El switch mira la MAC de destino y la manda solo por el puerto de ${t}.`,'good')}
+    else{add(`${f} envía la trama al switch.`);await sendSw(f,t,col);add(`El switch mira la MAC de destino y la manda solo por el puerto de ${t}.`,'good');
+      if(mode==='mis')add(f==='A'?'Con tráfico en un solo sentido el desajuste no se nota. Prueba «C descarga un archivo de A»: hay tráfico en los dos sentidos a la vez.':'B y D no tienen el problema: sus dos extremos negocian bien.','warn')}
   }
   $('#cAC').onclick=()=>run(()=>single('A','C','var(--accent)'));
   $('#cBD').onclick=()=>run(()=>single('B','D','var(--warn)'));
+  async function misRun(){
+    add('A es un servidor fijado a mano en 100 Mbit/s dúplex completo. Su puerto del switch está en autonegociación.','warn');
+    add('Como A no negocia, el switch detecta la velocidad (100 Mbit/s), pero supone semidúplex. Ya tenemos el desajuste.','warn');
+    const M={x:(P.A.x+C.x)/2,y:(P.A.y+C.y)/2};
+    for(let n=1;n<=3;n++){
+      add(`Trama ${n}: A envía datos a C y, a la vez, el switch le pasa a A la confirmación (ACK) de C.`);
+      lit(['A'],'var(--bad)');
+      await Promise.all([go(P.A,M,{label:'datos',color:'var(--accent)'}),go(C,M,{label:'ACK',color:'var(--warn)'})]);
+      await burst(M);
+      add('El puerto del switch, en semidúplex, ve que A transmite mientras él envía: lo cuenta como colisión, corta, manda la señal de atasco y espera.','bad');
+      add('A, en dúplex completo, no escucha el medio: sigue transmitiendo como si nada. Su trama llega rota y el switch la descarta (error de FCS).','bad');
+      if(n===1)add('Además, el choque llega cuando A ya ha enviado más de 64 bytes: es una colisión tardía, que en una red bien configurada no se ve nunca.','warn');
+      lit([],'');
+    }
+    add('Resultado: el enlace funciona, pero cada vez que hay tráfico en los dos sentidos se pierden tramas. TCP tiene que retransmitirlas y la descarga va lentísima.','bad');
+    add('Solución: los dos extremos en autonegociación, o los dos fijados igual (por ejemplo, 100 Mbit/s dúplex completo).','good');
+  }
   $('#cBoth').onclick=()=>run(async()=>{
+    if(mode==='mis'){await misRun();return}
     if(mode==='sw'){add('A y B transmiten a la vez.');lit(Object.keys(P),'var(--accent)');
       await Promise.all([go(P.A,C,{label:'A→C',color:'var(--accent)'}),go(P.B,C,{label:'B→D',color:'var(--warn)'})]);
       await Promise.all([go(C,P.C,{color:'var(--accent)'}),go(C,P.D,{color:'var(--warn)'})]);flash('C','✓ recibida','var(--good)');flash('D','✓ recibida','var(--good)');lit([],'');
@@ -749,7 +784,7 @@ show((location.hash||'').slice(1));
     }
     add('Demasiados intentos seguidos: en la realidad se reintenta hasta 16 veces antes de dar error.','bad');
   });
-  $('#cHub').onclick=()=>setMode('hub');$('#cSw').onclick=()=>setMode('sw');
+  $('#cHub').onclick=()=>setMode('hub');$('#cSw').onclick=()=>setMode('sw');$('#cMis').onclick=()=>setMode('mis');
   setMode('hub');
 })();
 })();
@@ -1673,4 +1708,168 @@ acts(document.getElementById('r-trama'),[
 })();
 </script>
 
+<script>
+/* ================= S6 · VARIANTES, DOMINIOS Y ORDEN DE CSMA/CD ================= */
+(function(){
+const {h,md,shuffle,msg,acts,order,quiz}=K;
+const NS='http://www.w3.org/2000/svg';
+const S2=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.append(e);return e};
+const T2=(p,x,y,s,a={})=>{const e=S2('text',Object.assign({x,y},a),p);e.textContent=s;return e};
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const sel=(lab,opts)=>h('select',{'aria-label':lab},h('option',{value:''},'— elige —'),...opts.map(x=>h('option',{value:x},x)));
+const lbl=(t,i)=>h('label',{class:'lbl',style:'display:flex;flex-direction:column;gap:4px'},t,i);
+
+/* ---------- 1. ORDENA CSMA/CD ---------- */
+order(document.getElementById('r-csma-orden'),{
+  intro:'Pon en orden lo que hace un equipo con **CSMA/CD** cuando quiere enviar una trama y acaba chocando.',top:'Primero',bottom:'Último',
+  items:[
+    {t:'Tiene una trama que enviar.',d:'Todo empieza en el emisor.'},
+    {t:'Escucha el medio antes de transmitir.',d:'CS: detección de portadora.'},
+    {t:'Si el medio está ocupado, espera a que quede libre.',d:'Y respeta una pausa entre tramas de 96 tiempos de bit.'},
+    {t:'Empieza a transmitir y sigue escuchando.',d:'CD: mientras transmite, vigila si hay colisión.'},
+    {t:'Detecta una colisión y deja de transmitir la trama.',d:'Por eso la trama mínima es de 64 bytes: tiene que seguir transmitiendo cuando le llegue el choque.'},
+    {t:'Envía una señal de atasco (jam) de 32 bits.',d:'Para que todos se enteren de la colisión.'},
+    {t:'Espera un tiempo aleatorio antes de reintentar.',d:'Si los dos esperasen lo mismo, volverían a chocar. A los 16 intentos, se rinde.'}],
+  done:'Es el ejercicio 3A de la hoja 6. Recuerda: con switch y dúplex completo nada de esto pasa, porque CSMA/CD se desactiva.'});
+
+/* ---------- 2. VARIANTES DE ETHERNET ---------- */
+const V=[
+  {n:'10BASE5',v:'10 Mbit/s',m:'Coaxial',a:'500 m',x:'Coaxial grueso en bus: el 5 son 500 m. Obsoleto.'},
+  {n:'10BASE2',v:'10 Mbit/s',m:'Coaxial',a:'185 m',x:'Coaxial fino en bus: el 2 viene de unos 200 m (en realidad 185). Obsoleto.'},
+  {n:'10BASE‑T',v:'10 Mbit/s',m:'Par trenzado (cobre)',a:'100 m',x:'T = par trenzado. Categoría 3 o superior, 2 pares.'},
+  {n:'100BASE‑TX',v:'100 Mbit/s',m:'Par trenzado (cobre)',a:'100 m',x:'Fast Ethernet. Categoría 5, 2 pares.'},
+  {n:'1000BASE‑T',v:'1 Gbit/s',m:'Par trenzado (cobre)',a:'100 m',x:'Gigabit en cobre: categoría 5e o superior y los 4 pares.'},
+  {n:'1000BASE‑SX',v:'1 Gbit/s',m:'Fibra multimodo',a:'Cientos de metros',x:'S = onda corta (850 nm): fibra multimodo, dentro de un edificio.'},
+  {n:'1000BASE‑LX',v:'1 Gbit/s',m:'Fibra monomodo',a:'Hasta 5 km',x:'L = onda larga (1310 nm): fibra monomodo, para unir edificios.'},
+  {n:'10GBASE‑T',v:'10 Gbit/s',m:'Par trenzado (cobre)',a:'100 m',x:'10 Gbit/s en cobre: categoría 6A (en cat. 6, unos 55 m).'},
+  {n:'10GBASE‑SR',v:'10 Gbit/s',m:'Fibra multimodo',a:'Cientos de metros',x:'SR = short range: multimodo, cientos de metros según la fibra (OM3/OM4).'},
+  {n:'10GBASE‑LR',v:'10 Gbit/s',m:'Fibra monomodo',a:'10 km',x:'LR = long range: monomodo, hasta 10 km.'}];
+const OPT={v:['10 Mbit/s','100 Mbit/s','1 Gbit/s','10 Gbit/s'],m:['Coaxial','Par trenzado (cobre)','Fibra multimodo','Fibra monomodo'],a:['100 m','185 m','500 m','Cientos de metros','Hasta 5 km','10 km']};
+
+function descifra(root){
+  root.append(h('p',{class:'lead',html:'Lee el nombre y di qué significa. Recuerda la regla: <b>velocidad + BASE + medio</b>. T = par trenzado · S = onda corta, multimodo · L = onda larga, monomodo · en coaxial, el número son cientos de metros.'}));
+  const big=h('div',{style:'font:700 40px var(--f-mono);margin:10px 0 14px;color:var(--accent-ink)'});root.append(big);
+  const sv=sel('Velocidad',OPT.v),sm=sel('Medio',OPT.m),sa=sel('Alcance por segmento',OPT.a);
+  root.append(h('div',{class:'row',style:'gap:14px;align-items:end'},lbl('Velocidad',sv),lbl('Medio',sm),lbl('Alcance por segmento',sa)));
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'}),sc=h('div',{class:'k-score'});
+  root.append(h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:nuevo},'Otra variante')),sc,m);
+  let R,last=-1,ok=0,tot=0;
+  function nuevo(){let i;do{i=ri(0,V.length-1)}while(i===last);last=i;R=V[i];big.textContent=R.n;[sv,sm,sa].forEach(x=>{x.value='';x.style.borderColor=''});msg(m,'','Elige las tres cosas y pulsa «Comprobar».')}
+  function chk(){tot++;const g=[sv.value===R.v,sm.value===R.m,sa.value===R.a];[sv,sm,sa].forEach((x,k)=>x.style.borderColor=g[k]?'var(--good)':'var(--bad)');const all=g.every(Boolean);if(all)ok++;
+    sc.innerHTML=`<span>Aciertos: <b>${ok}/${tot}</b></span>`;
+    msg(m,all?'good':'bad',(all?'✓ Correcto. ':'✗ Revisa las casillas en rojo. ')+`<b>${R.n}</b>: ${R.v} · ${R.m.toLowerCase()} · ${R.a.toLowerCase()}. ${R.x}`)}
+  nuevo();
+}
+
+const ESC=[
+  {q:'Un puesto de trabajo a **60 m** del armario de planta. Quieren **1 Gbit/s**.',o:['1000BASE‑T','1000BASE‑SX','10BASE‑T'],why:'Cobre de categoría 5e o superior hasta 100 m: lo normal en el cableado horizontal. La fibra hasta el puesto no hace falta.'},
+  {q:'Unir dos naves separadas **400 m** a **10 Gbit/s**.',o:['10GBASE‑LR','10GBASE‑T','10GBASE‑SR'],why:'El cobre no pasa de 100 m. La multimodo OM4 a 10 Gbit/s llega a unos 400 m, sin margen. La monomodo (LR) va sobrada.'},
+  {q:'Unir con la sede principal un edificio que está a **3 km**, a **1 Gbit/s**.',o:['1000BASE‑LX','1000BASE‑SX','1000BASE‑T'],why:'Kilómetros = fibra monomodo. LX llega hasta 5 km; SX (multimodo) se queda en cientos de metros.'},
+  {q:'El troncal entre la sala de equipos y la planta 1, **40 m** de fibra **multimodo** que ya está tendida, a 1 Gbit/s.',o:['1000BASE‑SX','1000BASE‑LX','100BASE‑TX'],why:'Distancia corta dentro del edificio y fibra multimodo: SX es la variante para ese caso.'},
+  {q:'Un servidor y el switch están **en el mismo armario**, unidos con un latiguillo de **cat. 6A**. Quieren **10 Gbit/s**.',o:['10GBASE‑T','10GBASE‑LR','1000BASE‑T'],why:'10 Gbit/s en cobre necesita categoría 6A, y aquí la distancia son un par de metros.'},
+  {q:'Una oficina tiene cableado antiguo de **categoría 5** (no 5e). ¿Qué es lo máximo que puedes garantizar con la norma?',o:['100BASE‑TX','1000BASE‑T','10GBASE‑T'],why:'1000BASE‑T pide categoría 5e o superior. Con cat. 5, lo que garantiza la norma es Fast Ethernet: 100 Mbit/s.'},
+  {q:'Un puesto queda a **130 m** del armario y solo hay cable de cobre.',o:['Ninguna de cobre: pasa de 100 m. Hace falta fibra o un switch intermedio','1000BASE‑T','10GBASE‑T'],why:'Todas las variantes de par trenzado se quedan en 100 m por canal (90 m de enlace permanente + latiguillos).'},
+  {q:'Una nave con **soldadoras y motores** al lado del recorrido del cable, **80 m**, a 1 Gbit/s.',o:['1000BASE‑SX','1000BASE‑T','10BASE2'],why:'La fibra es inmune a las interferencias electromagnéticas. El cobre funcionaría a esa distancia, pero con riesgo de errores.'},
+  {q:'Una **cámara IP** que se alimenta por el cable de red (**PoE**), a **50 m** del switch.',o:['1000BASE‑T','1000BASE‑SX','1000BASE‑LX'],why:'PoE lleva la corriente por el par trenzado. La fibra no conduce electricidad: no puede alimentar la cámara.'},
+  {q:'Una red muy antigua: un solo cable **coaxial fino** que va de equipo en equipo (en bus).',o:['10BASE2','10BASE5','10BASE‑T'],why:'Coaxial fino = 10BASE2 (185 m). El grueso era 10BASE5. Hoy no se instala ninguna de las dos.'}
+].map(x=>Object.assign({a:0},x));
+
+acts(document.getElementById('r-variantes'),[
+  {label:'Descifra el nombre',render:descifra},
+  {label:'Elige la variante',render:el=>quiz(el,{intro:'Lee cada situación y elige la variante de Ethernet que pondrías. Fíjate en la **distancia**, la **velocidad** y el **medio**.',questions:ESC})},
+  {label:'Tabla de repaso',render:el=>{
+    el.append(h('p',{class:'lead',html:'Las variantes que entran. Úsala para repasar y luego vuelve a las actividades sin mirarla.'}));
+    const t=h('table',{class:'k-tab',style:'border-collapse:collapse;width:100%;max-width:880px;font-size:15px'});
+    t.append(h('tr',{},...['Variante','Velocidad','Medio','Alcance','Detalle'].map(x=>h('th',{style:'text-align:left;padding:8px;border-bottom:2px solid var(--ink)'},x))));
+    V.forEach(r=>t.append(h('tr',{},h('td',{style:'padding:8px;border-bottom:1px solid var(--line);font:700 15px var(--f-mono)'},r.n),...[r.v,r.m,r.a,r.x].map(x=>h('td',{style:'padding:8px;border-bottom:1px solid var(--line)'},x)))));
+    el.append(h('div',{style:'overflow-x:auto'},t))}}
+]);
+
+/* ---------- 3. CUENTA LOS DOMINIOS ---------- */
+(function(){
+const root=document.getElementById('r-dominios');
+root.append(h('p',{class:'lead',html:'Cuenta los dominios de la red. Reglas: el <b>hub</b> junta todo lo que tiene conectado en <b>un</b> dominio de colisión; el <b>switch</b> y el <b>router</b> hacen <b>un dominio de colisión por puerto</b>; solo el <b>router</b> corta la difusión: <b>un dominio de difusión por interfaz</b>.'}));
+const lv=h('div',{class:'seg',role:'group','aria-label':'Nivel'});
+const LV=[['sin','Sin router'],['con','Con router'],['azar','Al azar']];let level='sin';
+LV.forEach(([k,t])=>{const b=h('button',{'aria-pressed':k===level?'true':'false',onclick:()=>{level=k;[...lv.children].forEach((x,i)=>x.setAttribute('aria-pressed',LV[i][0]===k));nuevo()}},t);lv.append(b)});
+root.append(h('div',{class:'row',style:'margin-bottom:10px'},lv));
+const box=h('div',{class:'svgbox'});root.append(box);
+const inp=lab=>h('input',{type:'number',min:0,'aria-label':lab,style:'font:600 20px var(--f-mono);width:5em;padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)'});
+const iC=inp('Dominios de colisión'),iB=inp('Dominios de difusión');
+root.append(h('div',{class:'row',style:'gap:18px;align-items:end;margin-top:12px'},lbl('Dominios de colisión',iC),lbl('Dominios de difusión',iB)));
+const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'}),sc=h('div',{class:'k-score'});
+root.append(h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:()=>{pintar();explica('warn')}},'Ver solución'),h('button',{class:'btn alt',onclick:nuevo},'Otra red')),sc,m);
+root.append(h('div',{class:'note',html:'<b>Truco para contar:</b> colisión → recorre cada switch y router y cuenta sus cables; lo que hay detrás de un hub (con su cable de subida) cuenta como uno solo. Difusión → si no hay router, es <b>1</b>; si lo hay, cuenta sus interfaces usadas. Es el ejercicio 3B de la hoja 6.'}));
+
+let N,ok=0,tot=0;
+function gen(){
+  for(let tries=0;tries<200;tries++){
+    const nodes=[],links=[],cnt={pc:0,hub:0,sw:0,r:0};
+    const mk=t=>{cnt[t]++;const n={id:nodes.length,t,ch:[],name:t==='pc'?'':({hub:'HUB',sw:'SW',r:'ROUTER'}[t]+' '+cnt[t])};nodes.push(n);return n};
+    const link=(a,b)=>{a.ch.push(b.id);b.par=a.id;links.push([a.id,b.id])};
+    const pcs=(d,k)=>{for(let i=0;i<k;i++)link(d,mk('pc'))};
+    const fill=(d)=>{const k=ri(2,4);for(let i=0;i<k;i++){if(Math.random()<.42){const s=mk(d.t==='hub'?'sw':(Math.random()<.6?'hub':'sw'));link(d,s);pcs(s,ri(2,3))}else link(d,mk('pc'))}};
+    const conR=level==='con'||(level==='azar'&&Math.random()<.5);
+    if(conR){const r=mk('r');const k=ri(2,3);for(let i=0;i<k;i++){const d=mk(Math.random()<.75?'sw':'hub');link(r,d);fill(d)}}
+    else{const d=mk(Math.random()<.8?'sw':'hub');fill(d)}
+    const leaves=nodes.filter(n=>!n.ch.length).length,devs=nodes.filter(n=>n.t!=='pc').length;
+    if(leaves>16||leaves<4||devs<2)continue;
+    if(!nodes.some(n=>n.t==='hub')&&Math.random()<.7)continue;
+    return {nodes,links};
+  }
+}
+function cuenta(net){
+  const {nodes,links}=net,par=links.map((_,i)=>i),f=i=>par[i]===i?i:(par[i]=f(par[i]));
+  nodes.filter(n=>n.t==='hub').forEach(hb=>{const idx=links.map((l,i)=>l.includes(hb.id)?i:-1).filter(i=>i>=0);idx.slice(1).forEach(i=>{par[f(i)]=f(idx[0])})});
+  const cRoot=links.map((_,i)=>f(i)),cIds=[...new Set(cRoot)],cOf=cRoot.map(r=>cIds.indexOf(r));
+  const np=nodes.map(n=>n.id),g=i=>np[i]===i?i:(np[i]=g(np[i]));
+  links.forEach(([a,b])=>{if(nodes[a].t!=='r'&&nodes[b].t!=='r')np[g(a)]=g(b)});
+  const bR=nodes.map(n=>n.t==='r'?-1:g(n.id)),bIds=[...new Set(bR.filter(x=>x>=0))],bOf=bR.map(r=>r<0?-1:bIds.indexOf(r));
+  const hubLinks=new Set(links.map((l,i)=>l.some(x=>nodes[x].t==='hub')?cOf[i]:-1).filter(x=>x>=0));
+  const plain=cIds.length-hubLinks.size;
+  return {col:cIds.length,dif:bIds.length,cOf,bOf,hubGroups:hubLinks.size,plain,routers:nodes.filter(n=>n.t==='r').length,rIf:nodes.filter(n=>n.t==='r').reduce((s,n)=>s+n.ch.length,0)};
+}
+const colC=i=>`hsl(${(i*137.5+200)%360} 70% 45%)`,colB=i=>`hsl(${(i*97+40)%360} 75% 60% / .22)`;
+let G={};
+function dibuja(){
+  box.innerHTML='';const {nodes,links}=N;
+  const leafW=58,lvH=100,depth=n=>n.par==null?0:1+depth(nodes[n.par]);
+  const leaves=n=>n.ch.length?n.ch.reduce((s,c)=>s+leaves(nodes[c]),0):1;
+  const rootN=nodes[0],W=Math.max(420,leaves(rootN)*leafW+40);let maxD=0;
+  (function place(n,x0){const w=leaves(n)*leafW;n.x=x0+w/2;n.d=depth(n);maxD=Math.max(maxD,n.d);n.y=48+n.d*lvH;let x=x0;n.ch.forEach(c=>{place(nodes[c],x);x+=leaves(nodes[c])*leafW})})(rootN,20);
+  const H=48+maxD*lvH+46;
+  const svg=S2('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:`max-width:${W}px;min-width:${Math.min(W,560)}px;display:block`,role:'img','aria-label':'Red para contar dominios'},box);
+  G.halo=S2('g',{},svg);G.lk=S2('g',{},svg);G.nd=S2('g',{},svg);G.num=S2('g',{},svg);
+  G.lines=links.map(([a,b])=>S2('line',{x1:nodes[a].x,y1:nodes[a].y,x2:nodes[b].x,y2:nodes[b].y,stroke:'var(--line)','stroke-width':4},G.lk));
+  nodes.forEach(n=>{
+    const dims={pc:[40,28],hub:[78,32],sw:[78,32],r:[104,34]}[n.t],[w,hh]=dims;
+    const fill={pc:'var(--l-tcp)',hub:'var(--warn-bg)',sw:'var(--l-eth)',r:'var(--l-ip)'}[n.t];
+    S2('rect',{x:n.x-w/2,y:n.y-hh/2,width:w,height:hh,rx:n.t==='r'?17:7,fill,stroke:'var(--ink)','stroke-width':n.t==='pc'?1.5:2.5},G.nd);
+    T2(G.nd,n.x,n.y+5,n.t==='pc'?'PC':n.name,{'text-anchor':'middle','font-size':n.t==='pc'?12:13,'font-weight':700,fill:'#0e1b32','font-family':'var(--f-mono)'});
+  });
+}
+function pintar(){
+  const R=cuenta(N),{nodes,links}=N;G.halo.innerHTML='';G.num.innerHTML='';
+  G.lines.forEach((l,i)=>{l.setAttribute('stroke',colC(R.cOf[i]));l.setAttribute('stroke-width',6)});
+  nodes.forEach(n=>{if(R.bOf[n.id]>=0)S2('circle',{cx:n.x,cy:n.y,r:n.t==='pc'?30:48,fill:colB(R.bOf[n.id])},G.halo)});
+  const seen=new Set();links.forEach(([a,b],i)=>{const k=R.cOf[i];if(seen.has(k))return;seen.add(k);const x=(nodes[a].x+nodes[b].x)/2,y=(nodes[a].y+nodes[b].y)/2;
+    S2('circle',{cx:x,cy:y,r:11,fill:colC(k),stroke:'var(--bg)','stroke-width':2},G.num);T2(G.num,x,y+4.5,String(k+1),{'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#fff','font-family':'var(--f-mono)'})});
+}
+function explica(cls,pre=''){
+  const R=cuenta(N);
+  const c=`<b>Colisión: ${R.col}</b> = ${R.plain} cable${R.plain===1?'':'s'} de switch o router sin hub`+(R.hubGroups?` + ${R.hubGroups} por ${R.hubGroups===1?'el hub':'los hubs'} (todo lo que cuelga de un hub, con su cable de subida, cuenta como uno)`:'')+'. Cada color de cable es un dominio.';
+  const d=R.routers?`<b>Difusión: ${R.dif}</b>: el router corta la difusión, así que hay una por cada interfaz que usa (${R.rIf}). Cada fondo de color es un dominio.`:`<b>Difusión: ${R.dif}</b>: no hay router, así que una difusión llega a toda la red. Ni el hub ni el switch la cortan.`;
+  msg(m,cls,pre+c+'<br>'+d);
+}
+function nuevo(){N=gen();dibuja();[iC,iB].forEach(i=>{i.value='';i.style.borderColor=''});msg(m,'','Escribe los dos números y pulsa «Comprobar».')}
+function chk(){const R=cuenta(N);if(iC.value===''||iB.value===''){msg(m,'bad','Escribe los dos números.');return}tot++;
+  const gc=+iC.value===R.col,gb=+iB.value===R.dif;iC.style.borderColor=gc?'var(--good)':'var(--bad)';iB.style.borderColor=gb?'var(--good)':'var(--bad)';
+  if(gc&&gb)ok++;sc.innerHTML=`<span>Aciertos: <b>${ok}/${tot}</b></span>`;pintar();
+  explica(gc&&gb?'good':'bad',gc&&gb?'✓ <b>Correcto.</b> ':'✗ '+(gc?'Colisión bien. ':'Revisa colisión. ')+(gb?'Difusión bien. ':'Revisa difusión. ')+'<br>');}
+window.__dominios={gen:()=>{N=gen();return N},cuenta:()=>cuenta(N),set:n=>{N=n;dibuja()},level:l=>{level=l}};
+nuevo();
+})();
+})();
+
+</script>
 </body></html>
