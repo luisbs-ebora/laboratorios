@@ -26,3 +26,5 @@ a.lab .mas{display:block;margin-top:10px;color:var(--accent-ink);font-weight:600
 .ciclo{font-size:.85rem;color:#B8C7D6;margin:0 0 4px}
 a.lab.taller{border-left-color:#E8A33D}
 a.lab.taller .tag{display:inline-block;margin:0 0 6px;background:#FCE6CC;color:#7A4A0B;font-size:.75rem;font-weight:600;padding:1px 9px;border-radius:999px}
+a.lab.externo{border-left-color:#7C5CD6}
+a.lab.externo .tag{display:inline-block;margin:0 0 6px;background:#ECE6FB;color:#4A2F9E;font-size:.75rem;font-weight:600;padding:1px 9px;border-radius:999px}
