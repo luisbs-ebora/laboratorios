@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taller · Archivos y permisos · Sistemas operativos monopuesto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@600;700&display=swap">
+<link rel="stylesheet" href="../estilos.css">
+<style>
+  .barra{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 16px}
+  .chip{display:inline-block;background:var(--chip);color:var(--accent-ink);font-weight:600;font-size:.85rem;padding:4px 12px;border-radius:999px}
+  .chip.ok{background:#D9F2E2;color:#17663A}
+  button.bt{font:600 .95rem "Open Sans",system-ui,sans-serif;padding:9px 16px;border-radius:10px;border:2px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer}
+  button.bt.sec{background:var(--surface);color:var(--ink)}
+  button.bt:focus-visible,select:focus,input:focus{outline:3px solid var(--accent);outline-offset:1px}
+  section.bloque{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 18px}
+  section.bloque h2{margin:0 0 8px}
+  .campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:10px 0}
+  .campo{display:grid;gap:5px;align-content:start;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--bg)}
+  .campo label{font-weight:600}
+  .campo small{color:var(--muted)}
+  .campo select,.campo input{font:600 1rem ui-monospace,Consolas,monospace;padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);max-width:100%}
+  .campo.ok{border-color:#2E9E5B;background:#E7F6EC}
+  .campo.ko{border-color:#C2462F;background:#FBE9E5}
+  .pista{margin:2px 0 0;font-size:.92rem}
+  pre.linea{font:600 1rem/1.5 ui-monospace,Consolas,monospace;background:var(--ink);color:#E8F2F7;padding:12px 14px;border-radius:10px;overflow-x:auto;margin:8px 0}
+  code{font:600 .95em ui-monospace,Consolas,monospace;background:var(--chip);padding:1px 6px;border-radius:5px}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <a class="volver" href="./">← Sistemas operativos monopuesto</a>
+  <p class="ciclo">1.º SMR · Tema 3 · Sistemas de archivos</p>
+  <h1>Taller · Archivos y permisos</h1>
+  <p>Una tanda distinta cada vez. Al corregir verás la respuesta y el porqué. No se guarda nada y no tiene nota.</p>
+</div></header>
+<main>
+  <div class="barra"><span class="chip" id="num"></span><span class="chip" id="marcador">Sin corregir</span>
+    <button class="bt" type="button" id="corregir">Corregir</button><button class="bt sec" type="button" id="otra">Otra tanda</button></div>
+  <div id="cuerpo"></div>
+  <div class="barra"><button class="bt" type="button" id="corregir2">Corregir</button></div>
+</main>
+<footer>Si no ves los últimos cambios, recarga la página con Ctrl + F5.</footer>
+<script type="module">
+import { SISTEMAS, crearTanda, corregir } from './taller-archivos.js';
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let tanda;
+const lista = (id, ops) => `<select id="f-${id}"><option value="">Elige…</option>${ops.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join('')}</select>`;
+const texto = (id, ancho) => `<input id="f-${id}" type="text" autocomplete="off" spellcheck="false" style="width:${ancho}ch">`;
+const campo = (id, etiqueta, control, ayuda = '') => `<div class="campo" data-id="${id}"><label for="f-${id}">${etiqueta}</label>${control}${ayuda ? `<small>${ayuda}</small>` : ''}<p class="pista" hidden></p></div>`;
+const siNo = id => lista(id, [['si', 'Sí'], ['no', 'No']]);
+
+function pintar() {
+  const p = tanda.permisos;
+  $('num').textContent = 'Tanda ' + tanda.semilla;
+  $('marcador').textContent = 'Sin corregir'; $('marcador').className = 'chip';
+  $('cuerpo').innerHTML = `
+  <section class="bloque"><h2>1 · ¿Qué sistema de archivos pondrías?</h2>
+    <p>Cuatro encargos. Elige el sistema de archivos con el que formatearías cada uno.</p>
+    <div class="campos">${tanda.clientes.map((c, i) => campo('cli' + i, esc(c.texto), lista('cli' + i, SISTEMAS.map(s => [s, s])))).join('')}</div></section>
+  <section class="bloque"><h2>2 · Permisos</h2>
+    <p>En un equipo con Linux, la orden <code>ls -l</code> muestra esto. La propietaria es <strong>ana</strong> y el grupo es <strong>ventas</strong>, al que también pertenece <strong>luis</strong>. <strong>marta</strong> no está en ese grupo.</p>
+    <pre class="linea">${esc(p.linea)}</pre>
+    <div class="campos">
+      ${campo('octal', 'Escribe esos permisos en números', texto('octal', 6), 'Tres cifras, como 644')}
+      ${p.preguntas.map((q, i) => campo('puede' + i, `¿Puede <strong>${q.quien}</strong> ${q.accion} <code>${esc(p.nombre)}</code>?`, siNo('puede' + i))).join('')}
+      ${campo('inverso', `Y al revés: escribe con letras los permisos <code>${p.inverso}</code>`, texto('inverso', 12), 'Nueve caracteres, como rw-r--r--')}
+    </div></section>
+  <section class="bloque"><h2>3 · Rutas, atributos y diario</h2>
+    <div class="campos">
+      ${campo('ruta', `La ruta <code>${esc(tanda.ruta[0])}</code> es…`, lista('ruta', [['absoluta', 'Absoluta'], ['relativa', 'Relativa']]))}
+      ${campo('atributo', esc(tanda.atributo[0]) + ' ¿Qué atributo tiene?', lista('atributo', ['Solo lectura', 'Oculto', 'Sistema', 'Archivo'].map(x => [x, x])))}
+      ${campo('diario', `¿Lleva <strong>${tanda.diario[0]}</strong> registro por diario (journaling)?`, siNo('diario'))}
+    </div></section>`;
+}
+function comprobar() {
+  const resp = {};
+  for (const c of document.querySelectorAll('.campo')) resp[c.dataset.id] = $('f-' + c.dataset.id).value;
+  const r = corregir(tanda, resp);
+  for (const x of r.lista) {
+    const c = document.querySelector(`.campo[data-id="${x.id}"]`), pista = c.querySelector('.pista');
+    c.classList.toggle('ok', x.ok); c.classList.toggle('ko', !x.ok);
+    pista.hidden = false; pista.innerHTML = (x.ok ? 'Bien. ' : `<strong>Correcto: ${esc(x.correcta)}.</strong> `) + esc(x.porque);
+  }
+  $('marcador').textContent = `${r.aciertos} de ${r.total}`;
+  $('marcador').className = 'chip' + (r.aciertos === r.total ? ' ok' : '');
+  $('marcador').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+function nueva(semilla) { tanda = crearTanda(semilla ?? 1000 + Math.floor(Math.random() * 9000)); pintar(); }
+$('corregir').onclick = $('corregir2').onclick = comprobar;
+$('otra').onclick = () => { nueva(); scrollTo({ top: 0 }); };
+const pedida = Number(new URLSearchParams(location.search).get('tanda'));
+nueva(Number.isInteger(pedida) && pedida > 0 ? pedida : undefined);
+</script>
+</body>
+</html>
