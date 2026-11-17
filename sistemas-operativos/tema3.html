@@ -1,0 +1,640 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratorio de Sistemas Operativos · Tema 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --ink:#0E1B32; --muted:#55697C; --line:#C9D5DF;
+  --accent:#00B8CF; --accent-ink:#17627C; --chip:#DFF5F9; --warn:#C9741F; --warn-bg:#FCE6CC;
+  --bad:#C2412D; --bad-bg:#FBE1DC; --good:#1F8A5B; --good-bg:#DDF2E7;
+  --lamp:#FFC93C; --lamp-glow:rgba(255,201,60,.55); --lamp-off:#DCE3EA;
+  --l-app:#FBE3C4; --l-tcp:#CFEAF7; --l-ip:#D9EBD0; --l-eth:#E6DCF4;
+  --f-head:'Poppins',system-ui,sans-serif; --f-body:'Open Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.5 var(--f-body)}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-top:6px solid var(--accent);padding-top:18px}
+.eyebrow{font:600 13px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font:700 clamp(28px,4vw,40px)/1.1 var(--f-head);margin:6px 0 0;text-wrap:balance}
+.speed{display:flex;align-items:center;gap:10px;font:600 15px var(--f-body);color:var(--muted)}
+nav.tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:20px 0 22px}
+.tab{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:12px 14px;background:var(--surface);border:2px solid var(--line);border-radius:10px;min-width:0}
+.tab b{font:600 17px/1.25 var(--f-head)}
+.tab span{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em}
+.tab[aria-selected="true"]{border-color:var(--accent);background:var(--chip)}
+.tab:focus-visible,.btn:focus-visible,.seg button:focus-visible,.bulb:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px clamp(16px,3vw,30px) 26px}
+.panel h2{font:700 clamp(24px,3vw,30px)/1.2 var(--f-head);margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:6px 0 18px;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{all:unset;cursor:pointer;font:600 17px var(--f-head);padding:12px 20px;border-radius:10px;background:var(--ink);color:var(--surface);text-align:center}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn[disabled]{opacity:.4;cursor:default}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:10px 18px;font:600 16px var(--f-head)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+input[type=number],select{font:600 20px var(--f-mono);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:7.5em}
+select{width:auto}
+label.lbl{font:600 15px var(--f-body);color:var(--muted)}
+.note{background:var(--chip);border-radius:10px;padding:14px 18px;margin-top:18px;max-width:80ch}
+.note b{font-family:var(--f-head)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.svgbox{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.svgbox svg{display:block;width:100%;min-width:560px;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+.mono{font-family:var(--f-mono)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.log li{padding:10px 12px;border-left:4px solid var(--accent);background:var(--bg);border-radius:6px;font-size:16px}
+.log li.bad{border-color:var(--bad);background:var(--bad-bg)}
+.log li.good{border-color:var(--good);background:var(--good-bg)}
+.log li.warn{border-color:var(--warn);background:var(--warn-bg)}
+.side h3{font:600 15px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--accent-ink);margin:0 0 10px}
+
+/* ===== Kit de actividades (clasificar, ordenar, test) ===== */
+.k-acts{margin:0 0 18px}
+.k-stage{min-height:120px}
+.k-msg{border-radius:12px;padding:12px 16px;background:var(--bg);border:2px solid var(--line);font-size:17px;margin:12px 0;min-height:52px}
+.k-msg.good{background:var(--good-bg);border-color:var(--good)}
+.k-msg.bad{background:var(--bad-bg);border-color:var(--bad)}
+.k-msg.warn{background:var(--warn-bg);border-color:var(--warn)}
+.k-msg b{font-family:var(--f-head)}
+.k-score{font:600 15px var(--f-mono);color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.k-score b{color:var(--ink)}
+.k-pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:2px dashed var(--line);border-radius:12px;min-height:64px;background:var(--bg);margin:10px 0 14px}
+.k-pool:empty::after{content:'¡Todas colocadas!';font:600 16px var(--f-head);color:var(--good);padding:8px}
+.k-chip{all:unset;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;padding:9px 13px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font:600 16px/1.3 var(--f-body);max-width:100%;overflow-wrap:anywhere}
+.k-chip.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-chip.ok{background:var(--good-bg);border-color:var(--good);cursor:default}
+.k-chip.shake{animation:kshake .35s}
+.k-chip:focus-visible,.k-bucket:focus-visible,.k-opt:focus-visible,.k-oi:focus-visible,.k-tok:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.k-ghost{position:fixed;z-index:50;pointer-events:none;opacity:.92;transform:translate(-50%,-50%) scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.k-buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.k-bucket{border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);min-height:120px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0}
+.k-bucket.over{border-color:var(--accent);background:var(--chip)}
+.k-bucket.armed{border-style:dashed;border-color:var(--accent)}
+.k-bucket h4{margin:0 0 4px;font:700 17px/1.2 var(--f-head)}
+.k-bucket h4 small{display:block;font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em;margin-top:2px}
+.k-bucket .k-chip{font-size:14px;padding:6px 9px}
+@keyframes kshake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.k-olist{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:860px}
+.k-oi{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.k-oi .n{font:700 18px var(--f-mono);color:var(--muted);min-width:1.6em;text-align:center}
+.k-oi .t{font:600 17px/1.35 var(--f-body)}
+.k-oi .t small{display:block;font-weight:400;color:var(--muted);font-size:14px}
+.k-oi .mv{display:flex;gap:4px}
+.k-oi .mv button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:8px;border:2px solid var(--line);text-align:center;font:700 18px/34px var(--f-mono);background:var(--bg)}
+.k-oi.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-oi.ok{border-color:var(--good);background:var(--good-bg)}
+.k-oi.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-olabel{font:600 13px var(--f-mono);color:var(--accent-ink);text-transform:uppercase;letter-spacing:.06em}
+.k-q{max-width:900px}
+.k-q .qn{font:600 14px var(--f-mono);color:var(--muted)}
+.k-q .qt{font:700 clamp(20px,2.4vw,24px)/1.3 var(--f-head);margin:6px 0 14px;text-wrap:pretty}
+.k-q .qfig{margin:0 0 14px}
+.k-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.k-opt{all:unset;cursor:pointer;padding:14px 16px;border:2px solid var(--line);border-radius:10px;background:var(--surface);font:600 17px/1.35 var(--f-body)}
+.k-opt:hover{border-color:var(--accent)}
+.k-opt.ok{border-color:var(--good);background:var(--good-bg)}
+.k-opt.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-opt[disabled]{cursor:default}
+.k-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:6px 0 12px;max-width:900px}
+.k-bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.k-end{font:700 24px var(--f-head);margin:8px 0}
+.k-two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+.k-two.wide{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr)}
+@media (max-width:900px){.k-two,.k-two.wide{grid-template-columns:minmax(0,1fr)}}
+.k-two>*{min-width:0}
+.k-tok{all:unset;cursor:pointer;font:700 clamp(18px,2.4vw,26px) var(--f-mono);padding:8px 12px;border-radius:8px;border:2px solid var(--line);background:var(--surface)}
+.k-tok.seen{background:var(--chip);border-color:var(--accent)}
+.k-tok.sel{box-shadow:0 0 0 3px var(--accent)}
+.k-toks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.k-tbl{border-collapse:collapse;font-size:16px;width:100%}
+.k-tbl th,.k-tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+.k-tbl th{background:var(--bg);font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.k-tbl tr.hl td{background:var(--warn-bg)}
+.k-tbl tr.new td{background:var(--good-bg);animation:pop .4s}
+.k-tbl td.fk,.k-tbl td.pk{font-family:var(--f-mono);font-weight:700}
+.k-tbl td.fk button{all:unset;cursor:pointer;color:var(--accent-ink);text-decoration:underline;text-underline-offset:3px}
+.k-tbl td.chg{background:var(--good-bg);font-weight:700}
+.k-tblwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.k-cap{font:700 16px var(--f-head);margin:14px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.k-cap small{font:600 12px var(--f-mono);color:var(--muted)}
+.k-mission{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.k-mission li{padding:10px 12px;border-radius:8px;background:var(--bg);border-left:4px solid var(--line);font-size:16px}
+.k-mission li.cur{border-color:var(--accent);background:var(--chip)}
+.k-mission li.done{border-color:var(--good);background:var(--good-bg)}
+.k-mission li.done::before{content:'✓ ';font-weight:700;color:var(--good)}
+.k-term{background:#0C1220;color:#D8E1EA;border-radius:12px;padding:14px 16px;font:500 15px/1.5 var(--f-mono);min-height:340px;max-height:460px;overflow:auto;border:2px solid var(--line)}
+.k-term .pr{color:#7FE3A0}
+.k-term .ps{color:#7CC4FF}
+.k-term .er{color:#FF9C8C}
+.k-term .wn{color:#FFD27A}
+.k-term pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+.k-term .in{display:flex;gap:8px;align-items:center}
+.k-term input{all:unset;flex:1;min-width:0;color:#fff;caret-color:#7FE3A0}
+.k-chips2{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.k-chips2 button{all:unset;cursor:pointer;font:600 14px var(--f-mono);padding:6px 10px;border-radius:8px;border:2px solid var(--line);background:var(--bg)}
+.k-chips2 button:focus-visible{outline:3px solid var(--accent)}
+.k-dm{border:2px solid var(--line);border-radius:10px;background:var(--surface);font:400 15px var(--f-body);overflow:hidden}
+.k-dm .tb{background:var(--bg);padding:6px 10px;border-bottom:1px solid var(--line);font:600 14px var(--f-body)}
+.k-dm ul{list-style:none;margin:0;padding:4px 0 8px}
+.k-dm li{margin:0}
+.k-dm .cat,.k-dm .dev{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;padding:5px 10px;width:100%;box-sizing:border-box}
+.k-dm .dev{padding-left:34px}
+.k-dm .cat:hover,.k-dm .dev:hover{background:var(--chip)}
+.k-dm .dev.sel{background:var(--chip);outline:2px solid var(--accent);outline-offset:-2px}
+.k-dm .ic{width:18px;height:18px;flex:none}
+.k-dm .car{width:14px;font:700 13px var(--f-mono);color:var(--muted)}
+.k-props{border:2px solid var(--line);border-radius:10px;background:var(--surface)}
+.k-props .ptabs{display:flex;border-bottom:2px solid var(--line)}
+.k-props .ptabs button{all:unset;cursor:pointer;padding:8px 14px;font:600 15px var(--f-body)}
+.k-props .ptabs button[aria-pressed="true"]{background:var(--chip);box-shadow:inset 0 -3px 0 var(--accent)}
+.k-props .pbody{padding:14px 16px;font-size:16px;min-height:170px}
+.k-props .pbody .mono{background:var(--bg);padding:8px 10px;border-radius:6px;display:block;overflow-wrap:anywhere;margin-top:6px}
+.k-svgfig{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.k-svgfig svg{display:block;width:100%;height:auto}
+.seg.k-acts,.k-stage .seg{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%}
+.k-q .qt b{color:var(--accent-ink)}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:20px 0;max-width:900px}
+.ro{background:var(--bg);border-radius:10px;padding:10px 14px;min-width:0}
+.ro small{display:block;font:600 13px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ro div{font:700 26px var(--f-mono);overflow-wrap:anywhere}
+.ro.big div{font-size:44px;line-height:1.1}
+.sum{font:600 20px var(--f-mono);margin:4px 0 0;color:var(--accent-ink);overflow-wrap:anywhere}
+.target{font:700 20px var(--f-head);padding:8px 14px;border-radius:8px;background:var(--warn-bg)}
+.target.ok{background:var(--good-bg);color:var(--good)}
+svg g[role=button]:focus{outline:none}svg g[role=button]:focus-visible .slot{stroke:var(--accent);stroke-width:5}
+.lbl{font:600 15px var(--f-body);color:var(--muted)}
+select{font:600 17px var(--f-body);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+
+.hdr-note{font:600 14px var(--f-body);color:var(--muted)}
+.k-tree{font:500 16px/1.55 var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0;overflow-x:auto;white-space:pre}
+.k-tree .cur{background:var(--chip);color:var(--accent-ink);font-weight:700}
+.k-tree .tgt{background:var(--warn-bg);font-weight:700}
+input.txt{font:600 19px var(--f-mono);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;max-width:520px;display:block;margin-top:4px}
+.k-cajas{display:flex;flex-direction:column;gap:6px;margin-top:14px;max-width:620px}
+.k-caja{position:relative;height:34px;border:2px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden}
+.k-caja i{position:absolute;inset:0 auto 0 0;background:var(--chip)}
+.k-caja span{position:relative;font:600 14px/30px var(--f-mono);padding:0 10px}
+.k-mission li.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-mission li.ko::before{content:'⚡ ';}
+.ro input[type=number]{width:100%;margin-top:4px}
+</style></head><body>
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Tema 3 · Sistemas operativos monopuesto · SMR</div>
+    <h1>Laboratorio de Sistemas Operativos · Tema 3</h1>
+  </div>
+  <label class="speed" for="slow"><input type="checkbox" id="slow"> Ritmo lento en las animaciones</label>
+</header>
+<nav class="tabs" role="tablist" aria-label="Sesiones">
+  <button class="tab" role="tab" data-t="archivos"><b>Archivos y rutas</b><span>Sección 1 · Árbol, rutas, clústeres y tablas</span></button>
+  <button class="tab" role="tab" data-t="permisos"><b>Atributos y permisos</b><span>Sección 2 · attrib, NTFS, icacls, rwx y chmod</span></button>
+  <button class="tab" role="tab" data-t="tipos"><b>Tipos de sistemas de archivos</b><span>Sección 3 · FAT32, NTFS, ext4… y journaling</span></button>
+</nav>
+<section class="panel" id="p-archivos" role="tabpanel" hidden>
+  <h2>Archivos, rutas y organización del disco</h2>
+  <div id="r-archivos"></div>
+</section>
+<section class="panel" id="p-permisos" role="tabpanel" hidden>
+  <h2>Atributos y permisos</h2>
+  <div id="r-permisos"></div>
+</section>
+<section class="panel" id="p-tipos" role="tabpanel" hidden>
+  <h2>Tipos de sistemas de archivos</h2>
+  <div id="r-tipos"></div>
+</section>
+</div>
+<script>
+
+/* ===== Kit de actividades ===== */
+const K=(function(){
+  const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){if(k==='class')e.className=attrs[k];else if(k==='html')e.innerHTML=attrs[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k])}kids.flat().forEach(c=>{if(c==null)return;e.append(c.nodeType?c:document.createTextNode(c))});return e};
+  const md=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<span class="mono">$1</span>');
+  const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  function msg(el,cls,html){el.className='k-msg'+(cls?' '+cls:'');el.innerHTML=html}
+
+  // Selector de actividades dentro de una pestaña
+  function acts(root,list){
+    const seg=h('div',{class:'seg k-acts',role:'group','aria-label':'Actividad'});
+    const stage=h('div',{class:'k-stage'});
+    root.append(seg,stage);
+    const views=list.map(()=>null);
+    const btns=list.map((a,i)=>{const b=h('button',{'aria-pressed':i===0?'true':'false',onclick:()=>go(i)},a.label);seg.append(b);return b});
+    function go(i){btns.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));views.forEach(v=>v&&(v.hidden=true));
+      if(!views[i]){views[i]=h('div');stage.append(views[i]);list[i].render(views[i])}views[i].hidden=false}
+    go(0);
+  }
+
+  // Clasificar: tocar ficha + tocar caja, o arrastrar
+  function sort(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const score=h('div',{class:'k-score'});
+    const pool=h('div',{class:'k-pool','aria-label':'Fichas sin colocar'});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    const grid=h('div',{class:'k-buckets'});
+    const bk={};
+    cfg.buckets.forEach(b=>{const el=h('div',{class:'k-bucket',tabindex:0,role:'button','aria-label':'Caja '+b.name,'data-b':b.id},h('h4',{html:md(b.name)+(b.sub?'<small>'+md(b.sub)+'</small>':'')}));
+      el.addEventListener('click',()=>{if(sel)drop(sel,b.id)});
+      el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel){e.preventDefault();drop(sel,b.id)}});
+      bk[b.id]=el;grid.append(el)});
+    const row=h('div',{class:'row',style:'margin-top:14px'},
+      h('button',{class:'btn alt',onclick:reset},'Empezar de nuevo'),
+      h('button',{class:'btn alt',onclick:solve},'Ver solución'));
+    root.append(score,pool,m,grid,row);
+    let sel=null,ok=0,ko=0,chips=[];
+    const bname=id=>cfg.buckets.find(b=>b.id===id).name.replace(/\*\*/g,'');
+    function upd(){score.innerHTML=`<span>Colocadas: <b>${ok}/${cfg.items.length}</b></span><span>Fallos: <b>${ko}</b></span>`;
+      Object.values(bk).forEach(b=>b.classList.toggle('armed',!!sel))}
+    function pick(c){if(c.classList.contains('ok'))return;if(sel===c){c.classList.remove('sel');sel=null}else{sel&&sel.classList.remove('sel');sel=c;c.classList.add('sel');
+      msg(m,'','<b>'+md(c._it.t)+'</b>. Ahora toca la caja donde va (o arrástrala).')}upd()}
+    function drop(c,b){const it=c._it;c.classList.remove('sel');sel=null;
+      if(it.b===b||(Array.isArray(it.b)&&it.b.includes(b))){c.classList.add('ok');c.setAttribute('tabindex','-1');bk[b].append(c);ok++;
+        msg(m,'good','✓ <b>'+md(it.t)+'</b> → '+md(bname(b))+(it.why?'. '+md(it.why):''));
+        if(ok===cfg.items.length)msg(m,'good','<b>¡Completado!</b> '+ok+' fichas con '+ko+' fallo'+(ko===1?'':'s')+'. '+(it.why?md(it.why):''))}
+      else{ko++;c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);
+        msg(m,'bad','✗ <b>'+md(it.t)+'</b> no va en «'+md(bname(b))+'». '+(it.hint?md(it.hint):'Piénsalo otra vez.'))}
+      upd()}
+    function build(){pool.innerHTML='';Object.values(bk).forEach(b=>[...b.querySelectorAll('.k-chip')].forEach(c=>c.remove()));
+      chips=shuffle(cfg.items).map(it=>{const c=h('button',{class:'k-chip',type:'button',html:md(it.t)});c._it=it;
+        c.addEventListener('pointerdown',e=>startDrag(e,c));
+        c.addEventListener('click',e=>{if(c._dragged){c._dragged=false;return}pick(c)});
+        pool.append(c);return c});
+      ok=0;ko=0;sel=null;msg(m,'',cfg.start||'Toca una ficha y después la caja donde va. También puedes arrastrarla.');upd()}
+    function reset(){build()}
+    function solve(){chips.forEach(c=>{if(!c.classList.contains('ok')){const b=Array.isArray(c._it.b)?c._it.b[0]:c._it.b;c.classList.add('ok');c.classList.remove('sel');bk[b].append(c)}});sel=null;msg(m,'warn','Solución a la vista. Pulsa «Empezar de nuevo» para intentarlo sin ayuda.');upd()}
+    let dr=null;
+    function startDrag(e,c){if(c.classList.contains('ok')||e.button>0)return;dr={c,x:e.clientX,y:e.clientY,g:null,id:e.pointerId}}
+    window.addEventListener('pointermove',e=>{if(!dr||e.pointerId!==dr.id)return;
+      if(!dr.g){if(Math.hypot(e.clientX-dr.x,e.clientY-dr.y)<8)return;dr.g=dr.c.cloneNode(true);dr.g.classList.add('k-ghost');document.body.append(dr.g);dr.c.style.opacity=.35}
+      e.preventDefault();dr.g.style.left=e.clientX+'px';dr.g.style.top=e.clientY+'px';
+      Object.values(bk).forEach(b=>b.classList.remove('over'));const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))b.classList.add('over')},{passive:false});
+    window.addEventListener('pointerup',e=>{if(!dr||e.pointerId!==dr.id)return;const d=dr;dr=null;if(!d.g)return;
+      d.g.remove();d.c.style.opacity='';d.c._dragged=true;setTimeout(()=>d.c._dragged=false,0);Object.values(bk).forEach(b=>b.classList.remove('over'));
+      const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))drop(d.c,b.dataset.b)});
+    window.addEventListener('pointercancel',()=>{if(dr&&dr.g){dr.g.remove();dr.c.style.opacity=''}dr=null});
+    build();
+  }
+
+  // Ordenar
+  function order(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    if(cfg.top)root.append(h('div',{class:'k-olabel'},'▲ '+cfg.top));
+    const ol=h('ol',{class:'k-olist'});root.append(ol);
+    if(cfg.bottom)root.append(h('div',{class:'k-olabel'},'▼ '+cfg.bottom));
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    root.append(m,h('div',{class:'row'},h('button',{class:'btn',onclick:check},'Comprobar'),h('button',{class:'btn alt',onclick:()=>{cur=shuffleNotSorted();sel=-1;draw();msg(m,'','Ordena de nuevo.')}},'Mezclar'),h('button',{class:'btn alt',onclick:()=>{cur=cfg.items.map((_,i)=>i);sel=-1;draw(true);msg(m,'warn','Este es el orden correcto. Fíjate en las explicaciones en gris.')}},'Ver solución')));
+    let sel=-1,cur=shuffleNotSorted(),tries=0;
+    function shuffleNotSorted(){let a;do{a=shuffle(cfg.items.map((_,i)=>i))}while(a.every((v,i)=>v===i)&&a.length>1);return a}
+    function swap(i,j){if(j<0||j>=cur.length)return;[cur[i],cur[j]]=[cur[j],cur[i]];draw()}
+    function draw(showD){ol.innerHTML='';cur.forEach((v,i)=>{const it=cfg.items[v];
+      const li=h('li',{class:'k-oi'+(sel===i?' sel':''),tabindex:0},h('span',{class:'n'},String(i+1)),h('span',{class:'t',html:md(it.t)+(showD&&it.d?'<small>'+md(it.d)+'</small>':'')}),
+        h('span',{class:'mv'},h('button',{'aria-label':'Subir',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i-1)}},'↑'),h('button',{'aria-label':'Bajar',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i+1)}},'↓')));
+      li.addEventListener('click',()=>{if(sel<0){sel=i;draw()}else if(sel===i){sel=-1;draw()}else{const s=sel;sel=-1;swap(s,i)}});
+      ol.append(li)})}
+    function check(){tries++;let n=0;[...ol.children].forEach((li,i)=>{const good=cur[i]===i;if(good)n++;li.classList.add(good?'ok':'ko')});
+      if(n===cur.length){draw(true);[...ol.children].forEach(li=>li.classList.add('ok'));msg(m,'good','<b>¡Perfecto!</b> Todo en orden'+(tries>1?' (en '+tries+' intentos)':'')+'. '+(cfg.done?md(cfg.done):''))}
+      else msg(m,'bad',`<b>${n} de ${cur.length}</b> en su sitio (en verde). Mueve los rojos: toca uno y luego otro para intercambiarlos, o usa las flechas.`)}
+    draw();msg(m,'',cfg.start||'Toca un elemento y después otro para intercambiarlos, o usa las flechas ↑ ↓. Cuando acabes, pulsa «Comprobar».');
+  }
+
+  // Test de una pregunta cada vez
+  function quiz(root,cfg){
+    if(cfg.intro)root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const box=h('div',{class:'k-q'});root.append(box);
+    let qs,i,ok,answered;
+    function start(){qs=(cfg.noShuffle?cfg.questions:shuffle(cfg.questions)).map(q=>{const o=q.o.map((t,j)=>({t,c:j===q.a}));return Object.assign({},q,{opts:cfg.fixed||q.fixed?o:shuffle(o)})});i=0;ok=0;draw()}
+    function draw(){box.innerHTML='';
+      if(i>=qs.length){box.append(h('div',{class:'k-end'},`Resultado: ${ok} de ${qs.length}`),h('p',{},ok===qs.length?'¡Todas bien!':ok>=qs.length*.7?'Muy bien. Repasa las que fallaste.':'Vuelve a intentarlo: lee bien la explicación de cada pregunta.'),h('button',{class:'btn',onclick:start},'Otra vez (en otro orden)'));return}
+      const q=qs[i];answered=false;
+      const bar=h('div',{class:'k-bar'},h('i',{style:`width:${i/qs.length*100}%`}));
+      const opts=h('div',{class:'k-opts'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Elige una respuesta.');
+      const next=h('button',{class:'btn',onclick:()=>{i++;draw()},hidden:''},i===qs.length-1?'Ver resultado':'Siguiente pregunta');
+      q.opts.forEach(o=>{const b=h('button',{class:'k-opt',html:md(o.t)});b.onclick=()=>{if(answered)return;answered=true;
+        if(o.c){ok++;b.classList.add('ok');msg(m,'good','✓ <b>Correcto.</b> '+md(q.why||''))}
+        else{b.classList.add('ko');[...opts.children].forEach((x,k)=>{if(q.opts[k].c)x.classList.add('ok')});msg(m,'bad','✗ <b>No.</b> '+md(q.why||''))}
+        [...opts.children].forEach(x=>x.setAttribute('disabled',''));next.hidden=false;next.focus()};opts.append(b)});
+      box.append(h('div',{class:'qn'},`Pregunta ${i+1} de ${qs.length} · aciertos: ${ok}`),bar,h('div',{class:'qt',html:md(q.q)}));
+      if(q.fig){const f=h('div',{class:'qfig'});q.fig(f);box.append(f)}
+      box.append(opts,m,next)}
+    start();
+  }
+  return {h,md,shuffle,msg,acts,sort,order,quiz};
+})();
+
+</script>
+<script>
+(function(){const tabs=[...document.querySelectorAll('.tab')];
+function show(id){if(!document.getElementById('p-'+id))id=tabs[0].dataset.t;tabs.forEach(t=>t.setAttribute('aria-selected',t.dataset.t===id));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='p-'+id);try{history.replaceState(null,'','#'+id)}catch(e){}}
+tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.t)));show((location.hash||'').slice(1));})();
+</script>
+<script>
+/* ================= S1 · ARCHIVOS, RUTAS Y DISCO ================= */
+(function(){
+const {h,md,acts,sort,quiz,msg,shuffle}=K;
+const de=l=>l[Math.floor(Math.random()*l.length)];
+
+// Árboles: carpeta = objeto, archivo = null
+const ARBOLES={
+  win:{raiz:'C:\\',sep:'\\',mayus:false,sistema:'Windows (cmd)',arbol:{Users:{Estudiante:{Documents:{'notas.txt':null,so:{'tema3.pdf':null,practicas:{'rutas.txt':null}}},Pictures:{'foto.jpg':null,viaje:{'playa.jpg':null}},Music:{'cancion.mp3':null}}}}},
+  lin:{raiz:'/',sep:'/',mayus:true,sistema:'Linux (terminal)',arbol:{home:{ana:{documentos:{'notas.txt':null,so:{'tema3.pdf':null,Practicas:{'rutas.txt':null}}},fotos:{'foto.jpg':null,viaje:{'playa.jpg':null}},musica:{'cancion.mp3':null}}}}}
+};
+function recorrer(nodo,camino,carpetas,archivos){for(const k of Object.keys(nodo)){const c=camino.concat(k);if(nodo[k]===null)archivos.push(c);else{carpetas.push(c);recorrer(nodo[k],c,carpetas,archivos)}}}
+function absoluta(A,c){return A.raiz+c.join(A.sep)}
+function relativa(A,desde,hasta){let i=0;while(i<desde.length&&i<hasta.length-1&&desde[i]===hasta[i])i++;return Array(desde.length-i).fill('..').concat(hasta.slice(i)).join(A.sep)}
+function dibujar(A,desde,hasta){
+  const lineas=[];const esta=c=>c.join('/');
+  lineas.push({t:A.raiz,cls:desde.length===0?'cur':''});
+  (function pinta(nodo,camino,pref){const ks=Object.keys(nodo);ks.forEach((k,i)=>{const ult=i===ks.length-1,c=camino.concat(k);
+    lineas.push({t:pref+(ult?'└── ':'├── ')+k,cls:esta(c)===esta(desde)?'cur':esta(c)===esta(hasta)?'tgt':''});
+    if(nodo[k])pinta(nodo[k],c,pref+(ult?'    ':'│   '))})})(A.arbol,[],'');
+  return h('pre',{class:'k-tree'},...lineas.map(l=>h('span',{class:l.cls},l.t+(l.cls==='cur'?'   ← estás aquí':l.cls==='tgt'?'   ★ quieres llegar aquí':'')+'\n')));
+}
+function limpiaRuta(A,s){s=String(s||'').trim();if(A.sep==='\\')s=s.replace(/\//g,'\\');
+  s=s.replace(A.sep==='\\'?/^\.\\/:/^\.\//,'').replace(A.sep==='\\'?/\\+$/:/\/+$/,'');return A.mayus?s:s.toLowerCase()}
+function rutas(root){
+  root.append(h('p',{class:'lead',html:md('Mira el árbol. Escribe la **ruta relativa** (desde la carpeta en la que estás) y la **ruta absoluta** (desde la raíz) del archivo marcado con ★. Usa `..` para subir a la carpeta padre.')}));
+  const fig=h('div'),info=h('p',{class:'hdr-note'});
+  const ir=h('input',{class:'txt',id:'r-rel',autocomplete:'off',spellcheck:'false'}),ia=h('input',{class:'txt',id:'r-abs',autocomplete:'off',spellcheck:'false'});
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+  let A,desde,hasta,tot=0,bien=0;const score=h('div',{class:'k-score'});
+  root.append(h('div',{class:'k-two'},h('div',{},fig,info),h('div',{},
+    h('label',{class:'lbl',for:'r-rel'},'Ruta relativa'),ir,h('label',{class:'lbl',for:'r-abs',style:'margin-top:12px;display:block'},'Ruta absoluta'),ia,
+    h('div',{class:'row',style:'margin-top:14px'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:sol},'Ver solución'),h('button',{class:'btn alt',onclick:nuevo},'Otra ruta')),
+    m,score)));
+  function nuevo(){A=ARBOLES[Math.random()<.65?'win':'lin'];const carp=[],arch=[];recorrer(A.arbol,[],carp,arch);
+    do{desde=de(carp.filter(c=>c.length>=2));hasta=de(arch)}while(relativa(A,desde,hasta).split(A.sep).length<2&&Math.random()<.7);
+    fig.replaceChildren(dibujar(A,desde,hasta));
+    info.innerHTML=md(`Sistema: **${A.sistema}**. Separador: \`${A.sep}\`. ${A.mayus?'Linux **distingue** mayúsculas: escribe los nombres tal cual.':'Windows no distingue mayúsculas.'}`);
+    ir.value='';ia.value='';ir.style.borderColor=ia.style.borderColor='';msg(m,'','Escribe las dos rutas y pulsa «Comprobar».');ir.focus({preventScroll:true})}
+  function chk(){const r=relativa(A,desde,hasta),a=absoluta(A,hasta);const okR=limpiaRuta(A,ir.value)===limpiaRuta(A,r),okA=limpiaRuta(A,ia.value)===limpiaRuta(A,a);
+    tot++;if(okR&&okA)bien++;ir.style.borderColor=okR?'var(--good)':'var(--bad)';ia.style.borderColor=okA?'var(--good)':'var(--bad)';
+    if(okR&&okA)msg(m,'good','✓ <b>Las dos bien.</b> Pulsa «Otra ruta».');
+    else{let t=[];if(!okR)t.push(pista(ir.value,r));if(!okA)t.push(ia.value.trim()&&!ia.value.trim().startsWith(A.raiz.slice(0,1))?'La absoluta empieza siempre en la raíz: <span class="mono">'+md(A.raiz)+'</span>.':'Revisa la absoluta: desde la raíz, carpeta a carpeta, hasta el archivo.');msg(m,'bad','✗ '+t.join(' '))}
+    score.innerHTML=`<span>Rutas bien: <b>${bien}/${tot}</b></span>`}
+  function pista(v,r){const sube=r.split(A.sep).filter(x=>x==='..').length;
+    if(!v.trim())return'Falta la relativa.';
+    if(v.trim().startsWith(A.raiz.slice(0,1))&&A.raiz!=='/'||v.trim().startsWith('/')&&A.raiz==='/')return'Eso es una ruta absoluta: la relativa no empieza en la raíz, sino donde estás.';
+    return sube?`Desde donde estás hay que subir ${sube} ${sube===1?'vez':'veces'} con <span class="mono">..</span> antes de bajar.`:'No hace falta subir: el archivo está por debajo de donde estás.'}
+  function sol(){msg(m,'warn',`Relativa: <span class="mono">${md(relativa(A,desde,hasta))}</span><br>Absoluta: <span class="mono">${md(absoluta(A,hasta))}</span>`)}
+  [ir,ia].forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')chk()}));
+  nuevo();
+}
+
+// Tamaño y tamaño en disco con clústeres de 4 KB
+function clusters(root){
+  const C=4096;
+  root.append(h('p',{class:'lead',html:md('El disco tiene **clústeres de 4 KB (4096 bytes)** y un archivo siempre ocupa **clústeres enteros**. Calcula cuánto ocupa de verdad este archivo.')}));
+  const tgt=h('div',{class:'target'}),cajas=h('div',{class:'k-cajas','aria-hidden':'true'});
+  const fN=h('input',{type:'number',id:'cl-n',min:1}),fD=h('input',{type:'number',id:'cl-d',min:0}),fW=h('input',{type:'number',id:'cl-w',min:0});
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+  root.append(tgt,h('div',{class:'readouts'},
+    h('div',{class:'ro'},h('label',{class:'lbl',for:'cl-n'},'Clústeres que ocupa'),fN),
+    h('div',{class:'ro'},h('label',{class:'lbl',for:'cl-d'},'Tamaño en disco (bytes)'),fD),
+    h('div',{class:'ro'},h('label',{class:'lbl',for:'cl-w'},'Bytes desperdiciados'),fW)),
+    h('div',{class:'row'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:sol},'Ver solución'),h('button',{class:'btn alt',onclick:nuevo},'Otro archivo')),m,cajas);
+  let T;
+  const n=()=>Math.ceil(T/C);
+  function nuevo(){T=Math.random()<.2?C*(2+Math.floor(Math.random()*6)):1200+Math.floor(Math.random()*30000);
+    tgt.className='target';tgt.innerHTML=`Tamaño del archivo: <span class="mono">${T.toLocaleString('es-ES')} bytes</span>`;
+    [fN,fD,fW].forEach(f=>{f.value='';f.style.borderColor=''});cajas.replaceChildren();msg(m,'','Escribe las tres cifras y pulsa «Comprobar».')}
+  function pinta(){cajas.replaceChildren(...Array.from({length:n()},(_,i)=>{const lleno=Math.min(C,T-i*C);return h('div',{class:'k-caja'},h('i',{style:`width:${(lleno/C*100).toFixed(1)}%`}),h('span',{},`Clúster ${i+1}: ${lleno} de 4096`))}))}
+  function chk(){const ok=[+fN.value===n()&&fN.value!=='',+fD.value===n()*C&&fD.value!=='',+fW.value===n()*C-T&&fW.value!==''];
+    [fN,fD,fW].forEach((f,i)=>f.style.borderColor=ok[i]?'var(--good)':'var(--bad)');pinta();
+    if(ok.every(Boolean)){tgt.className='target ok';msg(m,'good',`✓ <b>Bien.</b> ${n()} clústeres × 4096 = ${n()*C} bytes en disco${n()*C===T?': no se desperdicia nada porque el tamaño es justo un múltiplo de 4096.':'.'}`)}
+    else msg(m,'bad',!ok[0]?'✗ Divide el tamaño entre 4096 y redondea <b>hacia arriba</b>: si sobra un solo byte, hace falta otro clúster entero.':!ok[1]?'✗ Tamaño en disco = clústeres × 4096.':'✗ Desperdicio = tamaño en disco − tamaño del archivo.')}
+  function sol(){fN.value=n();fD.value=n()*C;fW.value=n()*C-T;pinta();msg(m,'warn',`${T} ÷ 4096 = ${(T/C).toFixed(2).replace('.',',')} → <b>${n()} clústeres</b>. En disco: ${n()} × 4096 = <b>${n()*C} bytes</b>. Se desperdician ${n()*C} − ${T} = <b>${n()*C-T} bytes</b>.`)}
+  nuevo();
+}
+
+acts(document.getElementById('r-archivos'),[
+  {label:'Rutas',render:rutas},
+  {label:'Tamaño en disco',render:clusters},
+  {label:'¿Windows o Linux?',render:el=>sort(el,{intro:'¿Esto pasa en **Windows**, en **Linux** o en **los dos**?',
+    buckets:[{id:'w',name:'Windows'},{id:'l',name:'Linux'},{id:'a',name:'Los dos'}],
+    items:[{t:'Notas.txt y notas.txt son el mismo archivo',b:'w'},{t:'Notas.txt y notas.txt son dos archivos distintos',b:'l'},{t:'Cada unidad tiene su raíz: C:\\, D:\\…',b:'w'},{t:'Un solo árbol que empieza en /',b:'l'},
+      {t:'Un pendrive se monta en una carpeta, como /media/ana/PENDRIVE',b:'l'},{t:'Las carpetas de los usuarios están en /home',b:'l'},{t:'No se pueden usar : ? * " en los nombres',b:'w'},
+      {t:'.. es la carpeta padre',b:'a'},{t:'mkdir crea una carpeta',b:'a'},{t:'pwd te dice en qué carpeta estás',b:'l'},{t:'dir muestra el contenido de la carpeta',b:'w'},{t:'El separador de carpetas es la barra invertida \\',b:'w'}]})},
+  {label:'¿Qué tabla?',render:el=>sort(el,{intro:'Cada sistema de archivos apunta en su **tabla** dónde está cada archivo. ¿De cuál se habla?',
+    buckets:[{id:'f',name:'FAT',sub:'FAT32 y exFAT'},{id:'m',name:'MFT',sub:'NTFS'},{id:'i',name:'Inodos',sub:'ext4'}],
+    items:[{t:'File Allocation Table: tabla de asignación de archivos',b:'f'},{t:'Master File Table: tabla maestra de archivos',b:'m'},{t:'Una ficha por archivo con sus datos y dónde están sus bloques',b:'i'},
+      {t:'Guarda dentro los archivos muy pequeños: «Tamaño en disco: 0 bytes»',b:'m'},{t:'La tabla de los pendrives para la tele',b:'f'},{t:'La del disco de Linux',b:'i'},{t:'La del disco de Windows',b:'m'}]})},
+  {label:'Test',render:el=>quiz(el,{questions:[
+    {q:'¿Qué son los **metadatos** de un archivo?',o:['Datos sobre el archivo: tamaño, fechas, propietario, permisos…','El contenido del archivo','La carpeta en la que está'],a:0},
+    {q:'¿Qué indica la **extensión** de un archivo?',o:['Qué tipo de archivo es y con qué programa se abre','Su tamaño','Quién lo creó'],a:0},
+    {q:'Con las extensiones ocultas, ves un archivo llamado **factura.pdf**. En realidad se llama **factura.pdf.exe**. ¿Qué es?',o:['Un programa, posiblemente un virus','Un PDF','Una carpeta'],a:0,why:'La extensión es lo que va detrás del **último** punto: .exe.'},
+    {q:'¿Qué ruta es **absoluta**?',o:['C:\\Users\\Estudiante\\Documents\\notas.txt','Documents\\notas.txt','..\\notas.txt'],a:0,why:'Empieza en la raíz (C:\\).'},
+    {q:'¿Qué significa `..` en una ruta?',o:['La carpeta padre','La carpeta actual','La raíz'],a:0},
+    {q:'En el Explorador ves la carpeta **Documentos**. ¿Qué nombre usas en cmd?',o:['Documents','Documentos','Mis documentos'],a:0,why:'El Explorador traduce los nombres, pero en el disco se llaman **Users**, **Documents**, **Pictures**…'},
+    {q:'Con clústeres de 4 KB, ¿cuánto ocupa en disco un archivo de **5000 bytes**?',o:['8 KB (2 clústeres)','5000 bytes','4 KB'],a:0},
+    {q:'¿Qué es **formatear**?',o:['Crear en la partición un sistema de archivos vacío (borra lo que había)','Desfragmentar','Cambiar la extensión de un archivo'],a:0},
+    {q:'Borras un archivo. ¿Qué hace normalmente el sistema?',o:['Lo quita de la tabla y marca sus clústeres como libres','Escribe ceros encima de los datos','Nada'],a:0,why:'Por eso a veces se pueden **recuperar** archivos borrados.'},
+    {q:'¿Por qué un **SSD** no se desfragmenta?',o:['No tiene piezas que se muevan: Windows lo optimiza con TRIM','Porque no se llena nunca','Porque usa FAT32'],a:0},
+    {q:'¿Qué orden de cmd dibuja el árbol de carpetas con los archivos?',o:['tree /f','dir /a','cd ..'],a:0}]})}
+]);
+})();
+
+/* ================= S2 · ATRIBUTOS Y PERMISOS ================= */
+(function(){
+const {h,md,acts,sort,quiz,msg}=K;
+const de=l=>l[Math.floor(Math.random()*l.length)];
+const LET=['---','--x','-w-','-wx','r--','r-x','rw-','rwx'];
+const letras=o=>[...o].map(d=>LET[+d]).join('');
+const PERMS=['755','644','750','700','640','600','664','775','754','711','444','660'];
+const QUIEN=[['ana','la propietaria',0],['luis','del grupo alumnos',1],['marta','«otros»: ni propietaria ni del grupo',2]];
+const ACC={f:[['leer el contenido',4],['modificar el contenido',2],['ejecutarlo',1]],d:[['ver la lista de archivos (ls)',4],['crear o borrar archivos dentro',2],['entrar en ella (cd)',1]]};
+
+function rwx(root){
+  const modos=h('div',{class:'seg',role:'group','aria-label':'Modo'});
+  const caja=h('div');root.append(modos,caja);
+  const M=[['leer','Leer ls -l'],['num','De número a letras'],['chmod','¿Qué hace chmod?']];
+  M.forEach(([id,t],i)=>modos.append(h('button',{'aria-pressed':i===0?'true':'false',onclick:e=>{[...modos.children].forEach(b=>b.setAttribute('aria-pressed',b===e.currentTarget));ir(id)}},t)));
+  let tot=0,bien=0;
+  function ir(id){caja.replaceChildren();({leer,num,chmod})[id]()}
+  function marcador(){return h('div',{class:'k-score'},h('span',{html:`Aciertos: <b>${bien}/${tot}</b>`}))}
+  function leer(){
+    const o=de(PERMS),dir=Math.random()<.35,nom=dir?de(['apuntes','fotos','copias']):de(['script.sh','notas.txt','informe.odt','copia.sh']);
+    const pre=h('pre',{class:'k-term'},h('span',{class:'pr'},'ana@aula:~$ '),'ls -l\n',`${dir?'d':'-'}${letras(o)}  ${dir?2:1}  ana  alumnos  ${dir?4096:2048}  nov 24 10:00  ${nom}`);
+    const inp=h('input',{type:'number',id:'rw-o'});
+    const qs=[0,1,2].map(i=>{const [n,por,g]=QUIEN[i],[t,v]=de(ACC[dir?'d':'f']);return{n,por,g,t,v,puede:(+o[g]&v)>0,sel:null}});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Escribe el número y contesta las tres preguntas.');
+    const filas=qs.map(q=>{const seg=h('div',{class:'seg'});['Sí','No'].forEach(t=>seg.append(h('button',{'aria-pressed':'false',onclick:e=>{q.sel=t==='Sí';[...seg.children].forEach(b=>b.setAttribute('aria-pressed',b===e.currentTarget))}},t)));
+      return h('div',{class:'row',style:'margin:8px 0;justify-content:space-between'},h('span',{html:md(`¿Puede **${q.n}** (${q.por}) ${q.t}?`)}),seg)});
+    caja.append(h('p',{class:'lead',html:md(`Así sale ${dir?'una **carpeta**':'un **archivo**'} con \`ls -l\`. Recuerda: en ${dir?'una carpeta':'un archivo'} r, w y x no significan lo mismo que en ${dir?'un archivo':'una carpeta'}.`)}),pre,
+      h('div',{class:'row',style:'margin:14px 0'},h('label',{class:'lbl',for:'rw-o'},'Permisos en número (octal)'),inp),...filas,
+      h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:()=>ir('leer')},'Otro')),m,marcador());
+    function chk(){if(qs.some(q=>q.sel===null)||inp.value===''){msg(m,'warn','Te falta alguna respuesta.');return}
+      const okO=inp.value===o,okQ=qs.map(q=>q.sel===q.puede);tot++;if(okO&&okQ.every(Boolean))bien++;
+      inp.style.borderColor=okO?'var(--good)':'var(--bad)';
+      const exp=[0,3,6].map(i=>`${letras(o).slice(i,i+3)} = ${o[i/3]}`).join(' · ');
+      msg(m,okO&&okQ.every(Boolean)?'good':'bad',(okO&&okQ.every(Boolean)?'✓ <b>Todo bien.</b> ':'✗ ')+`r = 4, w = 2, x = 1: ${exp} → <b>${o}</b>.<br>`+qs.map((q,i)=>`${okQ[i]?'✓':'✗'} ${q.n} usa el ${['primer','segundo','tercer'][q.g]} trío (<span class="mono">${letras(o).slice(q.g*3,q.g*3+3)}</span>): ${q.puede?'sí':'no'} puede ${q.t}.`).join('<br>'));
+      caja.querySelector('.k-score').replaceWith(marcador())}
+    inp.focus({preventScroll:true});
+  }
+  function num(){
+    const o=de(PERMS);const inp=h('input',{class:'txt',id:'rw-l',maxlength:9,autocomplete:'off',spellcheck:'false',placeholder:'rwxr-x---'});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Escribe las nueve letras (con guiones donde no hay permiso).');
+    caja.append(h('p',{class:'lead',html:md(`¿Qué letras pone \`chmod ${o} archivo\`?`)}),h('div',{class:'target'},`chmod ${o}`),h('div',{class:'row',style:'margin:14px 0'},h('label',{class:'lbl',for:'rw-l'},'Permisos en letras'),inp),
+      h('div',{class:'row'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:()=>ir('num')},'Otro')),m,marcador());
+    function chk(){const v=inp.value.trim().toLowerCase().replace(/^-(?=.{9}$)/,'');const ok=v===letras(o);tot++;if(ok)bien++;inp.style.borderColor=ok?'var(--good)':'var(--bad)';
+      msg(m,ok?'good':'bad',(ok?'✓ <b>Bien.</b> ':'✗ ')+[...o].map(d=>`${d} = ${[4,2,1].filter(x=>d&x).join(' + ')||'0'} = <span class="mono">${LET[+d]}</span>`).join(' · '));caja.querySelector('.k-score').replaceWith(marcador())}
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk()});inp.focus({preventScroll:true});
+  }
+  function chmod(){
+    const o=de(PERMS);let p=letras(o).split('');
+    const ord=de([()=>{const n=de(PERMS.filter(x=>x!==o));return[`chmod ${n} informe.txt`,letras(n)]},
+      ()=>{const q=de(['u','g','o']),a=de(['r','w','x']),s=de(['+','-']);const r=p.slice();r['ugo'.indexOf(q)*3+'rwx'.indexOf(a)]=s==='+'?a:'-';return[`chmod ${q}${s}${a} informe.txt`,r.join('')]},
+      ()=>{const q=de(['g','o']),a=de(['r','rx','rw','']);const r=p.slice();const b='ugo'.indexOf(q)*3;['r','w','x'].forEach((l,i)=>r[b+i]=a.includes(l)?l:'-');return[`chmod ${q}=${a} informe.txt`,r.join('')]}])();
+    const inp=h('input',{class:'txt',id:'rw-c',maxlength:9,autocomplete:'off',spellcheck:'false'});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Escribe cómo quedan los nueve permisos.');
+    caja.append(h('p',{class:'lead',html:md('El archivo tiene estos permisos. ¿Cómo quedan después de la orden?')}),
+      h('pre',{class:'k-term'},h('span',{class:'pr'},'ana@aula:~$ '),'ls -l informe.txt\n',`-${p.join('')}  1  ana  alumnos  2048  nov 24 10:00  informe.txt\n`,h('span',{class:'pr'},'ana@aula:~$ '),ord[0]),
+      h('div',{class:'row',style:'margin:14px 0'},h('label',{class:'lbl',for:'rw-c'},'Permisos después'),inp),
+      h('div',{class:'row'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:()=>ir('chmod')},'Otra orden')),m,marcador(),
+      h('div',{class:'note',html:md('**u** propietario · **g** grupo · **o** otros. **+** añade, **−** quita, **=** deja exactamente esos. Con números, se ponen los nueve de golpe.')}));
+    function chk(){const v=inp.value.trim().toLowerCase().replace(/^-(?=.{9}$)/,'');const ok=v===ord[1];tot++;if(ok)bien++;inp.style.borderColor=ok?'var(--good)':'var(--bad)';
+      msg(m,ok?'good':'bad',(ok?'✓ <b>Bien.</b> ':'✗ ')+`Antes <span class="mono">${p.join('')}</span> → después <span class="mono">${ord[1]}</span>.`);caja.querySelector('.k-score').replaceWith(marcador())}
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk()});inp.focus({preventScroll:true});
+  }
+  ir('leer');
+}
+
+// NTFS: qué puede hacer de verdad un usuario (se suman los grupos y Denegar gana)
+const NT={'Control total':['leer','escribir','borrar','permisos'],'Modificar':['leer','escribir','borrar'],'Lectura y ejecución':['leer'],'Lectura':['leer'],'Escritura':['escribir']};
+const ACCN=[['leer','abrir y leer los archivos'],['escribir','crear archivos y cambiar su contenido'],['borrar','borrar archivos'],['permisos','cambiar los permisos']];
+function ntfs(root){
+  root.append(h('p',{class:'lead',html:md('Esta es la pestaña **Seguridad** de una carpeta del servidor de la empresa. Mira en qué grupos está el usuario y di qué puede hacer **de verdad**. Recuerda: los permisos de sus grupos **se suman** y **Denegar gana a Permitir**.')}));
+  const caja=h('div');root.append(caja);let tot=0,bien=0;
+  function nuevo(){caja.replaceChildren();
+    const nombre=de(['Ana','Luis','Marta','Pedro']);
+    const reglas=[{g:'Usuarios',t:'Permitir',p:de(['Lectura y ejecución','Lectura'])}];
+    const gr=de(['Ventas','Contabilidad']);
+    const caso=de(['suma','suma','deny','deny','total']);
+    if(caso==='suma')reglas.push({g:gr,t:'Permitir',p:de(['Modificar','Escritura'])});
+    if(caso==='deny'){reglas.push({g:gr,t:'Permitir',p:'Modificar'});reglas.push({g:'Becarios',t:'Denegar',p:'Escritura'})}
+    if(caso==='total')reglas.push({g:'Administradores',t:'Permitir',p:'Control total'});
+    const grupos=reglas.map(r=>r.g);
+    const puede=new Set();reglas.filter(r=>r.t==='Permitir').forEach(r=>NT[r.p].forEach(x=>puede.add(x)));
+    const deniega=new Set();reglas.filter(r=>r.t==='Denegar').forEach(r=>NT[r.p].forEach(x=>deniega.add(x)));
+    const preg=ACCN.filter(a=>!(deniega.size&&a[0]==='borrar'));
+    const tabla=h('table',{class:'k-tbl'},h('thead',{},h('tr',{},h('th',{},'Grupo o usuario'),h('th',{},'Tipo'),h('th',{},'Permiso'))),
+      h('tbody',{},...reglas.map(r=>h('tr',{class:r.t==='Denegar'?'hl':''},h('td',{},r.g),h('td',{},r.t),h('td',{},r.p)))));
+    const filas=preg.map(([id,t])=>{const s={id,t,sel:null,ok:puede.has(id)&&!deniega.has(id)};const seg=h('div',{class:'seg'});
+      ['Sí','No'].forEach(x=>seg.append(h('button',{'aria-pressed':'false',onclick:e=>{s.sel=x==='Sí';[...seg.children].forEach(b=>b.setAttribute('aria-pressed',b===e.currentTarget))}},x)));s.el=h('div',{class:'row',style:'margin:8px 0;justify-content:space-between'},h('span',{},`¿Puede ${t}?`),seg);return s});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Contesta y pulsa «Comprobar».');
+    caja.append(h('div',{class:'k-two'},h('div',{},h('div',{class:'k-tblwrap'},tabla)),h('div',{class:'note',style:'margin-top:0',html:md(`**${nombre}** está en los grupos: ${grupos.map(g=>'**'+g+'**').join(', ')}.`)})),
+      ...filas.map(f=>f.el),h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:chk},'Comprobar'),h('button',{class:'btn alt',onclick:nuevo},'Otro caso')),m,h('div',{class:'k-score',html:`<span>Casos bien: <b>${bien}/${tot}</b></span>`}));
+    function chk(){if(filas.some(f=>f.sel===null)){msg(m,'warn','Te falta alguna respuesta.');return}
+      const ok=filas.map(f=>f.sel===f.ok);tot++;if(ok.every(Boolean))bien++;
+      const exp=[`Sumando sus grupos tiene: ${[...puede].map(x=>ACCN.find(a=>a[0]===x)[1]).join(', ')}.`];
+      if(deniega.size)exp.push(`Pero en <b>Becarios</b> tiene <b>Denegar Escritura</b>, y Denegar gana: no puede crear ni cambiar archivos aunque ${gr} le dé Modificar.`);
+      if(!puede.has('permisos'))exp.push('Cambiar los permisos solo lo permite <b>Control total</b>.');
+      msg(m,ok.every(Boolean)?'good':'bad',(ok.every(Boolean)?'✓ <b>Todo bien.</b> ':'✗ ')+filas.map((f,i)=>`${ok[i]?'✓':'✗'} ${f.ok?'Sí':'No'} puede ${f.t}.`).join(' ')+'<br>'+exp.join(' '));
+      caja.querySelector('.k-score').innerHTML=`<span>Casos bien: <b>${bien}/${tot}</b></span>`}
+  }
+  nuevo();
+}
+
+acts(document.getElementById('r-permisos'),[
+  {label:'Permisos rwx',render:rwx},
+  {label:'Permisos NTFS',render:ntfs},
+  {label:'¿Atributo o permiso?',render:el=>sort(el,{intro:'Un **atributo** es igual para todo el mundo. Un **permiso** dice qué puede hacer **cada** usuario. ¿Qué es cada cosa?',
+    buckets:[{id:'a',name:'Atributo'},{id:'p',name:'Permiso'}],
+    items:[{t:'Que un archivo no salga en el Explorador',b:'a'},{t:'Que Ana pueda borrar un archivo y Pedro no',b:'p'},{t:'Que el programa de copias sepa que un archivo ha cambiado',b:'a'},{t:'Que el grupo alumnos pueda entrar en una carpeta',b:'p'},
+      {t:'Que nadie pueda guardar cambios en un archivo',b:'a'},{t:'Que solo el profesor pueda abrir la carpeta de exámenes',b:'p'},{t:'Lo que muestra icacls',b:'p'},{t:'Lo que cambia attrib',b:'a'},{t:'Lo que muestra la pestaña Seguridad',b:'p'},{t:'Que un archivo de Linux empiece por un punto',b:'a'}]})},
+  {label:'Atributos de Windows',render:el=>sort(el,{intro:'¿De qué **atributo** de Windows se habla?',
+    buckets:[{id:'r',name:'R',sub:'Solo lectura'},{id:'h',name:'H',sub:'Oculto'},{id:'s',name:'S',sub:'Sistema'},{id:'a',name:'A',sub:'Listo para archivar'}],
+    items:[{t:'Al guardar, el programa te pide otro nombre',b:'r'},{t:'attrib -r lo quita',b:'r'},{t:'No aparece con dir, pero sí con dir /a',b:'h'},{t:'Solo lo esconde: no lo protege',b:'h'},
+      {t:'Windows lo esconde aunque muestres los ocultos',b:'s'},{t:'Archivo importante del sistema operativo',b:'s'},{t:'Se activa solo cada vez que el archivo cambia',b:'a'},{t:'Lo usan los programas de copias de seguridad',b:'a'}]})},
+  {label:'Test',render:el=>quiz(el,{questions:[
+    {q:'¿Qué orden **oculta** el archivo notas.txt?',o:['attrib +h notas.txt','attrib -h notas.txt','dir /a:h notas.txt'],a:0},
+    {q:'¿Qué orden lista también los archivos **ocultos**?',o:['dir /a','dir','tree'],a:0},
+    {q:'En una línea de `icacls` ves `(I)`. ¿Qué significa?',o:['Permiso heredado de la carpeta padre','Permiso denegado','Control total'],a:0},
+    {q:'En `icacls`, ¿qué significa la letra **M**?',o:['Modificar','Mostrar el contenido','Máximo'],a:0},
+    {q:'¿Qué permiso NTFS deja **cambiar los permisos**?',o:['Control total','Modificar','Escritura'],a:0},
+    {q:'En la pestaña Seguridad, las casillas salen **grises**. ¿Por qué?',o:['Son permisos heredados: se cambian en la carpeta padre','Son permisos denegados','El disco es FAT32'],a:0},
+    {q:'¿Qué significa **755**?',o:['rwxr-xr-x','rw-r--r--','rwxrwxrwx'],a:0},
+    {q:'En una **carpeta** de Linux, ¿qué permite la **x**?',o:['Entrar en ella (cd)','Ejecutarla','Borrarla'],a:0},
+    {q:'¿Qué hace `chmod u+x script.sh`?',o:['Añade ejecución al propietario','Quita ejecución a todos','Da todos los permisos al usuario'],a:0},
+    {q:'¿Cómo se llama el administrador de Linux?',o:['root','Administrador','SYSTEM'],a:0},
+    {q:'¿Qué tiene NTFS que no tienen los permisos de Linux?',o:['Denegar y herencia','Lectura','Propietario'],a:0}]})}
+]);
+})();
+
+/* ================= S3 · TIPOS, JOURNALING Y TRANSACCIONES ================= */
+(function(){
+const {h,md,acts,sort,order,quiz,msg}=K;
+const slow=document.getElementById('slow');
+
+// Corte de luz mientras se guarda un archivo: FAT32 frente a NTFS
+function corte(root){
+  root.append(h('p',{class:'lead',html:md('Los dos discos guardan el mismo archivo, **notas.txt**. Pulsa **Guardar** y, cuando quieras, **Cortar la luz**. Mira qué le pasa a cada uno al volver a encender.')}));
+  const PASOS={fat:['Busca clústeres libres','Escribe los datos','Apunta los clústeres en la tabla','Actualiza el tamaño y la fecha'],
+    ntfs:['Anota la operación en el diario','Busca clústeres libres','Escribe los datos','Apunta los clústeres en la tabla','Actualiza el tamaño y la fecha','Marca la operación como completada']};
+  const col=(id,tit)=>{const ol=h('ol',{class:'k-mission'},...PASOS[id].map(t=>h('li',{},t)));const res=h('div',{class:'k-msg'},'Esperando.');return{id,ol,res,el:h('div',{},h('div',{class:'k-cap'},tit),ol,res)}};
+  const A=col('fat','Pendrive con FAT32 (sin diario)'),B=col('ntfs','Disco con NTFS (con journaling)');
+  const bG=h('button',{class:'btn',onclick:guardar},'Guardar notas.txt'),bC=h('button',{class:'btn alt',disabled:'',onclick:cortar},'⚡ Cortar la luz');
+  root.append(h('div',{class:'row',style:'margin-bottom:14px'},bG,bC),h('div',{class:'k-two'},A.el,B.el),h('div',{class:'note',html:md('El diario de NTFS protege la **estructura** (la tabla, las carpetas, los metadatos), **no siempre el contenido**: los últimos cambios del documento se pueden perder. Para eso están las copias de seguridad y el SAI.')}));
+  let t=0,tm=0,dur=()=>slow.checked?1600:800;
+  const total=Math.max(PASOS.fat.length,PASOS.ntfs.length);
+  function pinta(c,k,cortado){[...c.ol.children].forEach((li,i)=>li.className=i<k?'done':i===k&&!cortado?'cur':'')}
+  function guardar(){clearInterval(tm);t=0;bG.disabled=true;bC.disabled=false;[A,B].forEach(c=>msg(c.res,'','Guardando…'));
+    // NTFS hace 6 pasos y FAT32 4: los dos empiezan y acaban a la vez
+    const paso=()=>{t++;const f=Math.min(PASOS.fat.length,Math.floor(t*PASOS.fat.length/(total*2))),n=Math.min(PASOS.ntfs.length,Math.floor(t*PASOS.ntfs.length/(total*2)));pinta(A,f);pinta(B,n);
+      if(f>=PASOS.fat.length&&n>=PASOS.ntfs.length){clearInterval(tm);bG.disabled=false;bC.disabled=true;msg(A.res,'good','Guardado.');msg(B.res,'good','Guardado y marcado como completado en el diario.')}};
+    paso();tm=setInterval(paso,dur()/2)}
+  function cortar(){clearInterval(tm);bG.disabled=false;bC.disabled=true;
+    const f=[...A.ol.children].filter(li=>li.className==='done').length,n=[...B.ol.children].filter(li=>li.className==='done').length;
+    pinta(A,f,true);pinta(B,n,true);[...A.ol.children][f]&&([...A.ol.children][f].className='ko');[...B.ol.children][n]&&([...B.ol.children][n].className='ko');
+    msg(A.res,f===0?'warn':'bad',f===0?'<b>Al encender:</b> aún no había tocado nada: el disco está como antes, pero tampoco se ha guardado. Windows puede pedir <b>examinar y reparar</b> la unidad igualmente.':`<b>Al encender:</b> la tabla y los datos ya no cuadran (${f<3?'clústeres escritos que la tabla no apunta':'la tabla apunta a clústeres pero el tamaño y la fecha no se actualizaron'}). Hay que <b>revisar el disco entero</b> con chkdsk y algún archivo se puede perder.`);
+    msg(B.res,n<1?'warn':n>=PASOS.ntfs.length-1?'good':'good',n<1?'<b>Al encender:</b> la operación estaba a medio anotar en el diario: <b>se descarta</b>. El disco queda como antes, coherente, en segundos.':`<b>Al encender:</b> mira el diario, ve la operación anotada entera y <b>la termina</b>. El disco queda coherente en segundos, sin revisarlo entero.`)}
+}
+
+acts(document.getElementById('r-tipos'),[
+  {label:'Corte de luz',render:corte},
+  {label:'Elige el sistema',render:el=>sort(el,{intro:'¿Qué **sistema de archivos** elegirías en cada caso?',
+    buckets:[{id:'f',name:'FAT32'},{id:'e',name:'exFAT'},{id:'n',name:'NTFS'},{id:'x',name:'ext4'},{id:'r',name:'ReFS'},{id:'a',name:'APFS'}],
+    items:[{t:'Pendrive de 16 GB para poner fotos en la tele de casa',b:'f'},{t:'Pendrive con música para la radio del coche',b:'f'},{t:'Tarjeta SD de 128 GB para una cámara que graba vídeos largos',b:'e'},
+      {t:'Disco externo con películas de 8 GB para Windows y Mac',b:'e'},{t:'El disco donde va Windows 11',b:'n'},{t:'Disco externo solo para copias de un PC con Windows',b:'n'},
+      {t:'El disco de un servidor web con Linux',b:'x'},{t:'Servidor Windows Server con muchísimo almacenamiento',b:'r'},{t:'El SSD de un MacBook',b:'a'}]})},
+  {label:'¿Qué tiene cada uno?',render:el=>sort(el,{intro:'¿De qué sistema de archivos es cada característica?',
+    buckets:[{id:'f',name:'FAT32'},{id:'e',name:'exFAT'},{id:'n',name:'NTFS'},{id:'x',name:'ext4'},{id:'r',name:'ReFS'},{id:'a',name:'APFS'}],
+    items:[{t:'Archivos de 4 GB como máximo',b:'f'},{t:'Lo entiende casi cualquier aparato',b:'f'},{t:'Las SD de más de 32 GB vienen con él de fábrica',b:'e'},{t:'Creado en 2006 para pendrives y tarjetas',b:'e'},
+      {t:'Permisos con ACL, cuotas y puntos de restauración',b:'n'},{t:'macOS solo puede leerlo',b:'n'},{t:'Permisos rwx y archivos de hasta 16 TB',b:'x'},{t:'Windows y macOS no lo leen sin programas extra; es de Linux',b:'x'},
+      {t:'Suma de comprobación para detectar datos estropeados',b:'r'},{t:'Windows no puede arrancar desde él',b:'r'},{t:'Instantáneas que usa Time Machine',b:'a'},{t:'De Apple, desde 2017',b:'a'}]})},
+  {label:'Journaling',render:el=>order(el,{intro:'Ordena lo que hace un sistema de archivos **con journaling** al guardar un cambio.',top:'Primero',bottom:'Último',
+    items:[{t:'Anota en el diario la operación completa',d:'«Voy a crear notas.txt en los clústeres 120 y 121…»'},{t:'Hace los cambios en el disco',d:'Escribe los datos y actualiza la tabla y la carpeta'},{t:'Marca la operación del diario como completada',d:'Ya no hay nada pendiente'},{t:'Si se fue la luz: al arrancar mira solo el diario',d:'Termina lo anotado entero y descarta lo que estaba a medias'}],
+    done:'Como el camarero que apunta el pedido en la libreta antes de ir a la cocina.'})},
+  {label:'Test',render:el=>quiz(el,{questions:[
+    {q:'Copias una película de **5 GB** a un pendrive y Windows dice que el archivo es demasiado grande. ¿Qué sistema tiene el pendrive?',o:['FAT32','exFAT','NTFS'],a:0},
+    {q:'¿En qué sistema de archivos se puede **instalar Windows**?',o:['Solo NTFS','FAT32 o NTFS','Cualquiera'],a:0},
+    {q:'¿Qué es el **journaling**?',o:['Apuntar en un diario lo que se va a hacer antes de hacerlo','Copiar el disco cada noche','Comprimir los archivos'],a:0},
+    {q:'¿Qué protege el journaling de NTFS y ext4?',o:['La estructura del sistema de archivos, no siempre el contenido','El contenido de todos los archivos','Los permisos de los usuarios'],a:0},
+    {q:'¿Qué orden revisa el disco entero en Windows?',o:['chkdsk','attrib','icacls'],a:0},
+    {q:'¿Qué hacen **ReFS** y **APFS** en lugar de sobrescribir los datos?',o:['Copia al escribir: escriben la versión nueva en otro sitio y cambian el puntero','Nada: sobrescriben','Los borran'],a:0},
+    {q:'¿Qué es una **transacción**?',o:['Un grupo de operaciones que se hacen todas o ninguna','Una copia de seguridad','Un tipo de partición'],a:0},
+    {q:'Si una transacción falla a mitad, ¿qué se hace?',o:['Se deshace todo (rollback)','Se deja como está','Se confirma (commit)'],a:0},
+    {q:'¿Qué ejemplo es un **sistema transaccional**?',o:['La base de datos de un banco','Un pendrive FAT32','El Bloc de notas'],a:0},
+    {q:'¿Por qué hay que **expulsar** un pendrive antes de quitarlo?',o:['Porque FAT32 y exFAT no tienen journaling','Porque si no se borra','Porque lo pide la garantía'],a:0},
+    {q:'¿Dónde ves el sistema de archivos de la unidad C:?',o:['Clic derecho en Disco local (C:) → Propiedades → General','En el Administrador de tareas','Con attrib C:'],a:0}]})}
+]);
+})();
+</script>
+</body></html>

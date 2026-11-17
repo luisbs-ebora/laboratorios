@@ -16,7 +16,7 @@ const CLIENTES = [
   r => ({ texto: `Un disco de datos en un PC con Windows donde la carpeta de ${r.de(['nóminas', 'contabilidad', 'expedientes'])} solo la deben poder abrir dos personas.`, bien: 'NTFS', porque: 'Hacen falta permisos por usuario, y FAT32 y exFAT no los tienen. En Windows, eso es NTFS.' }),
   r => ({ texto: `El disco donde se va a instalar ${r.de(['Ubuntu', 'Linux Mint', 'Debian'])} en un portátil.`, bien: 'ext4', porque: 'ext4 es el sistema de archivos habitual de Linux: con permisos y con registro por diario.' }),
   r => ({ texto: `El SSD interno de un ${r.de(['MacBook', 'iMac'])} nuevo.`, bien: 'APFS', porque: 'APFS es el sistema de archivos de Apple, pensado para discos SSD.' }),
-  () => ({ texto: 'Los discos de un servidor con Windows Server que guarda muchísimos datos y máquinas virtuales, donde lo que más importa es que nada se corrompa.', bien: 'ReFS', porque: 'ReFS es el sistema de archivos de Microsoft para servidores: comprueba y repara los datos dañados.' }),
+  () => ({ texto: 'Los discos de un servidor con Windows Server que guarda muchísimos datos y máquinas virtuales, donde lo que más importa es que nada se corrompa.', bien: 'ReFS', porque: 'ReFS es el sistema de archivos de Microsoft para servidores: detecta los datos estropeados y, si hay copia en otro disco, los repara solo.' }),
 ];
 
 const PERMISOS = ['644', '640', '600', '664', '755', '750', '700', '775', '444', '660', '711', '754'];
@@ -26,14 +26,14 @@ const ACCIONES = [['leer', 4, 'r'], ['modificar', 2, 'w'], ['ejecutar', 1, 'x']]
 const QUIENES = [['ana', 0, 'es la propietaria'], ['luis', 1, 'no es el propietario, pero pertenece al grupo ventas'], ['marta', 2, 'no es la propietaria ni está en el grupo: es «otros»']];
 
 const RUTAS = [
-  ['C:\\Users\\ana\\Documentos\\nota.txt', 'absoluta'], ['Documentos\\nota.txt', 'relativa'], ['/home/ana/notas.txt', 'absoluta'], ['../fotos/playa.jpg', 'relativa'],
+  ['C:\\Users\\ana\\Documents\\nota.txt', 'absoluta'], ['Documents\\nota.txt', 'relativa'], ['/home/ana/notas.txt', 'absoluta'], ['../fotos/playa.jpg', 'relativa'],
   ['.\\trabajo.docx', 'relativa'], ['/etc/hosts', 'absoluta'], ['D:\\Copias\\enero.zip', 'absoluta'], ['musica/rock/tema1.mp3', 'relativa'],
 ];
 const ATRIBUTOS = [
   ['El archivo no se ve en el Explorador hasta que marcas «Elementos ocultos».', 'Oculto'],
   ['Puedes abrirlo, pero al guardar cambios encima te avisa de que no puede.', 'Solo lectura'],
-  ['Es un archivo que Windows necesita para funcionar y que protege para que no lo toques.', 'Sistema'],
-  ['Ha cambiado desde la última copia de seguridad y está marcado para entrar en la siguiente.', 'Archivo'],
+  ['Es un archivo importante de Windows: no aparece aunque marques «Elementos ocultos».', 'Sistema'],
+  ['Se ha activado solo porque el archivo ha cambiado: el programa de copias sabe que tiene que copiarlo.', 'Archivo'],
 ];
 const DIARIO = [['FAT32', 'no'], ['exFAT', 'no'], ['NTFS', 'si'], ['ext4', 'si']];
 
@@ -56,7 +56,7 @@ export function corregir(t, resp) {
     ...p.preguntas.map((q, i) => ({ id: 'puede' + i, ok: resp['puede' + i] === (q.puede ? 'si' : 'no'), correcta: q.puede ? 'Sí' : 'No', porque: `${q.quien} ${q.por}, así que le tocan los permisos «${q.trio}»: ${q.puede ? 'tiene' : 'no tiene'} la ${q.letra}.` })),
     { id: 'inverso', ok: limpio(resp.inverso).toLowerCase() === simbolico(p.inverso), correcta: simbolico(p.inverso), porque: `Cada cifra es un grupo de tres letras: ${[...p.inverso].map(d => d + ' = ' + simbolico(d)).join(', ')}.` },
     { id: 'ruta', ok: resp.ruta === t.ruta[1], correcta: t.ruta[1] === 'absoluta' ? 'Absoluta' : 'Relativa', porque: t.ruta[1] === 'absoluta' ? 'Empieza en la raíz (una letra de unidad como C:\\ en Windows, o / en Linux): vale estés donde estés.' : 'No empieza en la raíz: se cuenta desde la carpeta en la que estás.' },
-    { id: 'atributo', ok: resp.atributo === t.atributo[1], correcta: t.atributo[1], porque: 'Solo lectura: no deja guardar cambios. Oculto: no se muestra. Sistema: lo usa el propio Windows. Archivo: pendiente de copia de seguridad.' },
+    { id: 'atributo', ok: resp.atributo === t.atributo[1], correcta: t.atributo[1], porque: 'Solo lectura: no deja guardar cambios. Oculto: no se muestra (pero no lo protege). Sistema: archivo importante de Windows, oculto aunque muestres los ocultos. Archivo: se activa solo cuando el archivo cambia y lo usan las copias de seguridad.' },
     { id: 'diario', ok: resp.diario === t.diario[1], correcta: t.diario[1] === 'si' ? 'Sí' : 'No', porque: t.diario[1] === 'si' ? `${t.diario[0]} apunta en un diario lo que va a hacer antes de hacerlo; si se va la luz a medias, al arrancar lo repasa y deja el disco coherente.` : `${t.diario[0]} no lleva diario: si se va la luz mientras escribe, es más fácil que el sistema de archivos quede dañado.` },
   ];
   return { lista, aciertos: lista.filter(x => x.ok).length, total: lista.length };

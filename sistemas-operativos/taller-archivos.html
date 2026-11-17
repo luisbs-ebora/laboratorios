@@ -72,7 +72,7 @@ function pintar() {
   <section class="bloque"><h2>3 · Rutas, atributos y diario</h2>
     <div class="campos">
       ${campo('ruta', `La ruta <code>${esc(tanda.ruta[0])}</code> es…`, lista('ruta', [['absoluta', 'Absoluta'], ['relativa', 'Relativa']]))}
-      ${campo('atributo', esc(tanda.atributo[0]) + ' ¿Qué atributo tiene?', lista('atributo', ['Solo lectura', 'Oculto', 'Sistema', 'Archivo'].map(x => [x, x])))}
+      ${campo('atributo', esc(tanda.atributo[0]) + ' ¿Qué atributo tiene?', lista('atributo', [['Solo lectura', 'Solo lectura (R)'], ['Oculto', 'Oculto (H)'], ['Sistema', 'Sistema (S)'], ['Archivo', 'Listo para archivar (A)']]))}
       ${campo('diario', `¿Lleva <strong>${tanda.diario[0]}</strong> registro por diario (journaling)?`, siNo('diario'))}
     </div></section>`;
 }
