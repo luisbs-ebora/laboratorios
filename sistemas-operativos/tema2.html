@@ -460,7 +460,7 @@ acts(document.getElementById('r-cpu'),[
 (function(){
 const {h,acts,sort,order,quiz,msg}=K;
 function trad(root){
-  root.append(h('p',{class:'lead',html:'Las páginas son de <b>100 bytes</b> (en la realidad, 4096; con 100 es más fácil de calcular). Traduce la dirección del proceso a la dirección real en la RAM. Si la página está en el disco, marca <b>Fallo de página</b>.'}));
+  root.append(h('p',{class:'lead',html:'<b>Ampliación (opcional).</b> Las páginas son de <b>100 bytes</b> (en la realidad, 4096; con 100 es más fácil de calcular). Traduce la dirección del proceso a la dirección real en la RAM. Si la página está en el disco, marca <b>Fallo de página</b>.'}));
   const tb=h('div'),q=h('div',{class:'k-q'});root.append(h('div',{class:'k-two'},tb,q));
   const fl=h('input',{type:'checkbox',id:'so-fallo'});
   const mk=lab=>h('input',{type:'number',min:0,'aria-label':lab,style:'font:600 18px var(--f-mono);width:6em;padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)'});
@@ -480,7 +480,6 @@ function trad(root){
   nuevo();
 }
 acts(document.getElementById('r-memoria'),[
-  {label:'Traduce direcciones',render:trad},
   {label:'Jerarquía',render:el=>order(el,{intro:'Ordena las memorias de la **más rápida** a la **más lenta**.',top:'Más rápida, cara y pequeña',bottom:'Más lenta, barata y grande',
     items:[{t:'Registros',d:'Dentro del procesador: en la mano'},{t:'Caché L1',d:'Dentro de cada núcleo'},{t:'Caché L3',d:'Compartida entre núcleos: encima de la mesa'},{t:'RAM',d:'Memoria principal: la estantería'},{t:'SSD',d:'Almacenamiento: el trastero'},{t:'Disco duro (HDD)',d:'Mecánico: el trastero del sótano'}],done:'Cuanto más cerca del procesador, más rápida.'})},
   {label:'¿Paginación o segmentación?',render:el=>sort(el,{intro:'¿Esta frase es de **paginación** o de **segmentación**?',
@@ -495,9 +494,10 @@ acts(document.getElementById('r-memoria'),[
     {q:'¿Qué es la **hiperpaginación**?',o:['El sistema pasa casi todo el tiempo moviendo datos entre RAM y disco','Muchas pestañas en el navegador','Un tipo de caché'],a:0},
     {q:'En paginación, la RAM se divide en…',o:['Marcos','Páginas','Segmentos'],a:0},
     {q:'¿Qué guarda la **tabla de páginas**?',o:['Qué marco ocupa cada página','Los procesos abiertos','Las contraseñas'],a:0},
-    {q:'Páginas de 100 bytes, página 1 en el marco 4. ¿Dirección real de la 130?',o:['430','130','34'],a:0},
+    {q:'¿Cuándo se produce un **fallo de página**?',o:['El proceso necesita una página que está en el disco','El dato no está en la caché','El disco está lleno'],a:0},
     {q:'¿En qué estado queda un proceso durante un **fallo de página**?',o:['Bloqueado','Listo','Terminado'],a:0},
-    {q:'¿Qué protege el sistema operativo?',o:['Que un proceso no toque la memoria de otro','Que no se apague la pantalla','Que no se llene el disco'],a:0}]})}
+    {q:'¿Qué protege el sistema operativo?',o:['Que un proceso no toque la memoria de otro','Que no se apague la pantalla','Que no se llene el disco'],a:0}]})},
+  {label:'Ampliación: traduce direcciones',render:trad}
 ]);
 })();
 
