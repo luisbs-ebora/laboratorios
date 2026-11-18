@@ -1,0 +1,716 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratorio de Montaje · Tema 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --ink:#0E1B32; --muted:#55697C; --line:#C9D5DF;
+  --accent:#00B8CF; --accent-ink:#17627C; --chip:#DFF5F9; --warn:#C9741F; --warn-bg:#FCE6CC;
+  --bad:#C2412D; --bad-bg:#FBE1DC; --good:#1F8A5B; --good-bg:#DDF2E7;
+  --lamp:#FFC93C; --lamp-glow:rgba(255,201,60,.55); --lamp-off:#DCE3EA;
+  --l-app:#FBE3C4; --l-tcp:#CFEAF7; --l-ip:#D9EBD0; --l-eth:#E6DCF4;
+  --f-head:'Poppins',system-ui,sans-serif; --f-body:'Open Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1628; --surface:#12223A; --ink:#E6EEF6; --muted:#93A7BC; --line:#2A4362;
+  --accent:#2BD3EA; --accent-ink:#6FE3F2; --chip:#143553; --warn:#F0A961; --warn-bg:#4A3218;
+  --bad:#F37563; --bad-bg:#4A1E1A; --good:#43C88D; --good-bg:#163B2B;
+  --lamp:#FFD25A; --lamp-glow:rgba(255,210,90,.45); --lamp-off:#24384F;
+  --l-app:#5A3E1E; --l-tcp:#18405C; --l-ip:#27482D; --l-eth:#3B3059; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.5 var(--f-body)}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-top:6px solid var(--accent);padding-top:18px}
+.eyebrow{font:600 13px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font:700 clamp(28px,4vw,40px)/1.1 var(--f-head);margin:6px 0 0;text-wrap:balance}
+.speed{display:flex;align-items:center;gap:10px;font:600 15px var(--f-body);color:var(--muted)}
+nav.tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:20px 0 22px}
+.tab{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:12px 14px;background:var(--surface);border:2px solid var(--line);border-radius:10px;min-width:0}
+.tab b{font:600 17px/1.25 var(--f-head)}
+.tab span{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em}
+.tab[aria-selected="true"]{border-color:var(--accent);background:var(--chip)}
+.tab:focus-visible,.btn:focus-visible,.seg button:focus-visible,.bulb:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px clamp(16px,3vw,30px) 26px}
+.panel h2{font:700 clamp(24px,3vw,30px)/1.2 var(--f-head);margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:6px 0 18px;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{all:unset;cursor:pointer;font:600 17px var(--f-head);padding:12px 20px;border-radius:10px;background:var(--ink);color:var(--surface);text-align:center}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn[disabled]{opacity:.4;cursor:default}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:10px 18px;font:600 16px var(--f-head)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+input[type=number],select{font:600 20px var(--f-mono);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:7.5em}
+select{width:auto}
+label.lbl{font:600 15px var(--f-body);color:var(--muted)}
+.note{background:var(--chip);border-radius:10px;padding:14px 18px;margin-top:18px;max-width:80ch}
+.note b{font-family:var(--f-head)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.svgbox{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.svgbox svg{display:block;width:100%;min-width:560px;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+.mono{font-family:var(--f-mono)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.log li{padding:10px 12px;border-left:4px solid var(--accent);background:var(--bg);border-radius:6px;font-size:16px}
+.log li.bad{border-color:var(--bad);background:var(--bad-bg)}
+.log li.good{border-color:var(--good);background:var(--good-bg)}
+.log li.warn{border-color:var(--warn);background:var(--warn-bg)}
+.side h3{font:600 15px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--accent-ink);margin:0 0 10px}
+
+/* ===== Kit de actividades (clasificar, ordenar, test) ===== */
+.k-acts{margin:0 0 18px}
+.k-stage{min-height:120px}
+.k-msg{border-radius:12px;padding:12px 16px;background:var(--bg);border:2px solid var(--line);font-size:17px;margin:12px 0;min-height:52px}
+.k-msg.good{background:var(--good-bg);border-color:var(--good)}
+.k-msg.bad{background:var(--bad-bg);border-color:var(--bad)}
+.k-msg.warn{background:var(--warn-bg);border-color:var(--warn)}
+.k-msg b{font-family:var(--f-head)}
+.k-score{font:600 15px var(--f-mono);color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.k-score b{color:var(--ink)}
+.k-pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:2px dashed var(--line);border-radius:12px;min-height:64px;background:var(--bg);margin:10px 0 14px}
+.k-pool:empty::after{content:'¡Todas colocadas!';font:600 16px var(--f-head);color:var(--good);padding:8px}
+.k-chip{all:unset;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;padding:9px 13px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font:600 16px/1.3 var(--f-body);max-width:100%;overflow-wrap:anywhere}
+.k-chip.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-chip.ok{background:var(--good-bg);border-color:var(--good);cursor:default}
+.k-chip.shake{animation:kshake .35s}
+.k-chip:focus-visible,.k-bucket:focus-visible,.k-opt:focus-visible,.k-oi:focus-visible,.k-tok:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.k-ghost{position:fixed;z-index:50;pointer-events:none;opacity:.92;transform:translate(-50%,-50%) scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.k-buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.k-bucket{border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);min-height:120px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0}
+.k-bucket.over{border-color:var(--accent);background:var(--chip)}
+.k-bucket.armed{border-style:dashed;border-color:var(--accent)}
+.k-bucket h4{margin:0 0 4px;font:700 17px/1.2 var(--f-head)}
+.k-bucket h4 small{display:block;font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.03em;margin-top:2px}
+.k-bucket .k-chip{font-size:14px;padding:6px 9px}
+@keyframes kshake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.k-olist{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:860px}
+.k-oi{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.k-oi .n{font:700 18px var(--f-mono);color:var(--muted);min-width:1.6em;text-align:center}
+.k-oi .t{font:600 17px/1.35 var(--f-body)}
+.k-oi .t small{display:block;font-weight:400;color:var(--muted);font-size:14px}
+.k-oi .mv{display:flex;gap:4px}
+.k-oi .mv button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:8px;border:2px solid var(--line);text-align:center;font:700 18px/34px var(--f-mono);background:var(--bg)}
+.k-oi.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.k-oi.ok{border-color:var(--good);background:var(--good-bg)}
+.k-oi.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-olabel{font:600 13px var(--f-mono);color:var(--accent-ink);text-transform:uppercase;letter-spacing:.06em}
+.k-q{max-width:900px}
+.k-q .qn{font:600 14px var(--f-mono);color:var(--muted)}
+.k-q .qt{font:700 clamp(20px,2.4vw,24px)/1.3 var(--f-head);margin:6px 0 14px;text-wrap:pretty}
+.k-q .qfig{margin:0 0 14px}
+.k-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.k-opt{all:unset;cursor:pointer;padding:14px 16px;border:2px solid var(--line);border-radius:10px;background:var(--surface);font:600 17px/1.35 var(--f-body)}
+.k-opt:hover{border-color:var(--accent)}
+.k-opt.ok{border-color:var(--good);background:var(--good-bg)}
+.k-opt.ko{border-color:var(--bad);background:var(--bad-bg)}
+.k-opt[disabled]{cursor:default}
+.k-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:6px 0 12px;max-width:900px}
+.k-bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.k-end{font:700 24px var(--f-head);margin:8px 0}
+.k-two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+.k-two.wide{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr)}
+@media (max-width:900px){.k-two,.k-two.wide{grid-template-columns:minmax(0,1fr)}}
+.k-two>*{min-width:0}
+.k-tok{all:unset;cursor:pointer;font:700 clamp(18px,2.4vw,26px) var(--f-mono);padding:8px 12px;border-radius:8px;border:2px solid var(--line);background:var(--surface)}
+.k-tok.seen{background:var(--chip);border-color:var(--accent)}
+.k-tok.sel{box-shadow:0 0 0 3px var(--accent)}
+.k-toks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.k-tbl{border-collapse:collapse;font-size:16px;width:100%}
+.k-tbl th,.k-tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+.k-tbl th{background:var(--bg);font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.k-tbl tr.hl td{background:var(--warn-bg)}
+.k-tbl tr.new td{background:var(--good-bg);animation:pop .4s}
+.k-tbl td.fk,.k-tbl td.pk{font-family:var(--f-mono);font-weight:700}
+.k-tbl td.fk button{all:unset;cursor:pointer;color:var(--accent-ink);text-decoration:underline;text-underline-offset:3px}
+.k-tbl td.chg{background:var(--good-bg);font-weight:700}
+.k-tblwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.k-cap{font:700 16px var(--f-head);margin:14px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.k-cap small{font:600 12px var(--f-mono);color:var(--muted)}
+.k-mission{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.k-mission li{padding:10px 12px;border-radius:8px;background:var(--bg);border-left:4px solid var(--line);font-size:16px}
+.k-mission li.cur{border-color:var(--accent);background:var(--chip)}
+.k-mission li.done{border-color:var(--good);background:var(--good-bg)}
+.k-mission li.done::before{content:'✓ ';font-weight:700;color:var(--good)}
+.k-term{background:#0C1220;color:#D8E1EA;border-radius:12px;padding:14px 16px;font:500 15px/1.5 var(--f-mono);min-height:340px;max-height:460px;overflow:auto;border:2px solid var(--line)}
+.k-term .pr{color:#7FE3A0}
+.k-term .ps{color:#7CC4FF}
+.k-term .er{color:#FF9C8C}
+.k-term .wn{color:#FFD27A}
+.k-term pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+.k-term .in{display:flex;gap:8px;align-items:center}
+.k-term input{all:unset;flex:1;min-width:0;color:#fff;caret-color:#7FE3A0}
+.k-chips2{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.k-chips2 button{all:unset;cursor:pointer;font:600 14px var(--f-mono);padding:6px 10px;border-radius:8px;border:2px solid var(--line);background:var(--bg)}
+.k-chips2 button:focus-visible{outline:3px solid var(--accent)}
+.k-dm{border:2px solid var(--line);border-radius:10px;background:var(--surface);font:400 15px var(--f-body);overflow:hidden}
+.k-dm .tb{background:var(--bg);padding:6px 10px;border-bottom:1px solid var(--line);font:600 14px var(--f-body)}
+.k-dm ul{list-style:none;margin:0;padding:4px 0 8px}
+.k-dm li{margin:0}
+.k-dm .cat,.k-dm .dev{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;padding:5px 10px;width:100%;box-sizing:border-box}
+.k-dm .dev{padding-left:34px}
+.k-dm .cat:hover,.k-dm .dev:hover{background:var(--chip)}
+.k-dm .dev.sel{background:var(--chip);outline:2px solid var(--accent);outline-offset:-2px}
+.k-dm .ic{width:18px;height:18px;flex:none}
+.k-dm .car{width:14px;font:700 13px var(--f-mono);color:var(--muted)}
+.k-props{border:2px solid var(--line);border-radius:10px;background:var(--surface)}
+.k-props .ptabs{display:flex;border-bottom:2px solid var(--line)}
+.k-props .ptabs button{all:unset;cursor:pointer;padding:8px 14px;font:600 15px var(--f-body)}
+.k-props .ptabs button[aria-pressed="true"]{background:var(--chip);box-shadow:inset 0 -3px 0 var(--accent)}
+.k-props .pbody{padding:14px 16px;font-size:16px;min-height:170px}
+.k-props .pbody .mono{background:var(--bg);padding:8px 10px;border-radius:6px;display:block;overflow-wrap:anywhere;margin-top:6px}
+.k-svgfig{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.k-svgfig svg{display:block;width:100%;height:auto}
+.seg.k-acts,.k-stage .seg{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%}
+.k-q .qt b{color:var(--accent-ink)}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:20px 0;max-width:900px}
+.ro{background:var(--bg);border-radius:10px;padding:10px 14px;min-width:0}
+.ro small{display:block;font:600 13px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ro div{font:700 26px var(--f-mono);overflow-wrap:anywhere}
+.ro.big div{font-size:44px;line-height:1.1}
+.sum{font:600 20px var(--f-mono);margin:4px 0 0;color:var(--accent-ink);overflow-wrap:anywhere}
+.target{font:700 20px var(--f-head);padding:8px 14px;border-radius:8px;background:var(--warn-bg)}
+.target.ok{background:var(--good-bg);color:var(--good)}
+svg g[role=button]:focus{outline:none}svg g[role=button]:focus-visible .slot{stroke:var(--accent);stroke-width:5}
+.lbl{font:600 15px var(--f-body);color:var(--muted)}
+select{font:600 17px var(--f-body);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+
+.hdr-note{font:600 14px var(--f-body);color:var(--muted)}
+
+/* ===== Tema 3 ===== */
+.board text{font-family:var(--f-mono);font-weight:600;font-size:15px;fill:#F3F7FA;pointer-events:none}
+.board .pcb{fill:#1E5A45;stroke:#0F3A2C;stroke-width:3}
+.board .z{fill:#2D2F33;stroke:#C9D5DF;stroke-width:1.5;cursor:pointer;transition:fill .2s}
+.board .z:hover{fill:#3E5168}
+.board .z.ok{fill:#1F8A5B}
+.board .z.ko{fill:#C2412D}
+.board .z.hint{fill:#C9741F}
+.pins{display:inline-grid;grid-template-columns:repeat(5,64px);gap:10px 14px;padding:16px 18px;border-radius:12px;background:#1E5A45;margin:8px 0}
+.pin{all:unset;cursor:pointer;width:64px;height:64px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#173F31;border:2px solid #0F3A2C;color:#F3F7FA;font:600 11px/1.1 var(--f-mono);text-align:center}
+.pin i{display:block;width:16px;height:16px;border-radius:50%;background:#E8C66A;box-shadow:0 0 0 3px #8A6E25}
+.pin.key{cursor:default;background:transparent;border-style:dashed;border-color:#5C8A78}
+.pin.key i{display:none}
+.pin.nc i{background:#9AA7B2;box-shadow:0 0 0 3px #5E6A74}
+.pin.full{background:#2A4362;border-color:var(--accent)}
+.pin.ok{background:#1F8A5B;border-color:#1F8A5B}
+.pin.ko{background:#C2412D;border-color:#C2412D}
+.pin:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.pinlbl{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.04em}
+.lamps{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.lamp{display:flex;align-items:center;gap:8px;font:700 15px var(--f-mono)}
+.lamp i{width:22px;height:22px;border-radius:50%;background:var(--lamp-off);border:2px solid var(--line)}
+.lamp.on i{background:var(--lamp);box-shadow:0 0 12px 4px var(--lamp-glow)}
+.lamp.red.on i{background:#E5484D;box-shadow:0 0 12px 4px rgba(229,72,77,.5)}
+.uefi{background:#0D1B2E;color:#D8E6F2;border-radius:12px;padding:16px 18px;font:500 15px/1.5 var(--f-mono);border:2px solid #2A4362;max-width:860px}
+.uefi h3{margin:0 0 10px;font:700 17px var(--f-mono);color:#7FEAF7}
+.uefi .ur{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #1E3350}
+.uefi select,.uefi input{font:600 15px var(--f-mono);background:#13263F;color:#fff;border:2px solid #2A4362;border-radius:6px;padding:6px 8px;width:100%}
+.uefi .ur.ok{background:rgba(31,138,91,.25)}
+.uefi .ur.ko{background:rgba(194,65,45,.3)}
+.uefi .foot{margin-top:10px;color:#93A7BC;font-size:13px}
+.tray{display:grid;grid-template-columns:repeat(3,92px);gap:26px 70px;padding:34px 46px;border-radius:12px;background:#4B5563;width:fit-content;position:relative}
+.tray .mb{position:absolute;inset:14px;border:3px dashed #7FE3A0;border-radius:8px;pointer-events:none}
+.hole{all:unset;cursor:pointer;width:92px;height:64px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 12px var(--f-mono);color:#fff;background:rgba(255,255,255,.08);border:2px solid transparent;position:relative;z-index:1}
+.hole .so{width:26px;height:26px;border-radius:50%;background:#C9A227;border:4px solid #8A6E25;visibility:hidden}
+.hole.on .so{visibility:visible}
+.hole.ok{border-color:#43C88D}
+.hole.ko{border-color:#F37563;background:rgba(243,117,99,.25)}
+.hole:focus-visible{outline:3px solid var(--accent)}
+.inf textarea,.inf input{font:400 16px var(--f-body);padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+.inf textarea{min-height:64px;resize:vertical}
+.inf .f{display:flex;flex-direction:column;gap:4px;margin:0 0 10px}
+.inf .f label{font:600 14px var(--f-body);color:var(--muted)}
+.inf .f.miss textarea,.inf .f.miss input{border-color:var(--bad);background:var(--bad-bg)}
+.doc{background:#fff;color:#111;border:1px solid var(--line);border-radius:10px;padding:18px 22px;font:400 15px/1.45 var(--f-body)}
+.doc h3{font:700 18px var(--f-head);margin:0 0 8px}
+.doc table{border-collapse:collapse;width:100%;margin:6px 0 10px}
+.doc td,.doc th{border:1px solid #bbb;padding:5px 8px;text-align:left;vertical-align:top;font-size:14px}
+.doc th{background:#eef3f7;width:32%}
+@media (max-width:520px){.pins{grid-template-columns:repeat(5,52px);gap:8px;padding:10px}.pin{width:52px;height:56px;font-size:10px}.tray{grid-template-columns:repeat(3,72px);gap:18px 22px;padding:26px 18px}.hole{width:72px}}
+@media print{body *{visibility:hidden}.doc,.doc *{visibility:visible}.doc{position:absolute;left:0;top:0;border:0}}
+</style></head><body>
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Tema 3 · Montaje y mantenimiento de equipos · SMR</div>
+    <h1>Laboratorio de Montaje · Tema 3</h1>
+  </div>
+</header>
+<nav class="tabs" role="tablist" aria-label="Sesiones">
+  <button class="tab" role="tab" data-t="prep"><b>Preparar el montaje</b><span>Sesión 1 · Herramientas, manual y orden</span></button>
+  <button class="tab" role="tab" data-t="montar"><b>Montar las piezas</b><span>Sesión 2 · CPU, disipador, RAM, M.2, fuente y placa</span></button>
+  <button class="tab" role="tab" data-t="conectar"><b>Conectar y configurar</b><span>Sesión 3 · Cables, panel frontal, UEFI y arranque</span></button>
+  <button class="tab" role="tab" data-t="comprobar"><b>Comprobar y documentar</b><span>Sesión 4 · POST, diagnóstico e informe</span></button>
+</nav>
+<section class="panel" id="p-prep" role="tabpanel" hidden>
+  <h2>Preparar el montaje</h2>
+  <div id="r-prep"></div>
+</section>
+<section class="panel" id="p-montar" role="tabpanel" hidden>
+  <h2>Montar las piezas</h2>
+  <div id="r-montar"></div>
+</section>
+<section class="panel" id="p-conectar" role="tabpanel" hidden>
+  <h2>Conectar y configurar</h2>
+  <div id="r-conectar"></div>
+</section>
+<section class="panel" id="p-comprobar" role="tabpanel" hidden>
+  <h2>Comprobar y documentar</h2>
+  <div id="r-comprobar"></div>
+</section>
+</div>
+
+<script>
+
+/* ===== Kit de actividades ===== */
+const K=(function(){
+  const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){if(k==='class')e.className=attrs[k];else if(k==='html')e.innerHTML=attrs[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k])}kids.flat().forEach(c=>{if(c==null)return;e.append(c.nodeType?c:document.createTextNode(c))});return e};
+  const md=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<span class="mono">$1</span>');
+  const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  function msg(el,cls,html){el.className='k-msg'+(cls?' '+cls:'');el.innerHTML=html}
+
+  // Selector de actividades dentro de una pestaña
+  function acts(root,list){
+    const seg=h('div',{class:'seg k-acts',role:'group','aria-label':'Actividad'});
+    const stage=h('div',{class:'k-stage'});
+    root.append(seg,stage);
+    const views=list.map(()=>null);
+    const btns=list.map((a,i)=>{const b=h('button',{'aria-pressed':i===0?'true':'false',onclick:()=>go(i)},a.label);seg.append(b);return b});
+    function go(i){btns.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));views.forEach(v=>v&&(v.hidden=true));
+      if(!views[i]){views[i]=h('div');stage.append(views[i]);list[i].render(views[i])}views[i].hidden=false}
+    go(0);
+  }
+
+  // Clasificar: tocar ficha + tocar caja, o arrastrar
+  function sort(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const score=h('div',{class:'k-score'});
+    const pool=h('div',{class:'k-pool','aria-label':'Fichas sin colocar'});
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    const grid=h('div',{class:'k-buckets'});
+    const bk={};
+    cfg.buckets.forEach(b=>{const el=h('div',{class:'k-bucket',tabindex:0,role:'button','aria-label':'Caja '+b.name,'data-b':b.id},h('h4',{html:md(b.name)+(b.sub?'<small>'+md(b.sub)+'</small>':'')}));
+      el.addEventListener('click',()=>{if(sel)drop(sel,b.id)});
+      el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel){e.preventDefault();drop(sel,b.id)}});
+      bk[b.id]=el;grid.append(el)});
+    const row=h('div',{class:'row',style:'margin-top:14px'},
+      h('button',{class:'btn alt',onclick:reset},'Empezar de nuevo'),
+      h('button',{class:'btn alt',onclick:solve},'Ver solución'));
+    root.append(score,pool,m,grid,row);
+    let sel=null,ok=0,ko=0,chips=[];
+    const bname=id=>cfg.buckets.find(b=>b.id===id).name.replace(/\*\*/g,'');
+    function upd(){score.innerHTML=`<span>Colocadas: <b>${ok}/${cfg.items.length}</b></span><span>Fallos: <b>${ko}</b></span>`;
+      Object.values(bk).forEach(b=>b.classList.toggle('armed',!!sel))}
+    function pick(c){if(c.classList.contains('ok'))return;if(sel===c){c.classList.remove('sel');sel=null}else{sel&&sel.classList.remove('sel');sel=c;c.classList.add('sel');
+      msg(m,'','<b>'+md(c._it.t)+'</b>. Ahora toca la caja donde va (o arrástrala).')}upd()}
+    function drop(c,b){const it=c._it;c.classList.remove('sel');sel=null;
+      if(it.b===b||(Array.isArray(it.b)&&it.b.includes(b))){c.classList.add('ok');c.setAttribute('tabindex','-1');bk[b].append(c);ok++;
+        msg(m,'good','✓ <b>'+md(it.t)+'</b> → '+md(bname(b))+(it.why?'. '+md(it.why):''));
+        if(ok===cfg.items.length)msg(m,'good','<b>¡Completado!</b> '+ok+' fichas con '+ko+' fallo'+(ko===1?'':'s')+'. '+(it.why?md(it.why):''))}
+      else{ko++;c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);
+        msg(m,'bad','✗ <b>'+md(it.t)+'</b> no va en «'+md(bname(b))+'». '+(it.hint?md(it.hint):'Piénsalo otra vez.'))}
+      upd()}
+    function build(){pool.innerHTML='';Object.values(bk).forEach(b=>[...b.querySelectorAll('.k-chip')].forEach(c=>c.remove()));
+      chips=shuffle(cfg.items).map(it=>{const c=h('button',{class:'k-chip',type:'button',html:md(it.t)});c._it=it;
+        c.addEventListener('pointerdown',e=>startDrag(e,c));
+        c.addEventListener('click',e=>{if(c._dragged){c._dragged=false;return}pick(c)});
+        pool.append(c);return c});
+      ok=0;ko=0;sel=null;msg(m,'',cfg.start||'Toca una ficha y después la caja donde va. También puedes arrastrarla.');upd()}
+    function reset(){build()}
+    function solve(){chips.forEach(c=>{if(!c.classList.contains('ok')){const b=Array.isArray(c._it.b)?c._it.b[0]:c._it.b;c.classList.add('ok');c.classList.remove('sel');bk[b].append(c)}});sel=null;msg(m,'warn','Solución a la vista. Pulsa «Empezar de nuevo» para intentarlo sin ayuda.');upd()}
+    let dr=null;
+    function startDrag(e,c){if(c.classList.contains('ok')||e.button>0)return;dr={c,x:e.clientX,y:e.clientY,g:null,id:e.pointerId}}
+    window.addEventListener('pointermove',e=>{if(!dr||e.pointerId!==dr.id)return;
+      if(!dr.g){if(Math.hypot(e.clientX-dr.x,e.clientY-dr.y)<8)return;dr.g=dr.c.cloneNode(true);dr.g.classList.add('k-ghost');document.body.append(dr.g);dr.c.style.opacity=.35}
+      e.preventDefault();dr.g.style.left=e.clientX+'px';dr.g.style.top=e.clientY+'px';
+      Object.values(bk).forEach(b=>b.classList.remove('over'));const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))b.classList.add('over')},{passive:false});
+    window.addEventListener('pointerup',e=>{if(!dr||e.pointerId!==dr.id)return;const d=dr;dr=null;if(!d.g)return;
+      d.g.remove();d.c.style.opacity='';d.c._dragged=true;setTimeout(()=>d.c._dragged=false,0);Object.values(bk).forEach(b=>b.classList.remove('over'));
+      const t=document.elementFromPoint(e.clientX,e.clientY);const b=t&&t.closest&&t.closest('.k-bucket');if(b&&grid.contains(b))drop(d.c,b.dataset.b)});
+    window.addEventListener('pointercancel',()=>{if(dr&&dr.g){dr.g.remove();dr.c.style.opacity=''}dr=null});
+    build();
+  }
+
+  // Ordenar
+  function order(root,cfg){
+    root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    if(cfg.top)root.append(h('div',{class:'k-olabel'},'▲ '+cfg.top));
+    const ol=h('ol',{class:'k-olist'});root.append(ol);
+    if(cfg.bottom)root.append(h('div',{class:'k-olabel'},'▼ '+cfg.bottom));
+    const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+    root.append(m,h('div',{class:'row'},h('button',{class:'btn',onclick:check},'Comprobar'),h('button',{class:'btn alt',onclick:()=>{cur=shuffleNotSorted();sel=-1;draw();msg(m,'','Ordena de nuevo.')}},'Mezclar'),h('button',{class:'btn alt',onclick:()=>{cur=cfg.items.map((_,i)=>i);sel=-1;draw(true);msg(m,'warn','Este es el orden correcto. Fíjate en las explicaciones en gris.')}},'Ver solución')));
+    let sel=-1,cur=shuffleNotSorted(),tries=0;
+    function shuffleNotSorted(){let a;do{a=shuffle(cfg.items.map((_,i)=>i))}while(a.every((v,i)=>v===i)&&a.length>1);return a}
+    function swap(i,j){if(j<0||j>=cur.length)return;[cur[i],cur[j]]=[cur[j],cur[i]];draw()}
+    function draw(showD){ol.innerHTML='';cur.forEach((v,i)=>{const it=cfg.items[v];
+      const li=h('li',{class:'k-oi'+(sel===i?' sel':''),tabindex:0},h('span',{class:'n'},String(i+1)),h('span',{class:'t',html:md(it.t)+(showD&&it.d?'<small>'+md(it.d)+'</small>':'')}),
+        h('span',{class:'mv'},h('button',{'aria-label':'Subir',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i-1)}},'↑'),h('button',{'aria-label':'Bajar',onclick:e=>{e.stopPropagation();sel=-1;swap(i,i+1)}},'↓')));
+      li.addEventListener('click',()=>{if(sel<0){sel=i;draw()}else if(sel===i){sel=-1;draw()}else{const s=sel;sel=-1;swap(s,i)}});
+      ol.append(li)})}
+    function check(){tries++;let n=0;[...ol.children].forEach((li,i)=>{const good=cur[i]===i;if(good)n++;li.classList.add(good?'ok':'ko')});
+      if(n===cur.length){draw(true);[...ol.children].forEach(li=>li.classList.add('ok'));msg(m,'good','<b>¡Perfecto!</b> Todo en orden'+(tries>1?' (en '+tries+' intentos)':'')+'. '+(cfg.done?md(cfg.done):''))}
+      else msg(m,'bad',`<b>${n} de ${cur.length}</b> en su sitio (en verde). Mueve los rojos: toca uno y luego otro para intercambiarlos, o usa las flechas.`)}
+    draw();msg(m,'',cfg.start||'Toca un elemento y después otro para intercambiarlos, o usa las flechas ↑ ↓. Cuando acabes, pulsa «Comprobar».');
+  }
+
+  // Test de una pregunta cada vez
+  function quiz(root,cfg){
+    if(cfg.intro)root.append(h('p',{class:'lead',html:md(cfg.intro)}));
+    const box=h('div',{class:'k-q'});root.append(box);
+    let qs,i,ok,answered;
+    function start(){qs=(cfg.noShuffle?cfg.questions:shuffle(cfg.questions)).map(q=>{const o=q.o.map((t,j)=>({t,c:j===q.a}));return Object.assign({},q,{opts:cfg.fixed||q.fixed?o:shuffle(o)})});i=0;ok=0;draw()}
+    function draw(){box.innerHTML='';
+      if(i>=qs.length){box.append(h('div',{class:'k-end'},`Resultado: ${ok} de ${qs.length}`),h('p',{},ok===qs.length?'¡Todas bien!':ok>=qs.length*.7?'Muy bien. Repasa las que fallaste.':'Vuelve a intentarlo: lee bien la explicación de cada pregunta.'),h('button',{class:'btn',onclick:start},'Otra vez (en otro orden)'));return}
+      const q=qs[i];answered=false;
+      const bar=h('div',{class:'k-bar'},h('i',{style:`width:${i/qs.length*100}%`}));
+      const opts=h('div',{class:'k-opts'});const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Elige una respuesta.');
+      const next=h('button',{class:'btn',onclick:()=>{i++;draw()},hidden:''},i===qs.length-1?'Ver resultado':'Siguiente pregunta');
+      q.opts.forEach(o=>{const b=h('button',{class:'k-opt',html:md(o.t)});b.onclick=()=>{if(answered)return;answered=true;
+        if(o.c){ok++;b.classList.add('ok');msg(m,'good','✓ <b>Correcto.</b> '+md(q.why||''))}
+        else{b.classList.add('ko');[...opts.children].forEach((x,k)=>{if(q.opts[k].c)x.classList.add('ok')});msg(m,'bad','✗ <b>No.</b> '+md(q.why||''))}
+        [...opts.children].forEach(x=>x.setAttribute('disabled',''));next.hidden=false;next.focus()};opts.append(b)});
+      box.append(h('div',{class:'qn'},`Pregunta ${i+1} de ${qs.length} · aciertos: ${ok}`),bar,h('div',{class:'qt',html:md(q.q)}));
+      if(q.fig){const f=h('div',{class:'qfig'});q.fig(f);box.append(f)}
+      box.append(opts,m,next)}
+    start();
+  }
+  return {h,md,shuffle,msg,acts,sort,order,quiz};
+})();
+
+</script>
+<script>
+(function(){const tabs=[...document.querySelectorAll('.tab')];
+function show(id){if(!document.getElementById('p-'+id))id=tabs[0].dataset.t;tabs.forEach(t=>t.setAttribute('aria-selected',t.dataset.t===id));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='p-'+id);try{history.replaceState(null,'','#'+id)}catch(e){}}
+tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.t)));show((location.hash||'').slice(1));})();
+</script>
+<script>
+/* ================= S1 · PREPARAR EL MONTAJE ================= */
+(function(){
+const {h,md,acts,sort,order,quiz,msg,shuffle}=K;
+const NS='http://www.w3.org/2000/svg';
+function S(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+
+// ---------- Placa ficticia «Tajo B-M» (MicroATX) ----------
+const ZONES=[
+  {id:'atx12v',x:40,y:40,w:96,h:40,t:'ATX12V'},
+  {id:'cpufan',x:156,y:40,w:96,h:30,t:'CPU_FAN'},
+  {id:'socket',x:60,y:110,w:200,h:190,t:'CPU'},
+  {id:'dimm',x:318,y:40,w:120,h:270,t:'DIMM',slots:true},
+  {id:'atx24',x:470,y:110,w:44,h:200,t:'ATX_24P',vert:true},
+  {id:'chafan1',x:290,y:330,w:108,h:30,t:'CHA_FAN1'},
+  {id:'m21',x:60,y:340,w:210,h:40,t:'M2_1'},
+  {id:'pcie16',x:60,y:410,w:430,h:28,t:'PCIEX16'},
+  {id:'sata',x:536,y:380,w:62,h:150,t:'SATA',vert:true},
+  {id:'m22',x:60,y:462,w:210,h:40,t:'M2_2'},
+  {id:'pcie1',x:60,y:528,w:170,h:24,t:'PCIEX1'},
+  {id:'clr',x:300,y:528,w:110,h:26,t:'CLR_CMOS'},
+  {id:'bat',x:430,y:510,w:60,h:60,t:'BAT',round:true},
+  {id:'audio',x:40,y:612,w:100,h:30,t:'HD_AUDIO'},
+  {id:'usb2',x:152,y:612,w:76,h:30,t:'USB_2'},
+  {id:'usb3',x:240,y:612,w:90,h:30,t:'USB3_1'},
+  {id:'chafan2',x:342,y:612,w:108,h:30,t:'CHA_FAN2'},
+  {id:'fpanel',x:462,y:612,w:110,h:30,t:'F_PANEL'}
+];
+const QS=[
+  {q:'el cable de **8 pines (4+4)** que alimenta el procesador',a:['atx12v']},
+  {q:'el cable **principal de 24 pines** de la fuente',a:['atx24']},
+  {q:'el **ventilador del disipador** del procesador',a:['cpufan']},
+  {q:'los **botones y LED** del frontal de la caja',a:['fpanel']},
+  {q:'un **SSD NVMe**',a:['m21','m22'],why:'M2_1 o M2_2. La primera, la más cercana al procesador, suele ser la más rápida.'},
+  {q:'la **tarjeta gráfica**',a:['pcie16']},
+  {q:'el **cable de datos** de un disco duro',a:['sata']},
+  {q:'los **USB 3.x del frontal** (conector azul de 19 pines)',a:['usb3']},
+  {q:'los **auriculares y el micrófono** del frontal',a:['audio']},
+  {q:'un **ventilador de la caja**',a:['chafan1','chafan2']},
+  {q:'los **módulos de memoria**',a:['dimm']},
+  {q:'el **procesador**',a:['socket']},
+  {q:'una **tarjeta Wi‑Fi PCIe x1**',a:['pcie1','pcie16'],why:'Lo normal es la PCIEX1. Una tarjeta x1 también funciona en una ranura x16, pero la gastarías.'},
+  {q:'lo que usas para **borrar la CMOS** si el equipo no llega a la UEFI',a:['clr','bat'],why:'El puente CLR_CMOS o quitar la pila (BAT) unos minutos, siempre con el equipo desenchufado.'},
+  {q:'los **USB 2.0 del frontal** (9 pines)',a:['usb2']}
+];
+function boardSVG(onPick){
+  const svg=S('svg',{viewBox:'0 0 640 680',class:'board',role:'img','aria-label':'Esquema de la placa base Tajo B-M'});
+  S('rect',{x:16,y:16,width:608,height:648,rx:14,class:'pcb'},svg);
+  const els={};
+  ZONES.forEach(z=>{
+    const g=S('g',{role:'button',tabindex:0,'aria-label':z.t},svg);
+    const r=z.round?S('circle',{cx:z.x+z.w/2,cy:z.y+z.h/2,r:z.w/2,class:'z'},g):S('rect',{x:z.x,y:z.y,width:z.w,height:z.h,rx:5,class:'z'},g);
+    if(z.slots)for(let k=0;k<4;k++)S('rect',{x:z.x+14+k*26,y:z.y+34,width:14,height:z.h-48,rx:3,fill:'#11151A',style:'pointer-events:none'},g);
+    const tx=S('text',{x:z.x+z.w/2,y:z.slots?z.y+22:z.y+z.h/2+5,'text-anchor':'middle'},g);
+    tx.textContent=z.slots?'DIMM_A1 A2 B1 B2':z.t;
+    if(z.slots)tx.setAttribute('font-size','11');
+    if(z.vert)tx.setAttribute('transform',`rotate(-90 ${z.x+z.w/2} ${z.y+z.h/2+5})`);
+    if(z.id==='socket'){S('rect',{x:z.x+40,y:z.y+35,width:120,height:120,rx:6,fill:'none',stroke:'#C9D5DF','stroke-dasharray':'6 5',style:'pointer-events:none'},g);S('path',{d:`M${z.x+44} ${z.y+39} l16 0 l-16 16 z`,fill:'#E8C66A'},g)}
+    const go=()=>onPick(z.id);g.addEventListener('click',go);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}});
+    els[z.id]=r});
+  return {svg,els};
+}
+function layoutLab(root){
+  root.append(h('p',{class:'lead',html:md('Esta es la placa ficticia **«Tajo B-M»** de los apuntes, con los nombres serigrafiados como en una placa real. Te pedimos un componente o un cable: **toca el conector** donde va.')}));
+  const wrap=h('div',{class:'k-two'});root.append(wrap);
+  const fig=h('div',{class:'k-svgfig'}),side=h('div');wrap.append(fig,side);
+  const sc=h('div',{class:'k-score'}),qt=h('div',{class:'k-q'}),m=h('div',{class:'k-msg',role:'status','aria-live':'polite'}),next=h('button',{class:'btn',hidden:''},'Siguiente');
+  side.append(sc,qt,m,next);
+  let list,i,ok,done,B;
+  B=boardSVG(pick);fig.append(B.svg);
+  function clear(){Object.values(B.els).forEach(e=>e.classList.remove('ok','ko','hint'))}
+  function start(){list=shuffle(QS).slice(0,10);i=0;ok=0;show()}
+  function show(){clear();done=false;next.hidden=true;
+    if(i>=list.length){qt.innerHTML=`<div class="k-end">Resultado: ${ok} de ${list.length}</div>`;msg(m,ok>=8?'good':'warn',ok>=8?'¡Muy bien! Ya sabes leer el esquema de una placa.':'Repasa los nombres del apartado 4 de la Sección 1 y vuelve a intentarlo.');next.hidden=false;next.textContent='Otra vez';next.onclick=start;sc.innerHTML='';return}
+    sc.innerHTML=`<span>Pregunta <b>${i+1}</b> de ${list.length}</span><span>Aciertos: <b>${ok}</b></span>`;
+    qt.innerHTML=`<div class="qt">¿Dónde conectas ${md(list[i].q)}?</div>`;msg(m,'','Toca un conector de la placa.');
+    next.textContent=i===list.length-1?'Ver resultado':'Siguiente';next.onclick=()=>{i++;show()}}
+  function pick(id){if(done||!list||i>=list.length)return;const q=list[i];done=true;
+    const good=q.a.includes(id);if(good)ok++;
+    B.els[id].classList.add(good?'ok':'ko');if(!good)q.a.forEach(a=>B.els[a].classList.add('hint'));
+    const name=a=>ZONES.find(z=>z.id===a).t;
+    msg(m,good?'good':'bad',(good?'✓ <b>Correcto:</b> ':'✗ <b>No.</b> Va en ')+q.a.map(name).join(' o ')+'. '+md(q.why||''));next.hidden=false;next.focus()}
+  start();
+}
+
+acts(document.getElementById('r-prep'),[
+  {label:'Lee el esquema de la placa',render:layoutLab},
+  {label:'¿Qué tornillo?',render:el=>sort(el,{intro:'Cada pieza se fija con su tornillo. Coloca cada ficha en el tipo que le corresponde.',
+    buckets:[{id:'632',name:'6-32 (UNC)',sub:'grueso, rosca ancha'},{id:'m3',name:'M3',sub:'más fino'},{id:'m2',name:'M2',sub:'muy pequeño'}],
+    items:[{t:'Fuente de alimentación',b:'632'},{t:'Disco duro de 3,5″',b:'632'},{t:'Tarjeta gráfica a la caja',b:'632'},{t:'SSD SATA de 2,5″',b:'m3'},{t:'Unidad óptica',b:'m3'},{t:'SSD M.2 NVMe',b:'m2',why:'el tornillo M2 suele venir con la placa base.'},{t:'Tarjeta Wi‑Fi PCIe a la caja',b:'632'}]})},
+  {label:'Herramienta o útil',render:el=>sort(el,{intro:'¿Sirve para **trabajar** (herramienta) o para **trabajar bien y seguro** (útil)?',
+    buckets:[{id:'h',name:'Herramienta'},{id:'u',name:'Útil'}],
+    items:[{t:'Destornillador PH2',b:'h'},{t:'Destornillador PH1',b:'h'},{t:'Alicate de corte',b:'h'},{t:'Pinzas de plástico',b:'h'},{t:'Pulsera antiestática',b:'u'},{t:'Alfombrilla antiestática',b:'u'},{t:'Bandeja de tornillos',b:'u'},{t:'Bolsas antiestáticas',b:'u'},{t:'Bridas de velcro',b:'u'}]})},
+  {label:'Orden de montaje',render:el=>order(el,{intro:'Ordena los pasos del montaje habitual de un equipo de sobremesa.',top:'Primero',bottom:'Último',
+    items:[{t:'Procesador en la placa',d:'Fuera de la caja, con la placa sobre su caja de cartón.'},{t:'Memoria RAM',d:'Fuera de la caja.'},{t:'Unidad M.2',d:'Fuera de la caja.'},{t:'Disipador del procesador',d:'Fuera de la caja si cabe; los muy grandes pueden ir después.'},
+      {t:'Fuente de alimentación en la caja'},{t:'Placa base sobre los separadores'},{t:'Discos y unidades SATA'},{t:'Cables de alimentación de la placa y del procesador'},{t:'Panel frontal, USB, audio y ventiladores'},{t:'Tarjeta gráfica',d:'Casi al final: es grande y tapa otros conectores.'},{t:'Ordenar los cables'},{t:'Primera prueba con la caja abierta'}],
+    done:'Recuerda: si el manual de la caja o del disipador dice otro orden, manda el manual.'})},
+  {label:'Test: seguridad y manuales',render:el=>quiz(el,{questions:[
+    {q:'¿Cuándo te pones la **pulsera antiestática**?',o:['Antes de sacar las piezas de su bolsa','Solo para tocar el procesador','Al terminar, para cerrar la caja'],a:0},
+    {q:'¿Dónde se engancha la pinza de la pulsera?',o:['En la toma de tierra del puesto o en una parte metálica sin pintar del chasis','En la placa base','En un tornillo de plástico'],a:0},
+    {q:'¿Por qué es peligrosa la electricidad estática para los componentes?',o:['Los chips pueden estropearse con descargas que tú ni notas','Porque provoca incendios','Solo afecta a los discos duros'],a:0,why:'Y a veces el daño aparece semanas después.'},
+    {q:'¿Qué **nunca** se hace con una fuente de alimentación?',o:['Abrirla','Atornillarla a la caja','Conectar sus cables con ella desenchufada'],a:0,why:'Sus condensadores pueden guardar carga aunque esté desenchufada.'},
+    {q:'Has perdido el manual de la placa. ¿Qué haces?',o:['Descargarlo en PDF de la web de soporte del fabricante, con el modelo exacto','Montar sin manual','Usar el manual de otra placa de la misma marca'],a:0},
+    {q:'¿Qué es la **QVL** de una placa?',o:['La lista de módulos de memoria probados en esa placa','El esquema de la placa','La lista de tornillos'],a:0},
+    {q:'Un tornillo no entra con suavidad. ¿Qué pasa?',o:['No es el suyo: busca el tipo correcto','Hay que apretar más fuerte','Hay que usar el destornillador grande'],a:0},
+    {q:'Dentro de la caja se te cae un tornillo. ¿Qué haces?',o:['Sacarlo antes de seguir: puede provocar un cortocircuito','Seguir: ya saldrá','Cerrar la caja y moverla'],a:0},
+    {q:'¿Cuántos **separadores** tiene que haber debajo de la placa?',o:['Uno debajo de cada agujero de la placa, y ninguno más','Todos los que traiga la caja','Cuatro, en las esquinas'],a:0}]})}
+]);
+})();
+
+/* ================= S2 · MONTAR LAS PIEZAS ================= */
+(function(){
+const {h,md,acts,sort,order,quiz,msg}=K;
+
+// ---------- Separadores ----------
+const POS='ABCDEFGHI'.split('');
+const HOLES=['A','C','D','F','G','I'];
+function standoffLab(root){
+  root.append(h('p',{class:'lead',html:md('La caja trae **9 separadores** puestos (en dorado). La placa ficticia «Tajo B-M» tiene **6 agujeros**: A, C, D, F, G e I. La línea verde es el contorno de la placa. Toca una posición para **poner o quitar** el separador y pulsa «Comprobar».')}));
+  const tray=h('div',{class:'tray'},h('div',{class:'mb'}));
+  const st={};POS.forEach(p=>st[p]=true);
+  const btn={};
+  POS.forEach(p=>{const b=h('button',{class:'hole on','aria-pressed':'true','aria-label':'Posición '+p},h('span',{class:'so'}),h('span',{},p+(HOLES.includes(p)?' · agujero':' · sin agujero')));
+    b.onclick=()=>{st[p]=!st[p];b.classList.toggle('on',st[p]);b.setAttribute('aria-pressed',st[p]);b.classList.remove('ok','ko')};btn[p]=b;tray.append(b)});
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Quita los separadores que sobran.');
+  root.append(tray,h('div',{class:'row',style:'margin-top:14px'},h('button',{class:'btn',onclick:check},'Comprobar'),h('button',{class:'btn alt',onclick:reset},'Empezar de nuevo')),m);
+  function check(){let extra=[],miss=[];POS.forEach(p=>{const need=HOLES.includes(p);const good=st[p]===need;btn[p].classList.remove('ok','ko');btn[p].classList.add(good?'ok':'ko');if(st[p]&&!need)extra.push(p);if(!st[p]&&need)miss.push(p)});
+    if(!extra.length&&!miss.length)msg(m,'good','✓ <b>Perfecto.</b> Un separador debajo de cada agujero y ninguno más. Ya puedes atornillar la placa en diagonal.');
+    else msg(m,'bad',(extra.length?`<b>Cortocircuito:</b> el separador de ${extra.join(', ')} toca la placa donde no hay agujero. `:'')+(miss.length?`<b>Placa floja:</b> en ${miss.join(', ')} hay agujero sin separador; la placa se doblaría al conectar cables.`:''))}
+  function reset(){POS.forEach(p=>{st[p]=true;btn[p].classList.add('on');btn[p].classList.remove('ok','ko');btn[p].setAttribute('aria-pressed','true')});msg(m,'','Quita los separadores que sobran.')}
+}
+// figura de pasta térmica para el test
+function paste(r){return f=>{f.innerHTML=`<svg viewBox="0 0 360 160" width="360" role="img" aria-label="Procesador con pasta térmica"><rect x="100" y="10" width="140" height="140" rx="8" fill="#B8BEC6" stroke="#6B7580" stroke-width="3"/><path d="M106 16 l18 0 l-18 18 z" fill="#C9A227"/><circle cx="170" cy="80" r="${r}" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="2"/></svg>`}}
+
+acts(document.getElementById('r-montar'),[
+  {label:'Instala el procesador (LGA)',render:el=>order(el,{intro:'Ordena los pasos para instalar un procesador en un zócalo **LGA**.',top:'Primero',bottom:'Último',
+    items:[{t:'Ponerte la pulsera y apoyar la placa sobre su caja de cartón'},{t:'Bajar la palanca, sacarla del gancho y levantarla'},{t:'Levantar la placa de retención'},{t:'Coger el procesador por los bordes',d:'Sin tocar los contactos de abajo.'},{t:'Alinear el triángulo dorado y dejarlo caer en vertical',d:'Sin arrastrarlo ni hacer fuerza.'},{t:'Bajar la placa de retención y la palanca hasta el gancho',d:'Cuesta un poco: es normal.'},{t:'Guardar la tapa de plástico',d:'Puede pedirla la garantía.'}]})},
+  {label:'¿LGA o PGA?',render:el=>sort(el,{intro:'¿Es una característica del zócalo **LGA** o del **PGA**?',
+    buckets:[{id:'lga',name:'LGA',sub:'patillas en el zócalo'},{id:'pga',name:'PGA',sub:'patillas en la CPU'}],
+    items:[{t:'El procesador solo tiene contactos planos',b:'lga'},{t:'Las patillas salen por debajo del procesador',b:'pga'},{t:'Intel LGA 1700 y LGA 1851',b:'lga'},{t:'AMD AM4',b:'pga'},{t:'AMD AM5',b:'lga'},{t:'Una patilla doblada estropea la placa',b:'lga'},{t:'Una patilla doblada estropea el procesador',b:'pga'},{t:'El procesador cae solo por su peso en los agujeros',b:'pga'}]})},
+  {label:'Pon los separadores',render:standoffLab},
+  {label:'Test: pasta, disipador y unidades',render:el=>quiz(el,{questions:[
+    {q:'¿Cuál es la cantidad correcta de pasta térmica?',fig:paste(18),o:['Esta: un punto del tamaño de un guisante en el centro','Hay que cubrir todo el procesador con una capa gruesa','No hace falta pasta nunca'],a:0,why:'Al apretar el disipador, la pasta se reparte sola.'},
+    {q:'Así has puesto la pasta. ¿Está bien?',fig:paste(62),o:['No: es demasiada, rebosará por los bordes','Sí: cuanta más, mejor enfría','Sí, si el disipador es de serie'],a:0},
+    {q:'La base del disipador trae una capa gris. ¿Qué haces?',o:['Nada: ya trae pasta, no se añade más','Ponerle otro punto encima','Limpiarla siempre antes de montar'],a:0},
+    {q:'Montas el disipador y el procesador llega a 90 °C sin hacer nada. ¿Qué has olvidado probablemente?',o:['Quitar el plástico protector de la base del disipador','Activar el XMP','Conectar el cable SATA'],a:0},
+    {q:'¿A qué conector va el ventilador del disipador?',o:['CPU_FAN','CHA_FAN1','F_PANEL'],a:0,why:'Si no, muchas placas avisan con «CPU Fan Error».'},
+    {q:'¿Cómo se aprietan los tornillos de un disipador de torre?',o:['En cruz y poco a poco','Uno entero y luego el siguiente','Solo dos, en diagonal'],a:0},
+    {q:'Las patillas de presión del disipador de serie de Intel se presionan…',o:['En diagonal, hasta el clic, y se comprueba por detrás que están abiertas','Todas a la vez con una mano','Con un destornillador'],a:0},
+    {q:'¿Con qué ángulo se inserta una unidad M.2?',o:['Unos 30°','En vertical, a 90°','Plana, deslizándola'],a:0},
+    {q:'Una unidad M.2 **2280** mide…',o:['22 mm de ancho y 80 mm de largo','22 cm de largo','2280 GB'],a:0},
+    {q:'La caja tiene una rejilla con filtro debajo de la fuente. ¿Hacia dónde va su ventilador?',o:['Hacia abajo','Hacia arriba','Da igual'],a:0,why:'Así coge aire fresco del exterior.'},
+    {q:'Una fuente antigua tiene un selector 115 V / 230 V. En España, ¿dónde va?',o:['230 V','115 V','En cualquiera'],a:0,why:'En 115 V se estropearía al encenderla.'},
+    {q:'¿Cómo se aprietan los tornillos de la placa base?',o:['Primero todos sin apretar y luego en diagonal, firmes y sin forzar','Lo más fuerte posible, uno a uno','Basta con dos'],a:0}]})}
+]);
+})();
+
+/* ================= S3 · CONECTAR Y CONFIGURAR ================= */
+(function(){
+const {h,md,acts,sort,order,quiz,msg,shuffle}=K;
+
+// ---------- Panel frontal ----------
+// Cabezal de 2 filas × 5 (esquema típico): fila de arriba PLED+ PLED− PWR PWR (llave); abajo HDD+ HDD− RST RST NC
+const LAYOUT=[['PLED+','PLED−','PWR','PWR','KEY'],['HDD+','HDD−','RST','RST','NC']];
+const WIRES=[{id:'pw1',t:'POWER SW',need:'PWR'},{id:'pw2',t:'POWER SW',need:'PWR'},{id:'rs1',t:'RESET SW',need:'RST'},{id:'rs2',t:'RESET SW',need:'RST'},{id:'pl+',t:'POWER LED +',need:'PLED+'},{id:'pl-',t:'POWER LED −',need:'PLED−'},{id:'hd+',t:'HDD LED +',need:'HDD+'},{id:'hd-',t:'HDD LED −',need:'HDD−'}];
+function fpLab(root){
+  root.append(h('p',{class:'lead',html:md('Este es el esquema del cabezal **F_PANEL** de la placa «Tajo B-M» (en el manual de tu placa puede ser distinto). Toca un **cable** de la caja y después la **patilla** donde va. Cuando estén todos, pulsa el botón de encendido.')}));
+  const wrap=h('div',{class:'k-two'});root.append(wrap);
+  const L=h('div'),R=h('div');wrap.append(L,R);
+  const pool=h('div',{class:'k-pool','aria-label':'Cables sin conectar'});
+  const grid=h('div',{class:'pins',role:'group','aria-label':'Cabezal F_PANEL'});
+  L.append(h('div',{class:'pinlbl'},'CABLES DE LA CAJA'),pool,h('div',{class:'pinlbl'},'CABEZAL F_PANEL DE LA PLACA'),grid);
+  const lamps=h('div',{class:'lamps'},h('span',{class:'lamp',id:'lp-pw'},h('i'),'Equipo'),h('span',{class:'lamp',id:'lp-pl'},h('i'),'POWER LED'),h('span',{class:'lamp',id:'lp-hd'},h('i'),'HDD LED'));
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'});
+  R.append(h('div',{class:'row'},h('button',{class:'btn',onclick:power},'⏻ Pulsar encendido'),h('button',{class:'btn alt',onclick:reset},'Desconectar todo'),h('button',{class:'btn alt',onclick:sol},'Ver solución')),lamps,m);
+  let sel=null,at={},pinEl={};
+  LAYOUT.forEach((row,r)=>row.forEach((p,k)=>{const id=r+'-'+k;
+    if(p==='KEY'){grid.append(h('span',{class:'pin key','aria-hidden':'true'},'sin pin'));return}
+    const b=h('button',{class:'pin'+(p==='NC'?' nc':''),'aria-label':'Patilla '+(r?'inferior ':'superior ')+(k+1)},h('i'),h('span',{},p==='NC'?'NC':''));
+    b.onclick=()=>place(id);pinEl[id]=b;grid.append(b)}));
+  const chips={};
+  function drawPool(){pool.innerHTML='';WIRES.filter(w=>!Object.values(at).includes(w.id)).forEach(w=>{const c=h('button',{class:'k-chip'+(sel===w.id?' sel':'')},w.t);c.onclick=()=>{sel=sel===w.id?null:w.id;drawPool()};pool.append(c)})}
+  function drawPins(){Object.entries(pinEl).forEach(([id,b])=>{b.classList.remove('ok','ko');const w=WIRES.find(x=>x.id===at[id]);b.classList.toggle('full',!!w);
+    const [r,k]=id.split('-').map(Number);b.lastChild.textContent=w?({pw1:'PWR SW',pw2:'PWR SW',rs1:'RST SW',rs2:'RST SW','pl+':'PLED +','pl-':'PLED −','hd+':'HDD +','hd-':'HDD −'})[w.id]:(LAYOUT[r][k]==='NC'?'NC':'')})}
+  function place(id){if(at[id]){delete at[id];sel=null;drawPool();drawPins();return}
+    if(!sel){msg(m,'warn','Primero toca un cable de la caja.');return}at[id]=sel;sel=null;drawPool();drawPins();lampsOff();msg(m,'',`Conectados ${Object.keys(at).length} de 8.`)}
+  function lampsOff(){['pw','pl','hd'].forEach(x=>{const l=lamps.querySelector('#lp-'+x);l.classList.remove('on','red')})}
+  function power(){lampsOff();if(Object.keys(at).length<8){msg(m,'warn',`Faltan cables por conectar (${Object.keys(at).length} de 8).`);return}
+    const got=id=>{const [r,k]=id.split('-').map(Number);return LAYOUT[r][k]};
+    const okW=id=>{const w=WIRES.find(x=>x.id===at[id]);return w&&w.need===got(id)};
+    Object.keys(pinEl).forEach(id=>{if(at[id])pinEl[id].classList.add(okW(id)?'ok':'ko')});
+    const pins=need=>Object.keys(at).filter(id=>WIRES.find(x=>x.id===at[id]).need.replace(/[+−]/,'')===need);
+    const sw=pins('PWR').every(id=>got(id)==='PWR');
+    const led=n=>{const ps=pins(n);const okPos=ps.every(id=>got(id).replace(/[+−]/,'')===n);const okPol=ps.every(okW);return okPos?(okPol?'on':'rev'):'off'};
+    const out=[];
+    if(sw){lamps.querySelector('#lp-pw').classList.add('on');out.push('El equipo **enciende**.')}else out.push('El botón **no enciende** el equipo: los dos cables POWER SW tienen que ir en las dos patillas PWR (da igual el orden).');
+    if(sw){const pl=led('PLED'),hd=led('HDD');
+      if(pl==='on')lamps.querySelector('#lp-pl').classList.add('on');if(hd==='on')lamps.querySelector('#lp-hd').classList.add('on');
+      out.push(pl==='on'?'POWER LED encendido.':pl==='rev'?'POWER LED **apagado**: está al revés (+ con −). No se rompe nada: dale la vuelta.':'POWER LED apagado: no está en sus patillas.');
+      out.push(hd==='on'?'HDD LED parpadea al leer el disco.':hd==='rev'?'HDD LED **apagado**: está al revés.':'HDD LED apagado: no está en sus patillas.')}
+    const rst=pins('RST').every(id=>got(id)==='RST');out.push(rst?'El botón de reinicio funciona.':'El botón de reinicio no funciona: sus cables no están en RST.');
+    const all=Object.keys(at).every(okW)||(sw&&rst&&led('PLED')==='on'&&led('HDD')==='on');
+    msg(m,all?'good':'bad',(all?'✓ <b>¡Todo conectado!</b> ':'')+md(out.join(' ')))}
+  function reset(){at={};sel=null;drawPool();drawPins();lampsOff();msg(m,'','Toca un cable y después la patilla donde va.')}
+  function sol(){at={};const free={};WIRES.forEach(w=>{for(const [id] of Object.entries(pinEl)){const [r,k]=id.split('-').map(Number);if(LAYOUT[r][k]===w.need&&!free[id]){free[id]=1;at[id]=w.id;break}}});drawPool();drawPins();lampsOff();msg(m,'warn','Esta es la solución para esta placa. Los interruptores (PWR y RST) no tienen polaridad; los LED sí. Pulsa el encendido para probarla.')}
+  reset();
+}
+
+// ---------- UEFI simulada ----------
+const OPTS=[
+  {k:'fecha',t:'Fecha y hora del sistema',o:['01/01/2020 00:00','Fecha y hora actuales'],good:1},
+  {k:'boot1',t:'Prioridad de arranque n.º 1',o:['Windows Boot Manager (SSD NVMe)','USB: Kingston DataTraveler (instalación de Windows 11)','Red (PXE)'],good:1},
+  {k:'xmp',t:'Perfil de memoria (XMP)',o:['Desactivado (4800 MT/s)','Perfil 1 (6000 MT/s, la de la etiqueta)'],good:1},
+  {k:'sata',t:'Modo SATA',o:['AHCI','RAID'],good:0},
+  {k:'tpm',t:'Intel PTT (TPM 2.0)',o:['Desactivado','Activado'],good:1},
+  {k:'sb',t:'Arranque seguro (Secure Boot)',o:['Desactivado','Activado'],good:1},
+  {k:'vcore',t:'Voltaje del procesador (Vcore)',o:['Automático','1,45 V (manual)'],good:0}
+];
+function uefiLab(root){
+  root.append(h('p',{class:'lead',html:md('**Misión:** el equipo está recién montado. Configura la UEFI para **instalar Windows 11 desde un USB**, con la memoria a la velocidad de su etiqueta. Después «guarda y sal» (F10).')}));
+  const u=h('div',{class:'uefi'},h('h3',{},'UEFI · Tajo B-M · Modo avanzado'));
+  const sels={},rows={};
+  OPTS.forEach(o=>{const s=h('select',{'aria-label':o.t});o.o.forEach((x,i)=>s.append(h('option',{value:i},x)));s.value=o.k==='sata'?'0':(o.k==='vcore'?'0':'0');s.onchange=()=>rows[o.k].classList.remove('ok','ko');sels[o.k]=s;rows[o.k]=h('div',{class:'ur'},h('span',{},o.t),s);u.append(rows[o.k])});
+  u.append(h('div',{class:'foot'},'CPU: Intel Core (LGA 1700) · Memoria: 16 GB DDR5 · SSD NVMe 1 TB · F10: guardar y salir'));
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Revisa cada opción y pulsa F10.');
+  root.append(u,h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:save},'F10 · Guardar y salir'),h('button',{class:'btn alt',onclick:def},'Cargar valores por defecto')),m);
+  function save(){const bad=[];OPTS.forEach(o=>{const g=+sels[o.k].value===o.good;rows[o.k].classList.remove('ok','ko');rows[o.k].classList.add(g?'ok':'ko');if(!g)bad.push(o)});
+    const why={fecha:'la fecha tiene que ser la actual',boot1:'para instalar, primero el USB',xmp:'sin XMP la memoria va más lenta que su etiqueta',sata:'el modo normal es AHCI',tpm:'Windows 11 exige TPM 2.0',sb:'Windows 11 pide arranque seguro',vcore:'no se tocan los voltajes: pueden dañar el procesador'};
+    if(!bad.length)msg(m,'good','✓ <b>Configuración guardada.</b> Al reiniciar arrancará el instalador de Windows 11 desde el USB. Cuando acabe la instalación, el disco del sistema (Windows Boot Manager) pasa a ser el primero.');
+    else msg(m,'bad',`<b>${OPTS.length-bad.length} de ${OPTS.length}</b> bien. Revisa: `+bad.map(o=>`<b>${o.t}</b> (${why[o.k]})`).join('; ')+'.')}
+  function def(){OPTS.forEach(o=>{sels[o.k].value='0';rows[o.k].classList.remove('ok','ko')});msg(m,'warn','Valores por defecto cargados: es lo que harías si un cambio deja el equipo inestable. Ahora vuelve a configurar lo necesario.')}
+}
+
+acts(document.getElementById('r-conectar'),[
+  {label:'Conecta el panel frontal',render:fpLab},
+  {label:'Cada cable a su sitio',render:el=>sort(el,{intro:'¿Dónde va cada cable de la fuente o de la caja?',
+    buckets:[{id:'mb',name:'ATX_24P',sub:'placa base'},{id:'cpu',name:'ATX12V / CPU_PWR',sub:'procesador'},{id:'gpu',name:'Tarjeta gráfica'},{id:'sata',name:'Unidades SATA'},{id:'fan',name:'Cabezales de ventilador'}],
+    items:[{t:'Cable de 24 pines (20+4)',b:'mb'},{t:'Cable EPS de 8 pines (4+4)',b:'cpu'},{t:'Cable PCIe de 8 pines (6+2)',b:'gpu',why:'parece el EPS, pero no es igual: no se intercambian.'},{t:'Cable 12V-2x6 de 16 pines',b:'gpu'},{t:'Conector SATA de alimentación (15 pines)',b:'sata'},{t:'Cable de datos SATA (7 pines)',b:'sata',why:'el otro extremo va a un puerto SATA de la placa.'},{t:'Ventilador de 4 pines (PWM) del disipador',b:'fan',why:'en concreto, a CPU_FAN.'},{t:'Ventilador trasero de la caja',b:'fan',why:'a CHA_FAN o SYS_FAN.'}]})},
+  {label:'Configura la UEFI',render:uefiLab},
+  {label:'Secuencia de arranque',render:el=>order(el,{intro:'Ordena lo que pasa desde que pulsas el botón hasta que ves el inicio de sesión.',top:'Primero',bottom:'Último',
+    items:[{t:'Reposo: la fuente da 5 V a la placa para «escuchar» el botón'},{t:'Pulsas el botón y la placa pide a la fuente que se encienda'},{t:'La fuente se estabiliza y envía la señal Power Good'},{t:'El procesador ejecuta el firmware UEFI'},{t:'POST: comprueba procesador, memoria, gráfica y dispositivos'},{t:'Busca un sistema en el orden de arranque'},{t:'Carga el gestor de arranque (Windows Boot Manager o GRUB)'},{t:'El sistema operativo toma el control y muestra el inicio de sesión'}]})},
+  {label:'Test: cables, frontal y UEFI',render:el=>quiz(el,{questions:[
+    {q:'¿Qué cables del F_PANEL **no tienen polaridad**?',o:['POWER SW y RESET SW','POWER LED y HDD LED','Todos la tienen'],a:0},
+    {q:'El LED de encendido no se ilumina, pero el equipo arranca. ¿Qué haces?',o:['Darle la vuelta a su conector: está al revés','Cambiar la fuente','Nada: no tiene arreglo'],a:0},
+    {q:'El conector **USB 2.0** y el de **audio** del frontal…',o:['Tienen el mismo tamaño, pero el hueco en sitios distintos','Son iguales e intercambiables','El de audio es azul y de 19 pines'],a:0},
+    {q:'Tienes una tira **ARGB de 5 V** (3 pines). ¿Dónde la conectas?',o:['En un cabezal ARGB de 5 V','En el cabezal RGB de 12 V','En CPU_FAN'],a:0,why:'En uno de 12 V se queman sus LED.'},
+    {q:'¿Qué tecla suele abrir el **menú de arranque** para elegir un USB una sola vez?',o:['F8, F11 o F12, según el fabricante','F10','Supr'],a:0,why:'Supr o F2 entran en la UEFI; F10 guarda y sale.'},
+    {q:'¿Para qué sirve activar el perfil **XMP o EXPO**?',o:['Para que la memoria trabaje a la velocidad de su etiqueta','Para activar el TPM','Para arrancar desde USB'],a:0},
+    {q:'Con Windows ya instalado, ¿se puede cambiar el modo SATA de AHCI a RAID sin más?',o:['No: el sistema puede dejar de arrancar','Sí, sin ningún problema','Sí, pero solo en discos duros'],a:0},
+    {q:'Tras cambiar opciones, el equipo ni siquiera llega a la UEFI. ¿Qué haces?',o:['Desenchufarlo y borrar la CMOS (puente CLR_CMOS o pila)','Cambiar la placa','Pulsar F10 muchas veces'],a:0},
+    {q:'¿Qué señal envía la fuente a la placa cuando sus tensiones son estables?',o:['Power Good','POST','Boot'],a:0},
+    {q:'¿Qué es el **POST**?',o:['La autoprueba de encendido del firmware','El gestor de arranque de Windows','Un tipo de conector'],a:0}]})}
+]);
+})();
+
+/* ================= S4 · COMPROBAR Y DOCUMENTAR ================= */
+(function(){
+const {h,md,acts,sort,order,quiz,msg}=K;
+
+// ---------- Diagnóstico por síntomas ----------
+function scene(o){return f=>{
+  const lamps=h('div',{class:'lamps'});['CPU','DRAM','VGA','BOOT'].forEach(n=>lamps.append(h('span',{class:'lamp red'+(o.led===n?' on':'')},h('i'),n)));
+  f.append(h('div',{class:'k-tblwrap'},h('table',{class:'k-tbl'},h('tbody',{},
+    h('tr',{},h('th',{},'Ventiladores'),h('td',{},o.fans)),
+    h('tr',{},h('th',{},'Monitor'),h('td',{class:o.screen.startsWith('«')?'pk':''},o.screen)),
+    h('tr',{},h('th',{},'LED de diagnóstico'),h('td',{},lamps))))))}}
+const CASES=[
+  {fans:'No giran. No se enciende ninguna luz.',screen:'Negro',led:'',q:'¿Qué revisas primero?',o:['El enchufe, el interruptor de la fuente y el cable POWER SW','La memoria RAM','El orden de arranque'],why:'Si no hay ni luces, falla el primer paso del arranque: la corriente o el botón.'},
+  {fans:'Giran.',screen:'Negro (más de 3 minutos)',led:'DRAM',q:'¿Dónde está el problema?',o:['En la memoria: revisa que los módulos estén bien insertados','En la gráfica','En el disco'],why:'El LED que se queda encendido marca la pieza que falla.'},
+  {fans:'Giran.',screen:'Negro',led:'VGA',q:'El equipo tiene gráfica dedicada. ¿Qué revisas?',o:['Que la gráfica esté bien insertada, con sus cables, y el monitor conectado a ella','El ventilador CPU_FAN','La pila de la placa'],why:'Si hay gráfica dedicada, el monitor va en la gráfica, no en la placa.'},
+  {fans:'Giran.',screen:'Negro',led:'CPU',q:'¿Qué revisas primero?',o:['El cable EPS de 8 pines del procesador','El cable SATA','El modo SATA'],why:'Sin el EPS, el procesador no recibe corriente. Si está bien, revisa el asiento del procesador y si la placa necesita actualizar la UEFI para ese modelo.'},
+  {fans:'Giran.',screen:'«Reboot and select proper boot device»',led:'BOOT',q:'¿Qué significa?',o:['No encuentra un sistema: no está instalado, el disco no está conectado o el orden de arranque es incorrecto','La memoria está mal','La fuente es pequeña'],why:'El POST ha ido bien; falla la búsqueda del arranque.'},
+  {fans:'Giran.',screen:'«CPU Fan Error! Press F1 to continue»',led:'',q:'¿Qué ha pasado?',o:['El ventilador del disipador no está conectado a CPU_FAN','El procesador está roto','Falta el sistema operativo'],why:'No pulses F1 sin más: apaga y conecta el ventilador en CPU_FAN.'},
+  {fans:'Giran 2 segundos y se apaga. Vuelve a pasar.',screen:'Negro',led:'',q:'¿Qué sospechas?',o:['Un cortocircuito: un separador de más o un tornillo suelto debajo de la placa','Falta el sistema operativo','El monitor está apagado'],why:'Desenchufa y revisa separadores, tornillos sueltos, el cable EPS y el disipador.'},
+  {fans:'Giran. Se reinicia sola dos veces.',screen:'Negro el primer minuto',led:'DRAM',q:'Es el **primer arranque** de un equipo con DDR5. ¿Qué haces?',o:['Esperar unos minutos: está ajustando la memoria','Apagarlo enseguida','Cambiar la memoria'],why:'El ajuste de memoria (memory training) puede tardar varios minutos. Si no acaba nunca, borra la CMOS y prueba con un solo módulo.'},
+  {fans:'Giran.',screen:'Arranca bien, pero la fecha vuelve a 2020 cada vez que se desenchufa',led:'',q:'¿Qué falla?',o:['La pila CR2032 de la placa está agotada','El disco duro','La fuente'],why:'La pila mantiene la configuración y el reloj cuando no hay corriente.'},
+  {fans:'Giran.',screen:'Arranca, pero el procesador llega a 92 °C sin hacer nada',led:'',q:'¿Qué haces?',o:['Apagar: el disipador está mal puesto, sin pasta, con el plástico o sin ventilador','Seguir usándolo: es normal','Activar el XMP'],why:'En reposo suele estar por debajo de 50 °C.'}
+];
+const BANK=CASES.map(c=>({q:c.q,fig:scene(c),o:c.o,a:0,why:c.why}));
+
+// ---------- Informe de montaje ----------
+const F=[
+  {k:'fecha',l:'Fecha',ph:'06/11/2026'},{k:'tec',l:'Técnico',ph:'Tu nombre'},{k:'equipo',l:'Equipo y n.º de inventario',ph:'AULA2-PC12 · INV-0412'},
+  {k:'comp',l:'Componentes (marca, modelo y n.º de serie)',ph:'Placa Tajo B-M (S/N …), CPU …, 2 × 8 GB DDR5 …',area:1},
+  {k:'proc',l:'Proceso de montaje',ph:'CPU, RAM en A2 y B2, SSD en M2_1, disipador de serie…',area:1},
+  {k:'inc',l:'Incidencias (problema, causa y solución)',ph:'Sin imagen, LED DRAM encendido. Causa: … Solución: …',area:1},
+  {k:'uefi',l:'Configuración de la UEFI',ph:'Versión …; XMP activado; TPM y Secure Boot activados; arranque desde USB',area:1},
+  {k:'pru',l:'Pruebas realizadas y resultados',ph:'UEFI: 16 GB, 38 °C en reposo. CrystalDiskInfo: Bueno…',area:1},
+  {k:'res',l:'Resultado final',ph:'Apto / No apto y observaciones'}
+];
+function reportLab(root){
+  root.append(h('p',{class:'lead',html:md('Rellena el **informe de montaje** del equipo que has montado (o del caso «sin imagen» de los apuntes). Pulsa «Generar» para ver el documento listo para imprimir o guardar en PDF.')}));
+  const wrap=h('div',{class:'k-two'});root.append(wrap);
+  const form=h('div',{class:'inf'}),out=h('div');wrap.append(form,out);
+  const inp={},box={};
+  F.forEach(f=>{const i=f.area?h('textarea',{placeholder:f.ph,id:'if-'+f.k}):h('input',{placeholder:f.ph,id:'if-'+f.k});inp[f.k]=i;box[f.k]=h('div',{class:'f'},h('label',{for:'if-'+f.k},f.l),i);form.append(box[f.k])});
+  const m=h('div',{class:'k-msg',role:'status','aria-live':'polite'},'Rellena todos los apartados.');
+  form.append(h('div',{class:'row'},h('button',{class:'btn',onclick:gen},'Generar informe'),h('button',{class:'btn alt',onclick:ej},'Ver un ejemplo')),m);
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+  function gen(){const miss=F.filter(f=>!inp[f.k].value.trim());F.forEach(f=>box[f.k].classList.toggle('miss',miss.includes(f)));
+    if(miss.length){msg(m,'bad',`Faltan apartados: ${miss.map(f=>f.l.toLowerCase()).join(', ')}.`);return}
+    const tips=[];if(!/\d/.test(inp.pru.value))tips.push('las pruebas no tienen ningún dato concreto (temperaturas, GB detectados…)');if(!/(causa|ninguna|sin incidencias)/i.test(inp.inc.value))tips.push('en las incidencias indica la causa y la solución, o «ninguna»');if(!/(s\/?n|serie)/i.test(inp.comp.value))tips.push('faltan los números de serie de los componentes');
+    msg(m,tips.length?'warn':'good',tips.length?'Informe generado, pero mejóralo: '+tips.join('; ')+'.':'✓ <b>Informe completo.</b> Puedes imprimirlo o guardarlo en PDF.');
+    out.innerHTML='';const d=h('div',{class:'doc'});d.innerHTML='<h3>Informe de montaje</h3><table>'+F.map(f=>`<tr><th>${f.l}</th><td>${esc(inp[f.k].value)}</td></tr>`).join('')+'</table><p>Firma del técnico: ______________________</p>';
+    out.append(d,h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn alt',onclick:()=>window.print()},'Imprimir o guardar en PDF')))}
+  function ej(){const E={fecha:'06/11/2026',tec:'Alumno/a de 1.º SMR',equipo:'AULA2-PC12 · INV-0412',comp:'Placa Tajo B-M (S/N TBM2611-0042) · CPU Intel Core LGA 1700 (S/N X3B…) · 2 × 8 GB DDR5 (S/N …) · SSD NVMe 1 TB (S/N …) · Fuente ATX 550 W (S/N …) · Caja minitorre',proc:'CPU, RAM en A2 y B2, SSD en M2_1 y disipador de serie con pasta preaplicada, fuera de la caja. Fuente con ventilador hacia abajo. Placa sobre 6 separadores.',inc:'Sin imagen y LED DRAM encendido. Causa: módulo de B2 mal insertado (pestaña abierta). Solución: se reinserta hasta el clic.',uefi:'UEFI versión 1.20. Fecha y hora; XMP perfil 1; AHCI; PTT y Secure Boot activados; USB primero para instalar.',pru:'UEFI: 16 GB a 6000 MT/s, CPU 38 °C en reposo, 3 ventiladores con RPM. Diagnóstico de memoria de Windows: sin errores. CrystalDiskInfo: Bueno.',res:'Apto. Se adjuntan fotos del cableado.'};
+    F.forEach(f=>inp[f.k].value=E[f.k]);gen()}
+}
+
+acts(document.getElementById('r-comprobar'),[
+  {label:'Revisión antes de enchufar',render:el=>sort(el,{intro:'Antes del primer arranque, ¿qué está **bien** y qué hay que **corregir**?',
+    buckets:[{id:'ok',name:'Bien: se puede encender'},{id:'ko',name:'Corregir antes de enchufar'}],
+    items:[{t:'Cable de 24 pines y EPS conectados hasta el clic',b:'ok'},{t:'Un tornillo suelto sobre la placa',b:'ko'},{t:'Monitor conectado a la placa con gráfica dedicada instalada',b:'ko',why:'tiene que ir a la gráfica.'},{t:'Ventilador del disipador en CPU_FAN',b:'ok'},{t:'Un módulo de memoria con una pestaña abierta',b:'ko'},{t:'Un cable rozando las aspas de un ventilador',b:'ko'},{t:'Interruptor de la fuente en I',b:'ok'},{t:'Gráfica sin su cable PCIe de alimentación',b:'ko'}]})},
+  {label:'Diagnostica la avería',render:el=>quiz(el,{intro:'Cada caso es un equipo recién montado. Mira los síntomas y los **LED de diagnóstico** de la placa.',questions:BANK})},
+  {label:'¿Qué utilidad uso?',render:el=>sort(el,{intro:'¿Qué comprueba sobre todo cada utilidad?',
+    buckets:[{id:'ram',name:'La memoria RAM'},{id:'disk',name:'La salud de los discos'},{id:'sens',name:'Temperaturas y sensores'},{id:'info',name:'Qué hardware tiene el equipo'}],
+    items:[{t:'Diagnóstico de memoria de Windows (mdsched)',b:'ram'},{t:'MemTest86 desde un USB',b:'ram'},{t:'CrystalDiskInfo',b:'disk'},{t:'Get-PhysicalDisk en PowerShell',b:'disk'},{t:'HWiNFO',b:'sens'},{t:'Monitor de hardware de la UEFI',b:'sens'},{t:'Información del sistema (msinfo32)',b:'info'},{t:'CPU-Z',b:'info',why:'procesador, placa y memoria; también muestra los canales de memoria.'}]})},
+  {label:'Informe de montaje',render:reportLab}
+]);
+})();
+
+</script>
+</body></html>
