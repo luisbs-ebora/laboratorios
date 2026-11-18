@@ -650,7 +650,7 @@ function netLab(root){
   const wrap=h('div',{class:'k-two'});root.append(wrap);const A=h('div'),B=h('div');wrap.append(A,B);
   const mkSel=(lab,opts,val)=>{const s=h('select',{'aria-label':lab},...opts.map(([v,t])=>h('option',{value:v},t)));s.value=val;return [h('label',{class:'lbl',style:'display:flex;flex-direction:column;gap:4px;margin:6px 0'},lab,s),s]};
   const [l1,nic]=mkSel('Tarjeta de red del PC',[['1000','1 Gb/s'],['2500','2,5 Gb/s'],['10000','10 Gb/s']],'2500');
-  const [l2,cab]=mkSel('Cable',[['1000','Cat 5e (hasta 1 Gb/s)'],['10000','Cat 6A (hasta 10 Gb/s)']],'10000');
+  const [l2,cab]=mkSel('Cable',[['2500','Cat 5e (hasta 2,5 Gb/s)'],['10000','Cat 6A (hasta 10 Gb/s)']],'10000');
   const [l3,sw]=mkSel('Puerto del switch',[['1000','1 Gb/s'],['2500','2,5 Gb/s'],['10000','10 Gb/s']],'1000');
   const r1=h('div',{class:'k-msg'});A.append(h('h3',{},'Por cable'),l1,l2,l3,r1);
   const [l4,ad]=mkSel('Adaptador Wi‑Fi del PC',[['5','Wi‑Fi 5 (802.11ac)'],['6','Wi‑Fi 6 (802.11ax)'],['6.5','Wi‑Fi 6E (802.11ax, 6 GHz)'],['7','Wi‑Fi 7 (802.11be)']],'7');
