@@ -378,15 +378,14 @@ acts(document.getElementById('r-magnitudes'),[
   {label:'Test: fórmulas y señales',render:el=>quiz(el,{questions:[
     {q:'Una resistencia de **100 Ω** se conecta a **12 V**. ¿Qué intensidad pasa? (I = V ÷ R)',o:['0,12 A','1200 A','8,3 A'],a:0},
     {q:'Una gráfica toma **15 A** del cable de **12 V**. ¿Cuánto consume? (P = V × I)',o:['180 W','27 W','1,25 W'],a:0},
-    {q:'Un ventilador de **12 V** consume **3 W**. ¿Qué intensidad toma? (I = P ÷ V)',o:['0,25 A','36 A','4 A'],a:0},
-    {q:'Un equipo de **200 W** encendido **5 horas**. ¿Cuánta energía gasta?',o:['1 kWh','40 kWh','205 Wh'],a:0},
-    {q:'¿Qué valor de la red mide el polímetro y pone en los aparatos?',o:['230 V eficaces','325 V de pico','50 V'],a:0},
-    {q:'¿Qué significa **50 Hz**?',o:['La onda se repite 50 veces por segundo','La tensión es de 50 V','La corriente es de 50 A'],a:0},
-    {q:'¿Qué señal es esta?',fig:onda('ca'),o:['Alterna senoidal','Continua','Cuadrada'],a:0,why:'Sube y baja de forma suave y cambia de signo: el enchufe.'},
-    {q:'¿Qué señal es esta?',fig:onda('cuad'),o:['Cuadrada (digital)','Alterna senoidal','Pulsante'],a:0,why:'Solo dos valores: alto y bajo. Así viajan los datos.'},
-    {q:'¿Qué señal es esta?',fig:onda('puls'),o:['Pulsante','Alterna senoidal','Continua'],a:0,why:'Siempre del mismo signo pero sube y baja: la salida de un rectificador sin filtrar.'},
-    {q:'¿Qué señal es esta?',fig:onda('cc'),o:['Continua','Cuadrada','Pulsante'],a:0,why:'Un valor fijo: los 12 V de la fuente.'},
-    {q:'¿Por qué el ordenador necesita una fuente de alimentación?',o:['Porque el enchufe da alterna de 230 V y los chips necesitan continua de 12, 5 y 3,3 V','Porque el enchufe no da suficiente potencia','Para que el ordenador haga menos ruido'],a:0}]})}
+    {q:'Un ventilador de **12 V** consume **2,4 W**. ¿Qué intensidad toma? (I = P ÷ V)',o:['0,2 A','28,8 A','5 A'],a:0},
+    {q:'Un equipo de **200 W** encendido **5 horas**. ¿Cuánta energía gasta?',o:['1 kWh','40 kWh','205 Wh'],a:0,why:'200 W × 5 h = 1000 Wh = 1 kWh.'},
+    {q:'¿Qué valor de la red mide el polímetro y ponen los aparatos?',o:['230 V eficaces','325 V de pico','115 V, como en EE. UU.'],a:0},
+    {q:'¿Qué significa **50 Hz**?',o:['Se repite 50 veces cada segundo','La tensión de la red es de 50 V','Puede dar hasta 50 A de corriente'],a:0},
+    {q:'¿Qué señal es esta?',fig:onda('ca'),o:['Alterna','Continua','Pulsante'],a:0,why:'Sube y baja de forma suave y cambia de signo: es senoidal, la del enchufe.'},
+    {q:'¿Qué señal es esta?',fig:onda('cuad'),o:['Cuadrada','Alterna','Pulsante'],a:0,why:'Solo dos valores: alto y bajo. Así viajan los datos.'},
+    {q:'¿Qué señal es esta?',fig:onda('puls'),o:['Pulsante','Alterna','Continua'],a:0,why:'Siempre del mismo signo pero sube y baja: la salida de un rectificador sin filtrar.'},
+    {q:'¿Por qué el ordenador necesita una fuente de alimentación?',o:['El enchufe da alterna de 230 V y los chips usan continua','El enchufe no da suficiente potencia para todas las piezas','Para que el equipo gaste menos energía y haga menos ruido'],a:0,why:'La fuente la convierte en continua de 12, 5 y 3,3 V.'}]})}
 ]);
 })();
 
@@ -454,16 +453,15 @@ acts(document.getElementById('r-polimetro'),[
   {label:'Polímetro simulado',render:meterLab},
   {label:'Test: cómo se mide',render:el=>quiz(el,{questions:[
     {q:'¿Dónde va siempre la **punta negra**?',o:['En COM','En VΩ','En 10 A'],a:0},
-    {q:'¿Cómo se conecta el polímetro para medir **tensión**?',o:['En paralelo, con el circuito encendido','En serie, abriendo el circuito','Sin tensión'],a:0},
-    {q:'¿Cómo se conecta para medir **intensidad**?',o:['En serie, abriendo el circuito','En paralelo','Da igual'],a:0},
+    {q:'¿Cómo se conecta el polímetro para medir **tensión**?',o:['En paralelo y con tensión','En serie, abriendo el circuito','Sin tensión, con todo apagado'],a:0},
+    {q:'¿Cómo se conecta para medir **intensidad**?',o:['En serie, abriendo el circuito','En paralelo, con el circuito encendido','Da igual cómo se conecte'],a:0},
     {q:'¿Cómo deben estar los componentes para medir **resistencia**?',o:['Sin tensión','Encendidos','Conectados a la red'],a:0},
     {q:'Polímetro manual: vas a medir **12 V**. ¿Qué rango eliges?',o:['20 V','2 V','600 V'],a:0,why:'El inmediatamente superior al valor esperado.'},
-    {q:'La pantalla marca **«1»** a la izquierda (o **OL**). ¿Qué pasa?',o:['El rango es pequeño: hay que subirlo','La pila del polímetro está gastada','Has medido 1 voltio'],a:0},
-    {q:'Mides el cable amarillo y sale **−12,04 V**. ¿Qué ocurre?',o:['Las puntas están al revés','La fuente está estropeada','Estás midiendo alterna'],a:0},
-    {q:'Has medido intensidad. ¿Qué haces antes de medir una tensión?',o:['Devolver la punta roja a VΩ','Nada','Poner el selector en OFF y dejarlo así'],a:0,why:'Si no, provocas un cortocircuito y salta el fusible.'},
+    {q:'La pantalla marca **«1»** a la izquierda (o **OL**). ¿Qué pasa?',o:['El rango se queda corto: súbelo','La pila del polímetro está gastada','Has medido exactamente 1 voltio'],a:0},
+    {q:'Mides el cable amarillo y sale **−12,04 V**. ¿Qué ocurre?',o:['Las puntas están al revés','La fuente está estropeada','Estás midiendo en alterna'],a:0},
+    {q:'Has medido intensidad. ¿Qué haces antes de medir una tensión?',o:['Devolver la punta roja a VΩ','Nada: se mide igual que antes','Dejar el selector en OFF'],a:0,why:'Si no, provocas un cortocircuito y salta el fusible.'},
     {q:'¿Qué aparato mide la intensidad **sin cortar el cable**?',o:['La pinza amperimétrica','El osciloscopio','El comprobador de fuentes'],a:0},
-    {q:'¿Qué aparato **dibuja la forma** de una señal?',o:['El osciloscopio','El polímetro','El medidor de consumo'],a:0},
-    {q:'Una pila CR2032 marca **2,41 V**. ¿Qué haces?',o:['Cambiarla: está muy por debajo de 3 V','Nada: está bien','Cargarla'],a:0}]})}
+    {q:'Una pila CR2032 marca **2,41 V**. ¿Qué haces?',o:['Cambiarla: está por debajo de 3 V','Nada: le queda carga para años','Cargarla con el cargador del móvil'],a:0,why:'Es una pila de 3 V y no es recargable.'}]})}
 ]);
 })();
 
@@ -517,13 +515,13 @@ acts(document.getElementById('r-fuente'),[
   {label:'Bloques de la fuente',render:el=>order(el,{intro:'Ordena el camino de la energía dentro de una fuente conmutada, desde el enchufe hasta los cables.',top:'Enchufe',bottom:'Cables del PC',
     items:[{t:'Filtro de entrada (EMI)',d:'Quita el ruido de la red.'},{t:'Rectificador y PFC',d:'Alterna de 230 V → continua de unos 325 V.'},{t:'Conmutación',d:'La trocea miles de veces por segundo.'},{t:'Transformador',d:'Baja la tensión y aísla de la red.'},{t:'Rectificación y filtrado de salida',d:'Continua de 12, 5 y 3,3 V.'}]})},
   {label:'Test: la fuente',render:el=>quiz(el,{questions:[
-    {q:'¿Qué color tiene el cable de **+12 V**?',o:['Amarillo','Rojo','Naranja'],a:0},
-    {q:'¿Y el de **+3,3 V**?',o:['Naranja','Morado','Gris'],a:0},
-    {q:'¿Qué hace el cable **verde (PS_ON)**?',o:['La placa lo une a masa para encender la fuente','Da 12 V a la gráfica','Avisa de que las tensiones son estables'],a:0},
-    {q:'¿Qué indica el cable **gris (PWR_OK)**?',o:['Que las tensiones ya son estables','Que el equipo está apagado','La masa'],a:0},
-    {q:'¿Para qué sirve el **5VSB (morado)**?',o:['Mantiene viva la placa apagada para que el botón funcione','Alimenta la gráfica','Carga la batería del SAI'],a:0},
+    {q:'¿Qué tensión lleva el cable **amarillo**?',o:['+12 V','+5 V','+3,3 V'],a:0},
+    {q:'¿Y el cable **rojo**?',o:['+5 V','+3,3 V','+12 V'],a:0,why:'El naranja es el de +3,3 V.'},
+    {q:'¿Qué hace el cable **verde (PS_ON)**?',o:['La placa lo une a masa para encender la fuente','Da los 12 V que necesita la tarjeta gráfica','Avisa a la placa de que las tensiones son estables'],a:0},
+    {q:'¿Qué indica el cable **gris (PWR_OK)**?',o:['Que las tensiones ya son estables','Que el equipo está apagado del todo','Es la masa común de todos los cables'],a:0},
+    {q:'¿Para qué sirve el **5VSB (morado)**?',o:['Mantiene viva la placa con el equipo apagado','Alimenta la gráfica cuando juegas a tope','Carga la batería del SAI conectado al equipo'],a:0,why:'Por eso el botón de encendido funciona con el equipo apagado.'},
     {q:'¿Entre qué valores debe estar el **+12 V**?',o:['11,40 y 12,60 V','10 y 14 V','11,90 y 12,10 V'],a:0,why:'±5 % según la especificación ATX.'},
-    {q:'¿Por qué no se abre nunca una fuente?',o:['Sus condensadores guardan unos 325 V aunque esté desenchufada','Porque pierde la garantía, nada más','Porque tiene piezas frágiles'],a:0},
+    {q:'¿Por qué no se abre nunca una fuente?',o:['Sus condensadores guardan unos 325 V','Porque pierde la garantía y nada más','Porque sus piezas son frágiles y se rompen'],a:0,why:'Y los guardan aunque esté desenchufada.'},
     {q:'¿Cuál es la forma segura de probar una **fuente suelta** en el aula?',o:['Con un comprobador de fuentes ATX','Uniendo el verde y un negro con un clip','Enchufándola sin nada conectado'],a:0},
     {q:'¿Qué bloque convierte la alterna en continua de alta tensión?',o:['El rectificador','El transformador','El ventilador'],a:0},
     {q:'¿Qué bloque **aísla** la salida de la red eléctrica?',o:['El transformador','El filtro EMI','El rectificador de salida'],a:0}]})}
@@ -565,15 +563,16 @@ acts(document.getElementById('r-sai'),[
     items:[{t:'Filtro de entrada',d:'Recorta picos y ruido.'},{t:'Rectificador y cargador',d:'Carga la batería en continua.'},{t:'Batería',d:'Guarda la energía (12 V en los pequeños).'},{t:'Inversor',d:'Continua → alterna de 230 V.'},{t:'Conmutador o bypass',d:'Conecta los equipos a la salida del inversor.'},{t:'Tomas de salida',d:'Donde se enchufan los equipos.'}]})},
   {label:'Elige el SAI',render:saiLab},
   {label:'Test: el SAI',render:el=>quiz(el,{questions:[
-    {q:'¿Qué potencia del SAI es la que cuenta para elegirlo?',o:['Los vatios (W)','Los voltiamperios (VA)','Da igual'],a:0},
-    {q:'¿Qué margen se suele añadir al consumo?',o:['Del 20 al 30 %','Ninguno','El doble'],a:0},
-    {q:'¿Qué **no** se debe conectar a un SAI pequeño?',o:['Una impresora láser','Un monitor','Un router'],a:0,why:'Consume picos muy altos al calentar el fusor.'},
-    {q:'¿Qué tensión hay en la salida de un SAI **desenchufado de la pared**?',o:['Unos 230 V: está funcionando con batería','0 V','12 V'],a:0},
-    {q:'¿Qué tensión tiene la batería de un SAI pequeño cargada y en reposo?',o:['Unos 13 V en continua','230 V en alterna','5 V en continua'],a:0},
+    {q:'¿Qué potencia del SAI es la que cuenta para elegirlo?',o:['Los vatios (W)','Los amperios (A)','Los voltiamperios (VA)'],a:0},
+    {q:'¿Qué margen se suele añadir al consumo?',o:['Del 20 al 30 %','Ninguno: el justo','El doble'],a:0},
+    {q:'¿Qué **no** se debe conectar a un SAI pequeño?',o:['Una impresora láser','El monitor del equipo','El router de la oficina'],a:0,why:'Consume picos muy altos al calentar el fusor.'},
+    {q:'¿Qué tensión hay en la salida de un SAI **desenchufado de la pared**?',o:['Unos 230 V, sacados de la batería','0 V, porque no le llega corriente','12 V, los mismos que su batería'],a:0,why:'El inversor convierte la continua de la batería en alterna.'},
+    {q:'¿Qué tensión tiene la batería de un SAI pequeño cargada y en reposo?',o:['Unos 13 V en continua','Unos 230 V en alterna','Unos 5 V en continua'],a:0},
     {q:'¿Cuánto suelen durar las baterías de plomo de un SAI?',o:['Entre 3 y 5 años','Toda la vida del SAI','Unos 6 meses'],a:0},
-    {q:'¿Dónde se tiran las baterías usadas?',o:['En un punto limpio','En el contenedor amarillo','En la basura normal'],a:0},
+    {q:'¿Dónde se tiran las baterías usadas?',o:['En un punto limpio','En el amarillo','En la basura normal'],a:0},
     {q:'Una fuente con PFC activo se apaga al pasar el SAI a batería. ¿Qué SAI conviene?',o:['Uno de onda senoidal pura','Uno de más VA con onda escalonada','Uno off-line más barato'],a:0},
-    {q:'¿Qué bloque convierte la continua de la batería en alterna de 230 V?',o:['El inversor','El rectificador','El filtro'],a:0}]})}
+    {q:'¿Qué bloque convierte la continua de la batería en alterna de 230 V?',o:['El inversor','El rectificador','El filtro'],a:0},
+    {q:'¿En qué tipo de SAI van los equipos **siempre** por el inversor?',o:['On-line','Off-line','Interactivo'],a:0,why:'Por eso su tiempo de conmutación es cero.'}]})}
 ]);
 })();
 

@@ -489,15 +489,16 @@ acts(document.getElementById('r-prep'),[
       {t:'Fuente de alimentación en la caja'},{t:'Placa base sobre los separadores'},{t:'Discos y unidades SATA'},{t:'Cables de alimentación de la placa y del procesador'},{t:'Panel frontal, USB, audio y ventiladores'},{t:'Tarjeta gráfica',d:'Casi al final: es grande y tapa otros conectores.'},{t:'Ordenar los cables'},{t:'Primera prueba con la caja abierta'}],
     done:'Recuerda: si el manual de la caja o del disipador dice otro orden, manda el manual.'})},
   {label:'Test: seguridad y manuales',render:el=>quiz(el,{questions:[
-    {q:'¿Cuándo te pones la **pulsera antiestática**?',o:['Antes de sacar las piezas de su bolsa','Solo para tocar el procesador','Al terminar, para cerrar la caja'],a:0},
-    {q:'¿Dónde se engancha la pinza de la pulsera?',o:['En la toma de tierra del puesto o en una parte metálica sin pintar del chasis','En la placa base','En un tornillo de plástico'],a:0},
-    {q:'¿Por qué es peligrosa la electricidad estática para los componentes?',o:['Los chips pueden estropearse con descargas que tú ni notas','Porque provoca incendios','Solo afecta a los discos duros'],a:0,why:'Y a veces el daño aparece semanas después.'},
-    {q:'¿Qué **nunca** se hace con una fuente de alimentación?',o:['Abrirla','Atornillarla a la caja','Conectar sus cables con ella desenchufada'],a:0,why:'Sus condensadores pueden guardar carga aunque esté desenchufada.'},
-    {q:'Has perdido el manual de la placa. ¿Qué haces?',o:['Descargarlo en PDF de la web de soporte del fabricante, con el modelo exacto','Montar sin manual','Usar el manual de otra placa de la misma marca'],a:0},
-    {q:'¿Qué es la **QVL** de una placa?',o:['La lista de módulos de memoria probados en esa placa','El esquema de la placa','La lista de tornillos'],a:0},
-    {q:'Un tornillo no entra con suavidad. ¿Qué pasa?',o:['No es el suyo: busca el tipo correcto','Hay que apretar más fuerte','Hay que usar el destornillador grande'],a:0},
-    {q:'Dentro de la caja se te cae un tornillo. ¿Qué haces?',o:['Sacarlo antes de seguir: puede provocar un cortocircuito','Seguir: ya saldrá','Cerrar la caja y moverla'],a:0},
-    {q:'¿Cuántos **separadores** tiene que haber debajo de la placa?',o:['Uno debajo de cada agujero de la placa, y ninguno más','Todos los que traiga la caja','Cuatro, en las esquinas'],a:0}]})}
+    {q:'¿Cuándo te pones la **pulsera antiestática**?',o:['Antes de sacar las piezas de su bolsa','Solo cuando vas a tocar el procesador','Al terminar, justo antes de cerrar la caja'],a:0},
+    {q:'¿Dónde se engancha la pinza de la pulsera?',o:['En la toma de tierra o en metal sin pintar','En cualquier conector libre de la placa base','En uno de los tornillos de plástico de la caja'],a:0},
+    {q:'¿Por qué es peligrosa la electricidad estática para los componentes?',o:['Puede estropear los chips con descargas que ni notas','Porque puede provocar un incendio dentro de la caja','Porque borra los datos guardados en los discos duros'],a:0,why:'Y a veces el daño aparece semanas después.'},
+    {q:'¿Qué **nunca** se hace con una fuente de alimentación?',o:['Abrirla para ver cómo está por dentro','Atornillarla a la caja con sus tornillos','Conectar sus cables con ella desenchufada'],a:0,why:'Sus condensadores pueden guardar carga aunque esté desenchufada.'},
+    {q:'Has perdido el manual de la placa. ¿Qué haces?',o:['Bajarlo de la web del fabricante, con el modelo','Montar sin manual: todas las placas son iguales','Usar el manual de cualquier otra placa de la misma marca'],a:0},
+    {q:'¿Qué es la **QVL** de una placa?',o:['La lista de memorias probadas en esa placa','El esquema con todos los conectores de la placa','La lista de los tornillos que trae la caja'],a:0},
+    {q:'Un tornillo no entra con suavidad. ¿Qué pasa?',o:['No es el suyo: busca el tipo correcto','Hay que apretarlo con más fuerza','Hay que usar un destornillador más grande'],a:0},
+    {q:'Se te cae un tornillo dentro de la caja. ¿Qué haces?',o:['Sacarlo ya: puede hacer un cortocircuito','Seguir: ya saldrá cuando le des la vuelta','Dejarlo si no está debajo de la placa'],a:0},
+    {q:'¿Cuántos **separadores** van debajo de la placa?',o:['Uno en cada agujero de la placa','Todos los que traiga puestos la caja','Cuatro, uno en cada esquina'],a:0,why:'Un separador donde no hay agujero toca la placa y puede hacer un cortocircuito.'},
+    {q:'Mientras montas, ¿dónde dejas una pieza que aún no vas a usar?',o:['En su bolsa antiestática','En el bolsillo','En el suelo, junto a tu silla'],a:0}]})}
 ]);
 })();
 
@@ -533,18 +534,16 @@ acts(document.getElementById('r-montar'),[
     items:[{t:'El procesador solo tiene contactos planos',b:'lga'},{t:'Las patillas salen por debajo del procesador',b:'pga'},{t:'Intel LGA 1700 y LGA 1851',b:'lga'},{t:'AMD AM4',b:'pga'},{t:'AMD AM5',b:'lga'},{t:'Una patilla doblada estropea la placa',b:'lga'},{t:'Una patilla doblada estropea el procesador',b:'pga'},{t:'El procesador cae solo por su peso en los agujeros',b:'pga'}]})},
   {label:'Pon los separadores',render:standoffLab},
   {label:'Test: pasta, disipador y unidades',render:el=>quiz(el,{questions:[
-    {q:'¿Cuál es la cantidad correcta de pasta térmica?',fig:paste(18),o:['Esta: un punto del tamaño de un guisante en el centro','Hay que cubrir todo el procesador con una capa gruesa','No hace falta pasta nunca'],a:0,why:'Al apretar el disipador, la pasta se reparte sola.'},
-    {q:'Así has puesto la pasta. ¿Está bien?',fig:paste(62),o:['No: es demasiada, rebosará por los bordes','Sí: cuanta más, mejor enfría','Sí, si el disipador es de serie'],a:0},
-    {q:'La base del disipador trae una capa gris. ¿Qué haces?',o:['Nada: ya trae pasta, no se añade más','Ponerle otro punto encima','Limpiarla siempre antes de montar'],a:0},
-    {q:'Montas el disipador y el procesador llega a 90 °C sin hacer nada. ¿Qué has olvidado probablemente?',o:['Quitar el plástico protector de la base del disipador','Activar el XMP','Conectar el cable SATA'],a:0},
+    {q:'¿Cuál es la cantidad correcta de pasta térmica?',fig:paste(18),o:['Así: un punto del tamaño de un guisante','Una capa gruesa que cubra todo el procesador','Ninguna: el procesador no la necesita'],a:0,why:'Al apretar el disipador, la pasta se reparte sola.'},
+    {q:'Así has puesto la pasta. ¿Está bien?',fig:paste(62),o:['No: es demasiada, rebosará por los bordes','Sí: cuanta más pasta pongas, mejor enfría','Sí, siempre que el disipador sea de serie'],a:0},
+    {q:'La base del disipador trae una capa gris. ¿Qué haces?',o:['Nada: ya trae pasta de fábrica','Ponerle otro punto de pasta encima','Limpiarla siempre antes de montarlo'],a:0,why:'Esa capa gris es pasta térmica ya aplicada de fábrica.'},
+    {q:'Montas el disipador y el procesador llega a 90 °C sin hacer nada. ¿Qué has olvidado probablemente?',o:['Quitar el plástico de la base','Activar el perfil XMP en la UEFI','Conectar el cable de datos SATA'],a:0},
     {q:'¿A qué conector va el ventilador del disipador?',o:['CPU_FAN','CHA_FAN1','F_PANEL'],a:0,why:'Si no, muchas placas avisan con «CPU Fan Error».'},
-    {q:'¿Cómo se aprietan los tornillos de un disipador de torre?',o:['En cruz y poco a poco','Uno entero y luego el siguiente','Solo dos, en diagonal'],a:0},
-    {q:'Las patillas de presión del disipador de serie de Intel se presionan…',o:['En diagonal, hasta el clic, y se comprueba por detrás que están abiertas','Todas a la vez con una mano','Con un destornillador'],a:0},
-    {q:'¿Con qué ángulo se inserta una unidad M.2?',o:['Unos 30°','En vertical, a 90°','Plana, deslizándola'],a:0},
-    {q:'Una unidad M.2 **2280** mide…',o:['22 mm de ancho y 80 mm de largo','22 cm de largo','2280 GB'],a:0},
-    {q:'La caja tiene una rejilla con filtro debajo de la fuente. ¿Hacia dónde va su ventilador?',o:['Hacia abajo','Hacia arriba','Da igual'],a:0,why:'Así coge aire fresco del exterior.'},
-    {q:'Una fuente antigua tiene un selector 115 V / 230 V. En España, ¿dónde va?',o:['230 V','115 V','En cualquiera'],a:0,why:'En 115 V se estropearía al encenderla.'},
-    {q:'¿Cómo se aprietan los tornillos de la placa base?',o:['Primero todos sin apretar y luego en diagonal, firmes y sin forzar','Lo más fuerte posible, uno a uno','Basta con dos'],a:0}]})}
+    {q:'¿Cómo se aprietan los tornillos de un disipador de torre?',o:['En cruz y poco a poco','Uno entero y luego otro','Solo dos, en diagonal'],a:0},
+    {q:'¿Con qué ángulo se inserta una unidad M.2?',o:['Inclinada, a unos 30°','En vertical, a 90°','Plana, deslizándola sobre la placa'],a:0},
+    {q:'Una unidad M.2 **2280** mide…',o:['22 mm de ancho y 80 de largo','Una capacidad máxima de 2280 GB','22 cm de largo y 80 g de peso'],a:0},
+    {q:'La caja tiene una rejilla con filtro debajo de la fuente. ¿Hacia dónde va su ventilador?',o:['Hacia abajo, hacia el filtro','Hacia arriba, hacia la placa','Da igual hacia dónde mire'],a:0,why:'Así coge aire fresco del exterior.'},
+    {q:'¿Cómo se aprietan los tornillos de la placa base?',o:['Primero flojos y luego en diagonal','Lo más fuerte posible, de uno en uno','Solo dos: los demás no hacen falta'],a:0,why:'Firmes y sin forzar: la placa no debe doblarse.'}]})}
 ]);
 })();
 
@@ -633,16 +632,16 @@ acts(document.getElementById('r-conectar'),[
   {label:'Secuencia de arranque',render:el=>order(el,{intro:'Ordena lo que pasa desde que pulsas el botón hasta que ves el inicio de sesión.',top:'Primero',bottom:'Último',
     items:[{t:'Reposo: la fuente da 5 V a la placa para «escuchar» el botón'},{t:'Pulsas el botón y la placa pide a la fuente que se encienda'},{t:'La fuente se estabiliza y envía la señal Power Good'},{t:'El procesador ejecuta el firmware UEFI'},{t:'POST: comprueba procesador, memoria, gráfica y dispositivos'},{t:'Busca un sistema en el orden de arranque'},{t:'Carga el gestor de arranque (Windows Boot Manager o GRUB)'},{t:'El sistema operativo toma el control y muestra el inicio de sesión'}]})},
   {label:'Test: cables, frontal y UEFI',render:el=>quiz(el,{questions:[
-    {q:'¿Qué cables del F_PANEL **no tienen polaridad**?',o:['POWER SW y RESET SW','POWER LED y HDD LED','Todos la tienen'],a:0},
-    {q:'El LED de encendido no se ilumina, pero el equipo arranca. ¿Qué haces?',o:['Darle la vuelta a su conector: está al revés','Cambiar la fuente','Nada: no tiene arreglo'],a:0},
-    {q:'El conector **USB 2.0** y el de **audio** del frontal…',o:['Tienen el mismo tamaño, pero el hueco en sitios distintos','Son iguales e intercambiables','El de audio es azul y de 19 pines'],a:0},
-    {q:'Tienes una tira **ARGB de 5 V** (3 pines). ¿Dónde la conectas?',o:['En un cabezal ARGB de 5 V','En el cabezal RGB de 12 V','En CPU_FAN'],a:0,why:'En uno de 12 V se queman sus LED.'},
-    {q:'¿Qué tecla suele abrir el **menú de arranque** para elegir un USB una sola vez?',o:['F8, F11 o F12, según el fabricante','F10','Supr'],a:0,why:'Supr o F2 entran en la UEFI; F10 guarda y sale.'},
-    {q:'¿Para qué sirve activar el perfil **XMP o EXPO**?',o:['Para que la memoria trabaje a la velocidad de su etiqueta','Para activar el TPM','Para arrancar desde USB'],a:0},
-    {q:'Con Windows ya instalado, ¿se puede cambiar el modo SATA de AHCI a RAID sin más?',o:['No: el sistema puede dejar de arrancar','Sí, sin ningún problema','Sí, pero solo en discos duros'],a:0},
-    {q:'Tras cambiar opciones, el equipo ni siquiera llega a la UEFI. ¿Qué haces?',o:['Desenchufarlo y borrar la CMOS (puente CLR_CMOS o pila)','Cambiar la placa','Pulsar F10 muchas veces'],a:0},
-    {q:'¿Qué señal envía la fuente a la placa cuando sus tensiones son estables?',o:['Power Good','POST','Boot'],a:0},
-    {q:'¿Qué es el **POST**?',o:['La autoprueba de encendido del firmware','El gestor de arranque de Windows','Un tipo de conector'],a:0}]})}
+    {q:'¿Qué cables del F_PANEL **no tienen polaridad**?',o:['POWER SW y RESET SW','POWER LED y HDD LED','Todos tienen polaridad'],a:0,why:'Son interruptores: da igual cómo se pongan. Los LED sí tienen + y −.'},
+    {q:'El LED de encendido no se ilumina, pero el equipo arranca. ¿Qué haces?',o:['Darle la vuelta a su conector','Cambiar la fuente de alimentación','Nada: un LED no tiene arreglo'],a:0,why:'Seguramente está al revés: los LED tienen polaridad.'},
+    {q:'El conector **USB 2.0** y el de **audio** del frontal…',o:['Se parecen, pero el hueco está en otro sitio','Son iguales y se pueden poner en cualquiera','El de audio es el azul, de 19 pines, más grande'],a:0,why:'El azul de 19 pines es el USB 3.0.'},
+    {q:'Tienes una tira **ARGB de 5 V** (3 pines). ¿Dónde la conectas?',o:['En un cabezal ARGB de 5 V','En el cabezal RGB de 12 V','En el cabezal CPU_FAN'],a:0,why:'En uno de 12 V se queman sus LED.'},
+    {q:'¿Qué tecla suele abrir el **menú de arranque** para elegir un USB una sola vez?',o:['F8, F11 o F12, según la placa','F10 en todas las placas','Supr o F2, según el fabricante'],a:0,why:'Supr o F2 entran en la UEFI; F10 guarda y sale.'},
+    {q:'¿Para qué sirve activar el perfil **XMP o EXPO**?',o:['Que la memoria vaya a la velocidad de su etiqueta','Activar el TPM que pide Windows 11 para instalarse','Poder arrancar el equipo desde un USB'],a:0},
+    {q:'Con Windows ya instalado, ¿se puede cambiar el modo SATA de AHCI a RAID sin más?',o:['No: Windows puede dejar de arrancar','Sí: Windows lo detecta y se adapta solo','Sí, pero solo si son discos duros'],a:0},
+    {q:'Tras cambiar opciones, el equipo ni siquiera llega a la UEFI. ¿Qué haces?',o:['Desenchufar y borrar la CMOS','Cambiar la placa base por otra','Pulsar F10 varias veces seguidas'],a:0,why:'Con el puente CLR_CMOS o quitando la pila un rato.'},
+    {q:'¿Qué señal envía la fuente a la placa cuando sus tensiones son estables?',o:['Power Good','Power Switch','POST'],a:0},
+    {q:'¿Qué es el **POST**?',o:['La autoprueba del firmware al encender','El gestor que carga Windows o Linux','Un conector del panel frontal de la caja'],a:0,why:'Comprueba procesador, memoria, gráfica y dispositivos antes de buscar un sistema.'}]})}
 ]);
 })();
 
@@ -658,16 +657,16 @@ function scene(o){return f=>{
     h('tr',{},h('th',{},'Monitor'),h('td',{class:o.screen.startsWith('«')?'pk':''},o.screen)),
     h('tr',{},h('th',{},'LED de diagnóstico'),h('td',{},lamps))))))}}
 const CASES=[
-  {fans:'No giran. No se enciende ninguna luz.',screen:'Negro',led:'',q:'¿Qué revisas primero?',o:['El enchufe, el interruptor de la fuente y el cable POWER SW','La memoria RAM','El orden de arranque'],why:'Si no hay ni luces, falla el primer paso del arranque: la corriente o el botón.'},
-  {fans:'Giran.',screen:'Negro (más de 3 minutos)',led:'DRAM',q:'¿Dónde está el problema?',o:['En la memoria: revisa que los módulos estén bien insertados','En la gráfica','En el disco'],why:'El LED que se queda encendido marca la pieza que falla.'},
-  {fans:'Giran.',screen:'Negro',led:'VGA',q:'El equipo tiene gráfica dedicada. ¿Qué revisas?',o:['Que la gráfica esté bien insertada, con sus cables, y el monitor conectado a ella','El ventilador CPU_FAN','La pila de la placa'],why:'Si hay gráfica dedicada, el monitor va en la gráfica, no en la placa.'},
-  {fans:'Giran.',screen:'Negro',led:'CPU',q:'¿Qué revisas primero?',o:['El cable EPS de 8 pines del procesador','El cable SATA','El modo SATA'],why:'Sin el EPS, el procesador no recibe corriente. Si está bien, revisa el asiento del procesador y si la placa necesita actualizar la UEFI para ese modelo.'},
-  {fans:'Giran.',screen:'«Reboot and select proper boot device»',led:'BOOT',q:'¿Qué significa?',o:['No encuentra un sistema: no está instalado, el disco no está conectado o el orden de arranque es incorrecto','La memoria está mal','La fuente es pequeña'],why:'El POST ha ido bien; falla la búsqueda del arranque.'},
-  {fans:'Giran.',screen:'«CPU Fan Error! Press F1 to continue»',led:'',q:'¿Qué ha pasado?',o:['El ventilador del disipador no está conectado a CPU_FAN','El procesador está roto','Falta el sistema operativo'],why:'No pulses F1 sin más: apaga y conecta el ventilador en CPU_FAN.'},
-  {fans:'Giran 2 segundos y se apaga. Vuelve a pasar.',screen:'Negro',led:'',q:'¿Qué sospechas?',o:['Un cortocircuito: un separador de más o un tornillo suelto debajo de la placa','Falta el sistema operativo','El monitor está apagado'],why:'Desenchufa y revisa separadores, tornillos sueltos, el cable EPS y el disipador.'},
-  {fans:'Giran. Se reinicia sola dos veces.',screen:'Negro el primer minuto',led:'DRAM',q:'Es el **primer arranque** de un equipo con DDR5. ¿Qué haces?',o:['Esperar unos minutos: está ajustando la memoria','Apagarlo enseguida','Cambiar la memoria'],why:'El ajuste de memoria (memory training) puede tardar varios minutos. Si no acaba nunca, borra la CMOS y prueba con un solo módulo.'},
-  {fans:'Giran.',screen:'Arranca bien, pero la fecha vuelve a 2020 cada vez que se desenchufa',led:'',q:'¿Qué falla?',o:['La pila CR2032 de la placa está agotada','El disco duro','La fuente'],why:'La pila mantiene la configuración y el reloj cuando no hay corriente.'},
-  {fans:'Giran.',screen:'Arranca, pero el procesador llega a 92 °C sin hacer nada',led:'',q:'¿Qué haces?',o:['Apagar: el disipador está mal puesto, sin pasta, con el plástico o sin ventilador','Seguir usándolo: es normal','Activar el XMP'],why:'En reposo suele estar por debajo de 50 °C.'}
+  {fans:'No giran. No se enciende ninguna luz.',screen:'Negro',led:'',q:'¿Qué revisas primero?',o:['El enchufe, el interruptor de la fuente y el cable POWER SW','La memoria RAM, probando los módulos de uno en uno','El orden de arranque y el modo SATA en la configuración de la UEFI'],why:'Si no hay ni luces, falla el primer paso del arranque: la corriente o el botón.'},
+  {fans:'Giran.',screen:'Negro (más de 3 minutos)',led:'DRAM',q:'¿Dónde está el problema?',o:['En la memoria: revisa que esté bien insertada','En la gráfica: revisa su cable de alimentación PCIe','En el disco: revisa el cable de datos SATA'],why:'El LED que se queda encendido marca la pieza que falla.'},
+  {fans:'Giran.',screen:'Negro',led:'VGA',q:'El equipo tiene gráfica dedicada. ¿Qué revisas?',o:['La gráfica, sus cables y que el monitor esté en ella','Que el ventilador del disipador esté conectado en CPU_FAN','La pila de la placa y la fecha de la UEFI'],why:'Si hay gráfica dedicada, el monitor va en la gráfica, no en la placa.'},
+  {fans:'Giran.',screen:'Negro',led:'CPU',q:'¿Qué revisas primero?',o:['El cable EPS de 8 pines del procesador','El cable de datos SATA del disco duro principal','El modo SATA y el orden de arranque'],why:'Sin el EPS, el procesador no recibe corriente. Si está bien, revisa el asiento del procesador y si la placa necesita actualizar la UEFI para ese modelo.'},
+  {fans:'Giran.',screen:'«Reboot and select proper boot device»',led:'BOOT',q:'¿Qué significa?',o:['No encuentra un sistema para arrancar en ningún disco','Un módulo de memoria está mal y el POST no ha terminado','La fuente se ha quedado corta para la gráfica que tiene'],why:'El POST ha ido bien; falla la búsqueda del arranque: el sistema no está instalado, el disco no está conectado o el orden de arranque es incorrecto.'},
+  {fans:'Giran.',screen:'«CPU Fan Error! Press F1 to continue»',led:'',q:'¿Qué ha pasado?',o:['El ventilador del disipador no está en CPU_FAN','El procesador está roto y hay que cambiarlo','Falta instalar el sistema operativo en el disco'],why:'No pulses F1 sin más: apaga y conecta el ventilador en CPU_FAN.'},
+  {fans:'Giran 2 segundos y se apaga. Vuelve a pasar.',screen:'Negro',led:'',q:'¿Qué sospechas?',o:['Un cortocircuito: un separador de más o un tornillo suelto','Falta el sistema operativo y se apaga al no encontrarlo','El monitor está apagado o conectado en la salida equivocada'],why:'Desenchufa y revisa separadores, tornillos sueltos, el cable EPS y el disipador.'},
+  {fans:'Giran. Se reinicia sola dos veces.',screen:'Negro el primer minuto',led:'DRAM',q:'Es el **primer arranque** de un equipo con DDR5. ¿Qué haces?',o:['Esperar unos minutos: está ajustando la memoria','Apagarlo enseguida para que no se estropee nada','Cambiar los módulos de memoria por otros nuevos'],why:'El ajuste de memoria (memory training) puede tardar varios minutos. Si no acaba nunca, borra la CMOS y prueba con un solo módulo.'},
+  {fans:'Giran.',screen:'Arranca bien, pero la fecha vuelve a 2020 cada vez que se desenchufa',led:'',q:'¿Qué falla?',o:['La pila CR2032 de la placa está agotada','El disco duro está empezando a fallar','La fuente de alimentación se está estropeando'],why:'La pila mantiene la configuración y el reloj cuando no hay corriente.'},
+  {fans:'Giran.',screen:'Arranca, pero el procesador llega a 92 °C sin hacer nada',led:'',q:'¿Qué haces?',o:['Apagar y revisar el disipador: pasta, plástico y ventilador','Seguir usándolo: es una temperatura normal para un procesador','Activar el perfil XMP para que la memoria vaya más rápida'],why:'En reposo suele estar por debajo de 50 °C. Revisa que el disipador esté bien puesto, con pasta, sin el plástico y con el ventilador conectado.'}
 ];
 const BANK=CASES.map(c=>({q:c.q,fig:scene(c),o:c.o,a:0,why:c.why}));
 
